@@ -12,6 +12,8 @@ const DEFAULT_BASE_RPC_URL = "https://mainnet.base.org";
 const APPROVAL_TOPIC = "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925";
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 const QUOTER_EXACT_INPUT_SINGLE_SELECTOR = "0xc6a5026a";
+const ERC20_SYMBOL_SELECTOR = "0x95d89b41";
+const ERC20_DECIMALS_SELECTOR = "0x313ce567";
 const ZERO = BigInt(0);
 const TWO = BigInt(2);
 const USDC_SCALE = BigInt(1_000_000);
@@ -55,6 +57,14 @@ export type RouterSwap = {
   sqrtPriceLimitX96Raw: string;
 };
 
+export type TokenMetadata = {
+  address: string;
+  state: "available" | "unavailable";
+  symbol: string | null;
+  decimals: number | null;
+  detail: string;
+};
+
 export type DecodedCall = {
   kind: DecodedCallKind;
   selector: string | null;
@@ -94,6 +104,10 @@ export type TransactionInspection = {
   };
   decoded: DecodedCall;
   simulation: RouterSimulation;
+  tokenMetadata: {
+    input: TokenMetadata | null;
+    output: TokenMetadata | null;
+  };
   observations: {
     approvals: Array<{ owner: string | null; spender: string | null; amountRaw: string; unlimited: boolean }>;
     transfers: Array<{ from: string | null; to: string | null; amountRaw: string }>;
@@ -134,6 +148,35 @@ function encodeAddressWord(address: string) {
 function encodeUintWord(value: string | number) {
   const decimal = typeof value === "number" ? BigInt(value) : BigInt(value);
   return decimal.toString(16).padStart(64, "0");
+}
+
+export function decodeErc20SymbolResponse(response: string) {
+  const body = response.slice(2);
+  if (!/^[0-9a-fA-F]+$/.test(body) || body.length < 64) throw new BaseRpcError("ERC-20 symbol response was malformed.");
+
+  let payload = body;
+  if (body.length > 64) {
+    const offset = Number(BigInt(`0x${body.slice(0, 64)}`));
+    const offsetIndex = offset * 2;
+    if (!Number.isSafeInteger(offsetIndex) || body.length < offsetIndex + 64) throw new BaseRpcError("ERC-20 symbol response used an invalid ABI offset.");
+    const stringLength = Number(BigInt(`0x${body.slice(offsetIndex, offsetIndex + 64)}`));
+    const dataStart = offsetIndex + 64;
+    const dataEnd = dataStart + stringLength * 2;
+    if (!Number.isSafeInteger(dataEnd) || body.length < dataEnd) throw new BaseRpcError("ERC-20 symbol response used an invalid ABI length.");
+    payload = body.slice(dataStart, dataEnd);
+  }
+
+  const symbol = Buffer.from(payload, "hex").toString("utf8").replace(/\0/g, "").trim();
+  if (!symbol || symbol.length > 48 || /[^\x20-\x7E]/.test(symbol)) throw new BaseRpcError("ERC-20 symbol response was not a display-safe string.");
+  return symbol;
+}
+
+export function decodeErc20DecimalsResponse(response: string) {
+  const body = response.slice(2);
+  if (!/^[0-9a-fA-F]+$/.test(body) || body.length < 64) throw new BaseRpcError("ERC-20 decimals response was malformed.");
+  const decimals = Number(BigInt(`0x${body.slice(0, 64)}`));
+  if (!Number.isSafeInteger(decimals) || decimals < 0 || decimals > 36) throw new BaseRpcError("ERC-20 decimals value was outside the supported display range.");
+  return decimals;
 }
 
 function toUsdcAmount(raw: bigint) {
@@ -275,6 +318,34 @@ function noSimulation(detail: string): RouterSimulation {
   return { state: "not-applicable", protocol: null, contractAddress: null, method: null, selector: null, amountOutRaw: null, sqrtPriceX96AfterRaw: null, initializedTicksCrossed: null, gasEstimate: null, blockTag: null, detail };
 }
 
+async function resolveTokenMetadata(address: string): Promise<TokenMetadata> {
+  try {
+    const [symbolResponse, decimalsResponse] = await Promise.all([
+      rpcCall("eth_call", [{ to: address, data: ERC20_SYMBOL_SELECTOR }, "latest"], hexSchema),
+      rpcCall("eth_call", [{ to: address, data: ERC20_DECIMALS_SELECTOR }, "latest"], hexSchema),
+    ]);
+    return {
+      address,
+      state: "available",
+      symbol: decodeErc20SymbolResponse(symbolResponse),
+      decimals: decodeErc20DecimalsResponse(decimalsResponse),
+      detail: "Read-only ERC-20 symbol and decimals calls completed at the latest Base state.",
+    };
+  } catch (error) {
+    const message = error instanceof BaseRpcError ? error.message : "The read-only ERC-20 metadata calls could not be completed.";
+    return { address, state: "unavailable", symbol: null, decimals: null, detail: message };
+  }
+}
+
+async function resolveRouterTokenMetadata(decoded: DecodedCall): Promise<TransactionInspection["tokenMetadata"]> {
+  if (!decoded.routerSwap) return { input: null, output: null };
+  const [input, output] = await Promise.all([
+    resolveTokenMetadata(decoded.routerSwap.tokenIn),
+    resolveTokenMetadata(decoded.routerSwap.tokenOut),
+  ]);
+  return { input, output };
+}
+
 function decodeQuoterResponse(response: string): Omit<RouterSimulation, "state" | "protocol" | "contractAddress" | "method" | "selector" | "blockTag" | "detail"> {
   const body = response.slice(2);
   if (body.length < 64 * 4) throw new BaseRpcError("QuoterV2 returned incomplete quote data.");
@@ -322,6 +393,7 @@ export async function inspectBaseTransaction(transactionHashInput: string): Prom
       receipt: { state: "missing", blockNumber: null },
       decoded: unknownCall(""),
       simulation: noSimulation("No transaction was found, so no router quote was requested."),
+      tokenMetadata: { input: null, output: null },
       observations: { approvals: [], transfers: [], spentUsdcRaw: null },
       raw: { transaction: null, receipt: null },
     };
@@ -334,7 +406,10 @@ export async function inspectBaseTransaction(transactionHashInput: string): Prom
     observations.approvals.unshift({ owner: transaction.from.toLowerCase(), spender: decoded.spender, amountRaw: decoded.amountRaw, unlimited: amount >= MAX_UINT256 / TWO });
   }
   const receiptState = !receipt ? "pending" : receipt.status.toLowerCase() === "0x1" ? "success" : "failed";
-  const simulation = await quoteAllowlistedRouterSwap(decoded);
+  const [simulation, tokenMetadata] = await Promise.all([
+    quoteAllowlistedRouterSwap(decoded),
+    resolveRouterTokenMetadata(decoded),
+  ]);
 
   return {
     transactionHash,
@@ -343,6 +418,7 @@ export async function inspectBaseTransaction(transactionHashInput: string): Prom
     receipt: { state: receiptState, blockNumber: receipt?.blockNumber ?? null },
     decoded,
     simulation,
+    tokenMetadata,
     observations,
     raw: {
       transaction: { from: transaction.from.toLowerCase(), to: normalizeAddress(transaction.to), input: transaction.input.toLowerCase(), value: transaction.value, blockNumber: transaction.blockNumber },

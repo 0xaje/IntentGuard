@@ -39,6 +39,10 @@ The project uses the managed server template only to expose a typed public tRPC 
 
 The live adapter defaults to the documented Base public RPC endpoint. `BASE_RPC_URL` is an optional server-side override for a production-grade node provider and must be managed as a project secret rather than committed. See [`environment.example.md`](./environment.example.md) for the non-sensitive configuration contract.
 
+## Router token metadata boundary
+
+For an allowlisted decoded router path, IntentGuard resolves each token’s `symbol()` and `decimals()` through independent read-only Base `eth_call` requests at the latest state. ERC-20 identifies both metadata methods as optional, so a failed, malformed, or out-of-range response remains an explicit unavailable metadata state and leaves the transaction amount in raw units. It is never replaced with a guessed token name or assumed decimals. [4]
+
 ## Router evidence enhancement decision
 
 The v0.1.1 enhancement will support **one allowlisted integration only**: Uniswap v3 `SwapRouter02` on Base Mainnet at `0x2626664c2603336E57B271c5C0b26F421741e481`. This deployment is listed by Uniswap for Base alongside `QuoterV2` at `0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a` and Base WETH at `0x4200000000000000000000000000000000000006`. [1]
@@ -54,3 +58,4 @@ The live Base transaction `0x89e0bcc982a5d661f45d12f537615dea9d8c2cadc036de7f744
 1. [Uniswap v3 Base deployments](https://developers.uniswap.org/docs/protocols/v3/deployments/v3-base-deployments)
 2. [Uniswap `IV3SwapRouter` interface](https://github.com/Uniswap/swap-router-contracts/blob/main/contracts/interfaces/IV3SwapRouter.sol)
 3. [Uniswap `IQuoterV2` interface](https://github.com/Uniswap/v3-periphery/blob/main/contracts/interfaces/IQuoterV2.sol) and [QuoterV2 source](https://github.com/Uniswap/v3-periphery/blob/main/contracts/lens/QuoterV2.sol)
+4. [ERC-20 optional `symbol` and `decimals` methods](https://eips.ethereum.org/EIPS/eip-20)

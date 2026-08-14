@@ -57,3 +57,11 @@ After replacing the prior illustrative sequence with a truthful in-flight state,
 The current loading presentation uses an indeterminate progress meter and lists the evidence operations that are pending as a single server request: transaction and chain retrieval, receipt inspection, allowlisted route decoding, read-only quotation, and deterministic comparison. It explicitly states that no individual stage is marked complete until the server returns the complete evidence payload.
 
 The live expanded raw-evidence packet now displayed the full Base RPC transaction and receipt fields, decoded `exactInputSingle` parameters (tokens, fee, recipient, amount in, minimum output, and price limit), and full QuoterV2 request/result metadata (contract, method, selector, latest block tag, output amount, post-quote price, ticks crossed, and gas estimate).
+
+After the token-metadata enhancement was loaded, the refreshed `/app` interface again accepted and schema-validated the supported Base swap intent before enabling live transaction inspection.
+
+Live inspection of Base transaction `0x89e0bcc982a5d661f45d12f537615dea9d8c2cadc036de7f744b77a95478be33` now resolved the observed router path through read-only ERC-20 metadata calls. The input token was returned as `ETD` with `18` decimals and the output as `USDC` with `6` decimals, producing the displayed values `12.20055724120418304 ETD` and `10.969333 USDC`. The raw evidence packet exposed each address, metadata state, symbol, decimals, and the source details. The incompatible ETD-to-USDC path remained **UNVERIFIABLE**, preserving deterministic policy boundaries.
+
+## Development command and integration audit
+
+`npm run dev` was reproduced successfully. It starts the same `tsx watch server/_core/index.ts` development entrypoint as `pnpm dev`; it does not require a pre-built `dist` directory. The audit used port `3001` only because the managed preview already occupied port `3000`, and the expected long-running development server was stopped by the bounded test timeout. The frontend uses `httpBatchLink` to `/api/trpc`, the Express server mounts the typed `intentGuard` router at that path, and the browser has exercised the resulting server-side Base transaction, receipt, metadata, and quote calls.

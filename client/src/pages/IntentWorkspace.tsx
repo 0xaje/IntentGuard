@@ -6,8 +6,6 @@ import SignalMark from "@/components/SignalMark";
 import { trpc } from "@/lib/trpc";
 
 const markAsset = "/manus-storage/intentguard-mark_5497d1c4.png";
-const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
-const USDC_ADDRESS = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
 
 const examples = [
   {
@@ -48,21 +46,24 @@ function formatUsdc(raw: string | null | undefined) {
   }
 }
 
-function formatTokenAmount(raw: string | null | undefined, token: string | null | undefined) {
-  if (!raw || !token) return "Unavailable";
-  if (token.toLowerCase() === USDC_ADDRESS) return formatUsdc(raw);
+type TokenMetadataView = { state: "available" | "unavailable"; symbol: string | null; decimals: number | null } | null;
+
+function formatTokenAmount(raw: string | null | undefined, metadata: TokenMetadataView) {
+  if (!raw) return "Unavailable";
+  if (!metadata || metadata.state !== "available" || !metadata.symbol || metadata.decimals === null) return `${raw} raw units`;
   try {
     const value = BigInt(raw);
-    if (token.toLowerCase() === WETH_ADDRESS) {
-      const scale = BigInt("1000000000000000000");
-      const whole = value / scale;
-      const fraction = value % scale;
-      return fraction === BigInt(0) ? `${whole.toString()} WETH` : `${whole.toString()}.${fraction.toString().padStart(18, "0").replace(/0+$/, "")} WETH`;
-    }
-    return `${value.toString()} raw units`;
+    const scale = BigInt(10) ** BigInt(metadata.decimals);
+    const whole = value / scale;
+    const fraction = value % scale;
+    return fraction === BigInt(0) ? `${whole.toString()} ${metadata.symbol}` : `${whole.toString()}.${fraction.toString().padStart(metadata.decimals, "0").replace(/0+$/, "")} ${metadata.symbol}`;
   } catch {
     return "Unavailable";
   }
+}
+
+function formatTokenLabel(address: string, metadata: TokenMetadataView) {
+  return metadata?.state === "available" && metadata.symbol ? `${metadata.symbol} / ${shortHash(address)}` : shortHash(address);
 }
 
 function verdictLabel(verdict: "MATCH" | "MISMATCH" | "UNVERIFIABLE") {
@@ -230,12 +231,12 @@ export default function IntentWorkspace() {
                   <div><dt>Transaction</dt><dd className="address-value">{shortHash(result.inspection.transactionHash)}</dd></div>
                   <div><dt>To contract</dt><dd className="address-value">{shortHash(result.inspection.transaction?.to)}</dd></div>
                   <div><dt>Function</dt><dd>{result.inspection.decoded.kind === "unknown" ? "UNRESOLVED" : result.inspection.decoded.kind.toUpperCase()} {result.inspection.decoded.selector ?? ""}</dd></div>
-                  <div><dt>Token</dt><dd>{result.inspection.decoded.token ?? "NOT IDENTIFIED"}</dd></div>
-                  <div><dt>Observed input</dt><dd>{result.inspection.decoded.routerSwap ? formatTokenAmount(result.inspection.decoded.routerSwap.amountInRaw, result.inspection.decoded.routerSwap.tokenIn) : formatUsdc(result.inspection.observations.spentUsdcRaw ?? result.inspection.decoded.amountRaw)}</dd></div>
+                  <div><dt>Token</dt><dd>{result.inspection.decoded.routerSwap ? result.inspection.tokenMetadata.input?.symbol ?? "UNRESOLVED" : result.inspection.decoded.token ?? "NOT IDENTIFIED"}</dd></div>
+                  <div><dt>Observed input</dt><dd>{result.inspection.decoded.routerSwap ? formatTokenAmount(result.inspection.decoded.routerSwap.amountInRaw, result.inspection.tokenMetadata.input) : formatUsdc(result.inspection.observations.spentUsdcRaw ?? result.inspection.decoded.amountRaw)}</dd></div>
                   <div><dt>Receipt</dt><dd>{result.inspection.receipt.state.toUpperCase()}</dd></div>
-                  {result.inspection.decoded.routerSwap && <><div><dt>Allowlisted path</dt><dd className="address-value">{shortHash(result.inspection.decoded.routerSwap.tokenIn)} → {shortHash(result.inspection.decoded.routerSwap.tokenOut)} / {result.inspection.decoded.routerSwap.fee}</dd></div><div><dt>Current quote</dt><dd>{result.inspection.simulation.state === "available" ? formatTokenAmount(result.inspection.simulation.amountOutRaw, result.inspection.decoded.routerSwap.tokenOut) : "UNAVAILABLE"}</dd></div></>}
+                  {result.inspection.decoded.routerSwap && <><div><dt>Allowlisted path</dt><dd className="address-value">{formatTokenLabel(result.inspection.decoded.routerSwap.tokenIn, result.inspection.tokenMetadata.input)} → {formatTokenLabel(result.inspection.decoded.routerSwap.tokenOut, result.inspection.tokenMetadata.output)} / {result.inspection.decoded.routerSwap.fee}</dd></div><div><dt>Current quote</dt><dd>{result.inspection.simulation.state === "available" ? formatTokenAmount(result.inspection.simulation.amountOutRaw, result.inspection.tokenMetadata.output) : "UNAVAILABLE"}</dd></div></>}
                 </dl> : <div className="unavailable-transaction"><CircleAlert size={20} /><p>Transaction data was unavailable. IntentGuard did not turn the missing evidence into a successful result.</p></div>}
-                {result.inspection && <details className="raw-evidence-details"><summary><span><Braces size={15} /> Raw evidence packet</span><span>{result.inspection.raw.receipt?.logs.length ?? 0} receipt logs <ChevronDown size={14} /></span></summary><p>This packet contains the returned RPC fields, the full decoded calldata object, and the read-only quote request/result metadata. It is inspectable evidence only; it never contains signing material.</p><pre>{JSON.stringify({ baseRpc: result.inspection.raw, decodedCalldata: result.inspection.decoded, readOnlySimulation: result.inspection.simulation }, null, 2)}</pre></details>}
+                {result.inspection && <details className="raw-evidence-details"><summary><span><Braces size={15} /> Raw evidence packet</span><span>{result.inspection.raw.receipt?.logs.length ?? 0} receipt logs <ChevronDown size={14} /></span></summary><p>This packet contains the returned RPC fields, the full decoded calldata object, read-only token metadata, and read-only quote request/result metadata. It is inspectable evidence only; it never contains signing material.</p><pre>{JSON.stringify({ baseRpc: result.inspection.raw, decodedCalldata: result.inspection.decoded, tokenMetadata: result.inspection.tokenMetadata, readOnlySimulation: result.inspection.simulation }, null, 2)}</pre></details>}
               </article>
             </div>
 

@@ -66,3 +66,13 @@
 - [x] Add keyboard-accessible expandable raw-evidence details, including full transaction/receipt fields, decoded calldata parameters, and complete simulation source and result fields.
 - [x] Test a real allowlisted Base router transaction, incompatible-path behavior, loading stages, evidence expansion, desktop/mobile layout, typecheck, tests, and production build.
 - [x] Commit, push, and checkpoint the router evidence enhancement without destructive history rewrites.
+
+## Development workflow and integration follow-up
+
+- [x] Audit the `dev`, `build`, `start`, and test scripts and reproduce the reported npm development-command behavior.
+- [x] Verify the live frontend-to-backend tRPC path from `/app` through the public intent verification procedure to Base RPC.
+- [x] Do not add a redundant `npm run dev` alias: the existing `dev` script works through both npm and pnpm and starts the same Node/Express development entrypoint.
+- [x] Identify and implement the next real Base verification enhancement after the integration audit.
+- [x] Resolve decoded allowlisted-router path tokens through read-only ERC-20 `symbol` and `decimals` RPC calls, with explicit unavailable states for noncompliant contracts.
+- [x] Display resolved router-path input/output labels and correctly scaled observable amounts without affecting deterministic verdict boundaries.
+- [ ] Test, commit, push, checkpoint, and document the development-workflow follow-up without destructive history rewrites.
