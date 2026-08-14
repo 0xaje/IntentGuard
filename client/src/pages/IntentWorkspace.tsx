@@ -1,11 +1,13 @@
 // Forensic Signal style reminder: show the evidence trail before the visual verdict; never imply a successful chain action or wallet approval that did not occur.
 import { useState, type FormEvent } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ArrowUpRight, Check, CircleAlert, ExternalLink, FileCheck2, Loader2, ScanLine, ShieldAlert, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Braces, Check, ChevronDown, CircleAlert, ExternalLink, FileCheck2, Loader2, ScanLine, ShieldAlert, ShieldCheck } from "lucide-react";
 import SignalMark from "@/components/SignalMark";
 import { trpc } from "@/lib/trpc";
 
 const markAsset = "/manus-storage/intentguard-mark_5497d1c4.png";
+const WETH_ADDRESS = "0x4200000000000000000000000000000000000006";
+const USDC_ADDRESS = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
 
 const examples = [
   {
@@ -16,6 +18,14 @@ const examples = [
     label: "Tighter execution rule",
     text: "Swap 50 USDC for ETH on Base. Maximum slippage 0.5%. Don't allow unlimited approvals.",
   },
+];
+
+const inspectionStages = [
+  { id: "01", label: "Resolve Base transaction", detail: "Requesting the transaction object and chain ID." },
+  { id: "02", label: "Inspect mined receipt", detail: "Reading execution state and observable event logs." },
+  { id: "03", label: "Decode allowlisted route", detail: "Checking the router address and supported calldata shape." },
+  { id: "04", label: "Request read-only quote", detail: "Calling the allowlisted QuoterV2 at the current Base state." },
+  { id: "05", label: "Compare deterministic policy", detail: "Producing evidence and a non-signing verdict." },
 ];
 
 function shortHash(value: string | null | undefined) {
@@ -33,6 +43,23 @@ function formatUsdc(raw: string | null | undefined) {
     return fraction === BigInt(0)
       ? `${whole.toString()} USDC`
       : `${whole.toString()}.${fraction.toString().padStart(6, "0").replace(/0+$/, "")} USDC`;
+  } catch {
+    return "Unavailable";
+  }
+}
+
+function formatTokenAmount(raw: string | null | undefined, token: string | null | undefined) {
+  if (!raw || !token) return "Unavailable";
+  if (token.toLowerCase() === USDC_ADDRESS) return formatUsdc(raw);
+  try {
+    const value = BigInt(raw);
+    if (token.toLowerCase() === WETH_ADDRESS) {
+      const scale = BigInt("1000000000000000000");
+      const whole = value / scale;
+      const fraction = value % scale;
+      return fraction === BigInt(0) ? `${whole.toString()} WETH` : `${whole.toString()}.${fraction.toString().padStart(18, "0").replace(/0+$/, "")} WETH`;
+    }
+    return `${value.toString()} raw units`;
   } catch {
     return "Unavailable";
   }
@@ -182,7 +209,7 @@ export default function IntentWorkspace() {
           </div>
         </section>
 
-        {verifyIntent.isPending && <div className="verification-progress" aria-live="polite"><Loader2 size={18} className="animate-spin" /><div><strong>Retrieving live Base evidence.</strong><span>IntentGuard is requesting the transaction, receipt, logs, and network chain ID before applying deterministic policy checks.</span></div></div>}
+        {verifyIntent.isPending && <section className="verification-progress inspector-progress" aria-live="polite" aria-busy="true" aria-label="Live Base transaction inspection in progress"><div className="inspection-progress-heading"><Loader2 size={18} className="animate-spin" /><div><strong>Live Base inspection is in progress.</strong><span>The server will return transaction, receipt, router, quote, and policy evidence together. No stage is marked complete until that evidence arrives.</span></div></div><ol className="inspection-stage-list">{inspectionStages.map((stage) => <li key={stage.id} className="stage-pending"><span>{stage.id}</span><div><strong>{stage.label}</strong><small>{stage.detail}</small></div></li>)}</ol><div className="inspection-progress-meter is-indeterminate" aria-hidden="true"><i /></div></section>}
 
         {result && (
           <section className="verification-output" aria-labelledby="verification-title">
@@ -204,14 +231,16 @@ export default function IntentWorkspace() {
                   <div><dt>To contract</dt><dd className="address-value">{shortHash(result.inspection.transaction?.to)}</dd></div>
                   <div><dt>Function</dt><dd>{result.inspection.decoded.kind === "unknown" ? "UNRESOLVED" : result.inspection.decoded.kind.toUpperCase()} {result.inspection.decoded.selector ?? ""}</dd></div>
                   <div><dt>Token</dt><dd>{result.inspection.decoded.token ?? "NOT IDENTIFIED"}</dd></div>
-                  <div><dt>Observed amount</dt><dd>{formatUsdc(result.inspection.observations.spentUsdcRaw ?? result.inspection.decoded.amountRaw)}</dd></div>
+                  <div><dt>Observed input</dt><dd>{result.inspection.decoded.routerSwap ? formatTokenAmount(result.inspection.decoded.routerSwap.amountInRaw, result.inspection.decoded.routerSwap.tokenIn) : formatUsdc(result.inspection.observations.spentUsdcRaw ?? result.inspection.decoded.amountRaw)}</dd></div>
                   <div><dt>Receipt</dt><dd>{result.inspection.receipt.state.toUpperCase()}</dd></div>
+                  {result.inspection.decoded.routerSwap && <><div><dt>Allowlisted path</dt><dd className="address-value">{shortHash(result.inspection.decoded.routerSwap.tokenIn)} → {shortHash(result.inspection.decoded.routerSwap.tokenOut)} / {result.inspection.decoded.routerSwap.fee}</dd></div><div><dt>Current quote</dt><dd>{result.inspection.simulation.state === "available" ? formatTokenAmount(result.inspection.simulation.amountOutRaw, result.inspection.decoded.routerSwap.tokenOut) : "UNAVAILABLE"}</dd></div></>}
                 </dl> : <div className="unavailable-transaction"><CircleAlert size={20} /><p>Transaction data was unavailable. IntentGuard did not turn the missing evidence into a successful result.</p></div>}
+                {result.inspection && <details className="raw-evidence-details"><summary><span><Braces size={15} /> Raw evidence packet</span><span>{result.inspection.raw.receipt?.logs.length ?? 0} receipt logs <ChevronDown size={14} /></span></summary><p>This packet contains the returned RPC fields, the full decoded calldata object, and the read-only quote request/result metadata. It is inspectable evidence only; it never contains signing material.</p><pre>{JSON.stringify({ baseRpc: result.inspection.raw, decodedCalldata: result.inspection.decoded, readOnlySimulation: result.inspection.simulation }, null, 2)}</pre></details>}
               </article>
             </div>
 
             <div className="result-details-grid">
-              <article className="evidence-panel"><div className="receipt-heading"><p className="panel-kicker">Evidence</p><span>{result.verification.evidence.length} checks</span></div><ul className="evidence-list">{result.verification.evidence.map((item) => <li key={item.id} className={`evidence-${item.state}`}><span className="evidence-state">{item.state === "verified" ? <Check size={14} /> : item.state === "failed" ? <CircleAlert size={14} /> : "?"}</span><div><strong>{item.label}</strong><p>{item.detail}</p><small>{item.source}</small></div></li>)}</ul></article>
+              <article className="evidence-panel"><div className="receipt-heading"><p className="panel-kicker">Evidence</p><span>{result.verification.evidence.length} checks</span></div><ul className="evidence-list">{result.verification.evidence.map((item) => <li key={item.id} className={`evidence-${item.state}`}><span className="evidence-state">{item.state === "verified" ? <Check size={14} /> : item.state === "failed" ? <CircleAlert size={14} /> : "?"}</span><div><strong>{item.label}</strong><p>{item.detail}</p><small>{item.source}</small>{result.inspection && <details className="evidence-row-details"><summary>Inspect source fields <ChevronDown size={13} /></summary><dl><div><dt>Evidence source</dt><dd>{item.source}</dd></div><div><dt>Transaction</dt><dd className="address-value">{result.inspection.transactionHash}</dd></div><div><dt>Selector</dt><dd>{result.inspection.decoded.selector ?? "Unavailable"}</dd></div><div><dt>Destination</dt><dd className="address-value">{result.inspection.transaction?.to ?? "Unavailable"}</dd></div>{result.inspection.decoded.routerSwap && <><div><dt>Token in</dt><dd className="address-value">{result.inspection.decoded.routerSwap.tokenIn}</dd></div><div><dt>Token out</dt><dd className="address-value">{result.inspection.decoded.routerSwap.tokenOut}</dd></div><div><dt>Fee / recipient</dt><dd>{result.inspection.decoded.routerSwap.fee} / {shortHash(result.inspection.decoded.routerSwap.recipient)}</dd></div><div><dt>Amount in / minimum</dt><dd>{result.inspection.decoded.routerSwap.amountInRaw} / {result.inspection.decoded.routerSwap.amountOutMinimumRaw}</dd></div><div><dt>Price limit</dt><dd>{result.inspection.decoded.routerSwap.sqrtPriceLimitX96Raw}</dd></div></>}{item.source === "Read-only QuoterV2" && <><div><dt>Quote state / block</dt><dd>{result.inspection.simulation.state.toUpperCase()} / {result.inspection.simulation.blockTag ?? "not requested"}</dd></div><div><dt>Quote contract</dt><dd className="address-value">{result.inspection.simulation.contractAddress ?? "Unavailable"}</dd></div><div><dt>Method / selector</dt><dd>{result.inspection.simulation.method ?? "Unavailable"} / {result.inspection.simulation.selector ?? "Unavailable"}</dd></div><div><dt>Output / gas estimate</dt><dd>{result.inspection.simulation.amountOutRaw ?? "Unavailable"} / {result.inspection.simulation.gasEstimate ?? "Unavailable"}</dd></div></>}</dl></details>}</div></li>)}</ul></article>
               <article className="trace-panel-app"><div className="receipt-heading"><p className="panel-kicker">Agent trace</p><span>actual operations</span></div><ol>{result.trace.map((step) => <li key={step.id} className={`trace-${step.state}`}><span>{step.id}</span><div><strong>{step.label}</strong><p>{step.detail}</p></div></li>)}</ol></article>
             </div>
 

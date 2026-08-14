@@ -55,3 +55,14 @@
 - [x] Update documentation and verification records with actual results.
 - [x] Create and push one verified v0.1 feature-branch commit through the authenticated repository workflow without destructive history rewrites.
 - [x] Save a final project checkpoint before delivery.
+
+## Router evidence enhancement
+
+- [x] Audit the existing Base RPC inspection, decoder, evidence payload, progress state, and evidence UI before extending the verifier.
+- [x] Research one authoritative allowlisted Base swap-router integration and record the verified contract, ABI, and supported call paths.
+- [x] Implement deterministic decoding only for the allowlisted router and return explicit unavailable evidence for all other routers or unsupported calldata.
+- [x] Add only observable simulation evidence, clearly distinguishing a static call or quoted output from a mined receipt.
+- [x] Add a truthful visual in-flight inspection state with an indeterminate meter and explicit pending evidence operations; do not claim individual server-stage completion before the complete response returns.
+- [x] Add keyboard-accessible expandable raw-evidence details, including full transaction/receipt fields, decoded calldata parameters, and complete simulation source and result fields.
+- [x] Test a real allowlisted Base router transaction, incompatible-path behavior, loading stages, evidence expansion, desktop/mobile layout, typecheck, tests, and production build.
+- [ ] Commit, push, and checkpoint the router evidence enhancement without destructive history rewrites.

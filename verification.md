@@ -43,3 +43,17 @@ Keyboard validation confirmed that the landing page focus sequence reaches the M
 ## Source-control delivery
 
 The verified v0.1 milestone was committed as `e33464f` (`feat: add Base intent verification v0.1 workflow`) on branch `feature/base-intent-verifier-v0.1` and pushed without rewriting the existing GitHub default-branch history. The review URL is [github.com/0xaje/IntentGuard/pull/new/feature/base-intent-verifier-v0.1](https://github.com/0xaje/IntentGuard/pull/new/feature/base-intent-verifier-v0.1).
+
+## Router evidence enhancement validation
+
+The live Base transaction `0x89e0bcc982a5d661f45d12f537615dea9d8c2cadc036de7f744b77a95478be33` was inspected through the public `/app` workflow. IntentGuard correctly identified the official allowlisted Uniswap Base `SwapRouter02` destination and decoded the `exactInputSingle` selector `0x04e45aaf`, its token path, fee tier, recipient, and input amount. The decoded path was not USDC-to-WETH, so the policy correctly returned **UNVERIFIABLE**, not a fabricated match.
+
+The read-only QuoterV2 call returned a contemporaneous Base estimate of `10.733711 USDC` for that observed router path. The interface labels it as a current quote, preserves the raw transaction and receipt fields behind a native expandable evidence disclosure, and states that it is neither mined-output evidence nor a guarantee. The native disclosure was opened through its summary control and confirmed to enter the expanded state.
+
+The visual loading sequence was observed while the live RPC request was pending: transaction resolution, receipt inspection, allowlisted route decoding, read-only quotation, and deterministic policy comparison. Full-page screenshots confirmed the revised desktop layout and the mobile single-column layout; the latter preserves readable stage ordering, functional actions, and no horizontal overflow.
+
+After replacing the prior illustrative sequence with a truthful in-flight state, the refreshed `/app` workflow again extracted the supported Base swap intent and displayed its schema-validated constraints before allowing transaction inspection.
+
+The current loading presentation uses an indeterminate progress meter and lists the evidence operations that are pending as a single server request: transaction and chain retrieval, receipt inspection, allowlisted route decoding, read-only quotation, and deterministic comparison. It explicitly states that no individual stage is marked complete until the server returns the complete evidence payload.
+
+The live expanded raw-evidence packet now displayed the full Base RPC transaction and receipt fields, decoded `exactInputSingle` parameters (tokens, fee, recipient, amount in, minimum output, and price limit), and full QuoterV2 request/result metadata (contract, method, selector, latest block tag, output amount, post-quote price, ticks crossed, and gas estimate).

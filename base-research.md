@@ -38,3 +38,19 @@ The project uses the managed server template only to expose a typed public tRPC 
 ## Configuration guidance
 
 The live adapter defaults to the documented Base public RPC endpoint. `BASE_RPC_URL` is an optional server-side override for a production-grade node provider and must be managed as a project secret rather than committed. See [`environment.example.md`](./environment.example.md) for the non-sensitive configuration contract.
+
+## Router evidence enhancement decision
+
+The v0.1.1 enhancement will support **one allowlisted integration only**: Uniswap v3 `SwapRouter02` on Base Mainnet at `0x2626664c2603336E57B271c5C0b26F421741e481`. This deployment is listed by Uniswap for Base alongside `QuoterV2` at `0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a` and Base WETH at `0x4200000000000000000000000000000000000006`. [1]
+
+The decoder will support only the documented `exactInputSingle` shape for a USDC-to-WETH single-hop path. Its observable tuple fields are `tokenIn`, `tokenOut`, `fee`, `recipient`, `amountIn`, `amountOutMinimum`, and `sqrtPriceLimitX96`. Every other router, selector, path type, and malformed tuple will remain explicit `UNVERIFIABLE` evidence rather than being heuristically decoded. [2]
+
+For an allowlisted `exactInputSingle`, the application may request a contemporaneous `eth_call` to the allowlisted `QuoterV2` using the decoded input token, output token, amount in, pool fee, and price limit. `IQuoterV2.quoteExactInputSingle` returns an amount out, a post-quote square-root price, initialized ticks crossed, and a gas estimate. QuoterV2 is designed to calculate expected swap amounts without executing the swap; its quote is a **read-only estimate at the current chain state**, not a mined execution result, a guarantee, or a substitute for a price-oracle slippage policy. [3]
+
+The live Base transaction `0x89e0bcc982a5d661f45d12f537615dea9d8c2cadc036de7f744b77a95478be33` was confirmed as a direct call to the allowlisted router with selector `0x04e45aaf`, the Base SwapRouter02 `exactInputSingle` ABI shape. Its decoded direction is WETH to USDC, so it is suitable for decoder and quote validation but not for the USDC-to-WETH policy-match demonstration.
+
+### References
+
+1. [Uniswap v3 Base deployments](https://developers.uniswap.org/docs/protocols/v3/deployments/v3-base-deployments)
+2. [Uniswap `IV3SwapRouter` interface](https://github.com/Uniswap/swap-router-contracts/blob/main/contracts/interfaces/IV3SwapRouter.sol)
+3. [Uniswap `IQuoterV2` interface](https://github.com/Uniswap/v3-periphery/blob/main/contracts/interfaces/IQuoterV2.sol) and [QuoterV2 source](https://github.com/Uniswap/v3-periphery/blob/main/contracts/lens/QuoterV2.sol)
