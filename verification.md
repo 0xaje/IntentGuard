@@ -39,3 +39,7 @@ A DOM-level browser assertion confirmed that the mismatch-state **Approval unava
 Full-page desktop and 375px mobile screenshots were captured for both `/` and `/app` after all shared CSS and workflow changes. The landing page retained the Forensic Signal hierarchy, generated visual assets, responsive menu treatment, and real `Test an Agent Action` links. The `/app` screen retained a single-column mobile reading order: intent, constraints, confirmation boundary, transaction inspection, then evidence.
 
 Keyboard validation confirmed that the landing page focus sequence reaches the Method link through the primary navigation. The real `Test an Agent Action` link was focused and activated using the Enter key, routing to `/app`; the loaded route then reported **Base Mainnet Live RPC**. The mismatch-state approval control remains disabled, so keyboard navigation cannot use it to initiate an approval, signature, or submission.
+
+## Source-control delivery
+
+The verified v0.1 milestone was committed as `e33464f` (`feat: add Base intent verification v0.1 workflow`) on branch `feature/base-intent-verifier-v0.1` and pushed without rewriting the existing GitHub default-branch history. The review URL is [github.com/0xaje/IntentGuard/pull/new/feature/base-intent-verifier-v0.1](https://github.com/0xaje/IntentGuard/pull/new/feature/base-intent-verifier-v0.1).

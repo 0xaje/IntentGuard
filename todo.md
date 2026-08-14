@@ -53,5 +53,5 @@
 - [x] Test live Base reads and failure modes with real observable responses.
 - [x] Test desktop and mobile layouts and keyboard-accessible approval/navigation states.
 - [x] Update documentation and verification records with actual results.
-- [ ] Commit every milestone and push the v0.1 branch through the authenticated repository workflow without destructive history rewrites.
+- [x] Create and push one verified v0.1 feature-branch commit through the authenticated repository workflow without destructive history rewrites.
 - [ ] Save a final project checkpoint before delivery.
