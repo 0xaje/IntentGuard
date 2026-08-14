@@ -65,4 +65,4 @@
 - [x] Add a truthful visual in-flight inspection state with an indeterminate meter and explicit pending evidence operations; do not claim individual server-stage completion before the complete response returns.
 - [x] Add keyboard-accessible expandable raw-evidence details, including full transaction/receipt fields, decoded calldata parameters, and complete simulation source and result fields.
 - [x] Test a real allowlisted Base router transaction, incompatible-path behavior, loading stages, evidence expansion, desktop/mobile layout, typecheck, tests, and production build.
-- [ ] Commit, push, and checkpoint the router evidence enhancement without destructive history rewrites.
+- [x] Commit, push, and checkpoint the router evidence enhancement without destructive history rewrites.
