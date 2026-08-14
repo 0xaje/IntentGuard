@@ -75,4 +75,4 @@
 - [x] Identify and implement the next real Base verification enhancement after the integration audit.
 - [x] Resolve decoded allowlisted-router path tokens through read-only ERC-20 `symbol` and `decimals` RPC calls, with explicit unavailable states for noncompliant contracts.
 - [x] Display resolved router-path input/output labels and correctly scaled observable amounts without affecting deterministic verdict boundaries.
-- [ ] Test, commit, push, checkpoint, and document the development-workflow follow-up without destructive history rewrites.
+- [x] Test, commit, push, checkpoint, and document the development-workflow follow-up without destructive history rewrites.
