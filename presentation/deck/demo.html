@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #111827; }
+    .slide-container { width: 1280px; min-height: 720px; background: #111827; color: #F8FAFC; font-family: Arial, Helvetica, sans-serif; position: relative; overflow: hidden; }
+    .rule { position: absolute; left: 64px; top: 56px; width: 1152px; height: 8px; background: #F59E0B; }
+    .kicker { position: absolute; left: 66px; top: 86px; color: #8EB6FF; font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    h1 { position: absolute; left: 64px; top: 116px; width: 485px; margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 48px; line-height: 1.04; letter-spacing: -1.2px; }
+    .promise { position: absolute; left: 68px; top: 276px; width: 440px; color: #CBD5E1; font-size: 18px; line-height: 1.34; }
+    .timeline { position: absolute; left: 64px; top: 362px; width: 490px; min-height: 250px; }
+    .scenario { position: absolute; left: 0; width: 490px; min-height: 72px; background: #F8FAFC; color: #10233D; padding: 13px 16px 0 16px; }
+    .s1 { top: 0; border-top: 7px solid #F87171; }
+    .s2 { top: 84px; border-top: 7px solid #2E7CFF; }
+    .s3 { top: 168px; border-top: 7px solid #F59E0B; }
+    .time { display: inline-block; width: 72px; color: #64748B; font-size: 13px; font-weight: 700; letter-spacing: 1px; vertical-align: top; }
+    .scenario-copy { display: inline-block; width: 368px; font-size: 16px; line-height: 1.22; }
+    .scenario-copy strong { font-size: 16px; }
+    .red { color: #B91C1C; } .blue { color: #1D4ED8; } .amber { color: #9A5B00; }
+    .demo-stage { position: absolute; right: 64px; top: 106px; width: 604px; min-height: 444px; background: #0B1220; border-top: 10px solid #2E7CFF; padding-top: 18px; }
+    .demo-stage img { display: block; width: 572px; height: 322px; object-fit: contain; margin: 0 auto; }
+    .stage-caption { margin: 16px 22px 0 22px; color: #E2E8F0; font-size: 18px; line-height: 1.3; }
+    .stage-caption strong { color: #F87171; }
+    .no-wallet { position: absolute; right: 64px; top: 570px; width: 604px; border-top: 2px solid #334155; padding-top: 15px; color: #94A3B8; font-size: 15px; letter-spacing: 0.3px; }
+    .no-wallet strong { color: #F8FAFC; }
+    .footer { position: absolute; left: 64px; bottom: 44px; width: 1152px; min-height: 46px; background: #10233D; padding: 13px 18px 0 18px; color: #C5D5EA; font-size: 16px; }
+    .footer strong { color: #F59E0B; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="rule"></div>
+    <div class="kicker">07 · Live proof</div>
+    <h1>The demo proves the product in under 90 seconds.</h1>
+    <div class="promise">One visible mismatch earns attention. A legitimate pass and a deliberate uncertainty state prove IntentGuard is a decision system—not a fear engine.</div>
+
+    <div class="timeline">
+      <div class="scenario s1"><span class="time">0–40s</span><span class="scenario-copy"><strong class="red">MISMATCH</strong> · An airdrop claim decodes to an unlimited ERC-20 approval.</span></div>
+      <div class="scenario s2"><span class="time">40–66s</span><span class="scenario-copy"><strong class="blue">MATCH</strong> · Exact amount, approved spender, token, and chain all agree.</span></div>
+      <div class="scenario s3"><span class="time">66–86s</span><span class="scenario-copy"><strong class="amber">CANNOT VERIFY</strong> · Permit or unknown selector is decoded—or deliberately refused.</span></div>
+    </div>
+
+    <div class="demo-stage">
+      <img src="/home/ubuntu/intentguard-mvp/presentation/assets/intentguard-mismatch-wireframe.png" alt="IntentGuard mismatch result during live demo" />
+      <div class="stage-caption"><strong>The moment judges remember:</strong> “This is not a claim. It is unlimited permission to move USDC.”</div>
+    </div>
+    <div class="no-wallet"><strong>Demo condition:</strong> public URL, cold browser, no wallet connection, no gas, no real funds.</div>
+    <div class="footer"><strong>Judge takeaway:</strong> useful in one glance, credible under inspection, and honest whenever the evidence is incomplete.</div>
+  </div>
+</body>
+</html>

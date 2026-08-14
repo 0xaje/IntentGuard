@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #111827; }
+    .slide-container { width: 1280px; min-height: 720px; background: #111827; color: #F8FAFC; font-family: Arial, Helvetica, sans-serif; position: relative; overflow: hidden; }
+    .kicker { position: absolute; left: 74px; top: 54px; color: #F59E0B; font-size: 14px; line-height: 1; letter-spacing: 3px; font-weight: 700; text-transform: uppercase; }
+    .rule { position: absolute; left: 74px; top: 88px; width: 130px; height: 8px; background: #2E7CFF; }
+    h1 { position: absolute; left: 74px; top: 126px; width: 820px; margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 51px; line-height: 1.04; letter-spacing: -1.4px; }
+    .intro { position: absolute; left: 78px; top: 250px; width: 670px; color: #CBD5E1; font-size: 19px; line-height: 1.38; }
+    .boundary-label { position: absolute; left: 78px; top: 332px; color: #94A3B8; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    .allowed { position: absolute; left: 74px; top: 368px; width: 800px; min-height: 190px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .proof { min-height: 91px; background: #F8FAFC; color: #10233D; padding: 17px 19px; border-top: 7px solid #2E7CFF; }
+    .proof h3 { margin: 0 0 8px 0; font-size: 16px; letter-spacing: 1px; text-transform: uppercase; }
+    .proof p { margin: 0; color: #475569; font-size: 15px; line-height: 1.25; }
+    .divide { position: absolute; left: 904px; top: 350px; width: 4px; min-height: 230px; background: #F59E0B; }
+    .never { position: absolute; left: 938px; top: 332px; width: 260px; }
+    .never-label { color: #F59E0B; font-size: 13px; letter-spacing: 2px; font-weight: 700; text-transform: uppercase; }
+    .never h2 { margin: 16px 0 18px 0; font-family: Georgia, 'Times New Roman', serif; font-size: 32px; line-height: 1.04; }
+    .never ul { list-style: none; margin: 0; padding: 0; }
+    .never li { border-top: 1px solid #334155; padding-top: 11px; margin-top: 10px; color: #CBD5E1; font-size: 15px; line-height: 1.24; }
+    .never li strong { color: #F87171; }
+    .honest { position: absolute; left: 74px; bottom: 48px; width: 1132px; min-height: 92px; border-top: 3px solid #F59E0B; background: #182434; padding: 16px 22px; }
+    .honest .title { color: #F59E0B; font-size: 13px; letter-spacing: 2px; font-weight: 700; text-transform: uppercase; }
+    .honest p { margin: 7px 0 0 0; color: #F8FAFC; font-size: 18px; line-height: 1.3; }
+    .honest strong { color: #FFFFFF; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="kicker">06 · Trust boundary</div>
+    <div class="rule"></div>
+    <h1>Safety is a product feature—<br/>and a trust boundary.</h1>
+    <div class="intro">IntentGuard earns trust by refusing powers it does not need. The MVP evaluates a proposed action, explains its evidence, and leaves signing and custody with the user.</div>
+
+    <div class="boundary-label">What IntentGuard does</div>
+    <div class="allowed">
+      <div class="proof"><h3>Read-only</h3><p>Analyzes calldata, typed data, and Base evidence without moving funds.</p></div>
+      <div class="proof"><h3>Non-custodial</h3><p>Never requests seed phrases, private keys, or account control.</p></div>
+      <div class="proof"><h3>Fail closed</h3><p>Unknown selectors and missing critical evidence become <strong>CANNOT VERIFY</strong>.</p></div>
+      <div class="proof"><h3>Evidence-led</h3><p>Policy rules and versioned receipts make every verdict inspectable.</p></div>
+    </div>
+
+    <div class="divide"></div>
+    <div class="never">
+      <div class="never-label">What it never does</div>
+      <h2>No custody.<br/>No arbitrary execution.</h2>
+      <ul>
+        <li><strong>Never</strong> signs or broadcasts a user transaction.</li>
+        <li><strong>Never</strong> holds user assets in the registry contracts.</li>
+        <li><strong>Never</strong> turns incomplete evidence into a “safe” label.</li>
+      </ul>
+    </div>
+
+    <div class="honest">
+      <div class="title">Honest scope</div>
+      <p><strong>An external EOA can still sign elsewhere.</strong> IntentGuard protects the approval flow it is integrated into; universal enforcement requires a programmable account or wallet integration, which is explicitly outside this MVP.</p>
+    </div>
+  </div>
+</body>
+</html>

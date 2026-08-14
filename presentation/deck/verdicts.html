@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #111827; }
+    .slide-container { width: 1280px; min-height: 720px; background: #111827; color: #F8FAFC; font-family: Arial, Helvetica, sans-serif; position: relative; overflow: hidden; }
+    .accent-line { position: absolute; left: 70px; top: 58px; width: 1140px; height: 8px; background: #F59E0B; }
+    .kicker { position: absolute; left: 70px; top: 88px; color: #8EB6FF; font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    h1 { position: absolute; left: 70px; top: 119px; margin: 0; width: 860px; font-family: Georgia, 'Times New Roman', serif; font-size: 49px; line-height: 1.02; letter-spacing: -1.2px; }
+    .thesis { position: absolute; left: 74px; top: 231px; width: 730px; color: #CBD5E1; font-size: 19px; line-height: 1.35; }
+    .outcomes { position: absolute; left: 70px; top: 326px; width: 700px; min-height: 304px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .outcome { min-height: 304px; padding: 21px 19px 0 19px; position: relative; }
+    .outcome h2 { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 30px; line-height: 0.98; letter-spacing: -0.5px; }
+    .instruction { margin-top: 22px; font-size: 17px; line-height: 1.15; font-weight: 700; }
+    .rule { margin-top: 30px; font-size: 15px; line-height: 1.38; }
+    .number { position: absolute; left: 19px; top: 226px; font-size: 56px; font-family: Georgia, 'Times New Roman', serif; opacity: 0.35; }
+    .match { background: #2E7CFF; color: #FFFFFF; }
+    .mismatch { background: #F8FAFC; color: #10233D; }
+    .cannot { background: #F59E0B; color: #10233D; }
+    .mismatch .instruction { color: #C2410C; }
+    .cannot .instruction { color: #7C2D12; }
+    .ui-stage { position: absolute; right: 70px; top: 294px; width: 392px; min-height: 276px; background: #0B1220; border-top: 8px solid #2E7CFF; padding-top: 12px; }
+    .ui-stage img { display: block; width: 368px; height: 207px; object-fit: contain; margin: 0 auto; }
+    .ui-caption { position: absolute; right: 70px; top: 584px; width: 392px; color: #94A3B8; font-size: 14px; line-height: 1.35; }
+    .footer { position: absolute; left: 70px; bottom: 43px; width: 1140px; border-top: 2px solid #334155; padding-top: 14px; display: flex; gap: 24px; color: #94A3B8; font-size: 14px; letter-spacing: 0.6px; }
+    .footer strong { color: #F8FAFC; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="accent-line"></div>
+    <div class="kicker">03 · The decision system</div>
+    <h1>One decision. Three outcomes.<br/>Zero false confidence.</h1>
+    <div class="thesis">IntentGuard does not compress uncertainty into a vague score. It gives a user a clear action based on what the engine can prove.</div>
+    <div class="outcomes">
+      <div class="outcome match">
+        <h2>MATCH</h2>
+        <div class="instruction">Safe to review</div>
+        <div class="rule">Every configured hard limit matches the decoded effect and required evidence is present.</div>
+        <div class="number">01</div>
+      </div>
+      <div class="outcome mismatch">
+        <h2>MISMATCH</h2>
+        <div class="instruction">Do not sign</div>
+        <div class="rule">A hard rule is violated: wrong chain, wrong spender, excess amount, or unlimited approval.</div>
+        <div class="number">02</div>
+      </div>
+      <div class="outcome cannot">
+        <h2>CANNOT<br/>VERIFY</h2>
+        <div class="instruction">Do not sign yet</div>
+        <div class="rule">Critical evidence is missing. Unknown selectors and incomplete routes are never guessed.</div>
+        <div class="number">03</div>
+      </div>
+    </div>
+    <div class="ui-stage"><img src="/home/ubuntu/intentguard-mvp/presentation/assets/intentguard-cannot-verify-wireframe.png" alt="IntentGuard cannot verify fail-closed product UI" /></div>
+    <div class="ui-caption">Uncertainty is not hidden. The product surfaces exactly what it knows—and what it cannot prove.</div>
+    <div class="footer"><strong>Model explains · deterministic policy decides</strong><span>Read-only</span><span>Fail closed</span><span>Evidence-backed</span></div>
+  </div>
+</body>
+</html>

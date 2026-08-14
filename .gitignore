@@ -1,0 +1,11 @@
+node_modules/
+artifacts/
+cache/
+typechain-types/
+dist/
+.env
+.env.*
+!.env.example
+deployments/*.local.json
+deployments/*-verification.json
+secrets/

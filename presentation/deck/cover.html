@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1280, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #111827; }
+    .slide-container {
+      width: 1280px;
+      min-height: 720px;
+      background: #111827;
+      color: #F8FAFC;
+      font-family: Arial, Helvetica, sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+    .rail { position: absolute; left: 0; top: 0; width: 22px; min-height: 720px; background: #2E7CFF; }
+    .eyebrow { position: absolute; left: 84px; top: 78px; color: #F59E0B; font-size: 15px; letter-spacing: 3px; font-weight: 700; }
+    .title { position: absolute; left: 80px; top: 142px; width: 720px; font-family: Georgia, 'Times New Roman', serif; font-size: 78px; line-height: 0.98; letter-spacing: -2px; font-weight: 700; }
+    .subtitle { position: absolute; left: 86px; top: 332px; width: 610px; color: #DCE7F5; font-size: 25px; line-height: 1.28; font-weight: 400; }
+    .meta { position: absolute; left: 86px; bottom: 70px; display: flex; gap: 30px; color: #94A3B8; font-size: 15px; letter-spacing: 1.2px; text-transform: uppercase; }
+    .meta span { border-top: 2px solid #334155; padding-top: 10px; }
+    .motif { position: absolute; right: 80px; top: 96px; width: 360px; min-height: 500px; }
+    .motif-block { position: absolute; width: 250px; min-height: 112px; padding: 24px 22px; font-size: 17px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+    .match { top: 0; left: 94px; background: #2E7CFF; color: #FFFFFF; }
+    .mismatch { top: 162px; left: 0; background: #F59E0B; color: #111827; }
+    .cannot { top: 324px; left: 94px; background: #F8FAFC; color: #111827; }
+    .line { position: absolute; height: 8px; background: #F59E0B; width: 118px; left: 0; top: 54px; }
+    .line.two { top: 216px; left: 250px; background: #2E7CFF; }
+    .line.three { top: 378px; left: 0; background: #F8FAFC; }
+    .mark { position: absolute; right: 0; bottom: 62px; color: #64748B; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="rail"></div>
+    <div class="eyebrow">ORION BUILDER HACKATHON</div>
+    <div class="title">IntentGuard</div>
+    <div class="subtitle">The transaction-intent firewall for autonomous finance.</div>
+    <div class="meta"><span>Base</span><span>Read-only</span><span>Confirm-first</span></div>
+    <div class="motif" aria-hidden="true">
+      <div class="line"></div><div class="line two"></div><div class="line three"></div>
+      <div class="motif-block match">MATCH<br><small>safe to review</small></div>
+      <div class="motif-block mismatch">MISMATCH<br><small>do not sign</small></div>
+      <div class="motif-block cannot">CANNOT VERIFY<br><small>do not guess</small></div>
+    </div>
+    <div class="mark">IntentGuard · 2026</div>
+  </div>
+</body>
+</html>

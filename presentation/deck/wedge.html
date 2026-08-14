@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F4F5F7; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F4F5F7; color: #10233D; font-family: Arial, Helvetica, sans-serif; position: relative; overflow: hidden; }
+    .header { position: absolute; left: 0; top: 0; width: 1280px; min-height: 210px; background: #10233D; }
+    .kicker { position: absolute; left: 72px; top: 46px; color: #F59E0B; font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    h1 { position: absolute; left: 70px; top: 76px; width: 930px; margin: 0; color: #F8FAFC; font-family: Georgia, 'Times New Roman', serif; font-size: 51px; line-height: 1.05; letter-spacing: -1.3px; }
+    .rule { position: absolute; right: 72px; top: 65px; width: 145px; height: 8px; background: #2E7CFF; }
+    .intro { position: absolute; left: 72px; top: 242px; width: 792px; color: #475569; font-size: 18px; line-height: 1.35; }
+    .grid { position: absolute; left: 70px; top: 332px; width: 790px; min-height: 244px; display: grid; grid-template-columns: 1fr 1fr 1fr; column-gap: 18px; }
+    .column { background: #FFFFFF; min-height: 244px; border-top: 8px solid #CBD5E1; padding: 22px 20px; }
+    .column:nth-child(2) { border-top-color: #94A3B8; }
+    .column:nth-child(3) { border-top-color: #64748B; }
+    .num { color: #94A3B8; font-family: Georgia, serif; font-size: 30px; line-height: 1; }
+    .title { margin-top: 15px; color: #10233D; font-size: 18px; font-weight: 700; line-height: 1.18; }
+    .copy { margin-top: 16px; color: #475569; font-size: 15px; line-height: 1.35; }
+    .decision { position: absolute; left: 900px; top: 240px; width: 310px; min-height: 390px; background: #2E7CFF; color: #FFFFFF; padding: 30px 28px; }
+    .decision-label { color: #CFE0FF; font-size: 13px; letter-spacing: 2.4px; font-weight: 700; text-transform: uppercase; }
+    .decision-question { margin-top: 30px; font-family: Georgia, 'Times New Roman', serif; font-size: 34px; line-height: 1.05; letter-spacing: -0.7px; }
+    .decision-answer { margin-top: 30px; border-top: 5px solid #F59E0B; padding-top: 18px; font-size: 18px; line-height: 1.32; font-weight: 700; }
+    .bottom { position: absolute; left: 70px; bottom: 49px; width: 1140px; border-top: 3px solid #CBD5E1; padding-top: 16px; color: #334155; font-size: 18px; line-height: 1.25; }
+    .bottom strong { color: #10233D; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="header"></div>
+    <div class="kicker">04 · Differentiation</div>
+    <div class="rule"></div>
+    <h1>This is intent fidelity—<br/>not another risk score.</h1>
+    <div class="intro">Existing tools provide valuable evidence. IntentGuard adds the missing decision layer: a comparison between the user’s explicit authorization and the effect the chain will execute.</div>
+    <div class="grid">
+      <div class="column"><div class="num">01</div><div class="title">Token research</div><div class="copy">Answers: “What is this asset or protocol?”</div></div>
+      <div class="column"><div class="num">02</div><div class="title">Wallet diagnostics</div><div class="copy">Answers: “What risks already exist in this wallet?”</div></div>
+      <div class="column"><div class="num">03</div><div class="title">Transaction security</div><div class="copy">Answers: “What may this request do?”</div></div>
+    </div>
+    <div class="decision">
+      <div class="decision-label">IntentGuard’s question</div>
+      <div class="decision-question">“Does this action match what the human authorized?”</div>
+      <div class="decision-answer">Typed policy + decoded effect + evidence receipt.</div>
+    </div>
+    <div class="bottom"><strong>IntentGuard complements security primitives.</strong> It turns their evidence into an explicit, explainable, pre-signing authorization decision.</div>
+  </div>
+</body>
+</html>

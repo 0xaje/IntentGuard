@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F4F5F7; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F4F5F7; color: #10233D; font-family: Arial, Helvetica, sans-serif; position: relative; overflow: hidden; }
+    .header { position: absolute; left: 0; top: 0; width: 1280px; min-height: 214px; background: #10233D; }
+    .kicker { position: absolute; left: 70px; top: 49px; color: #F59E0B; font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    h1 { position: absolute; left: 70px; top: 80px; width: 915px; margin: 0; color: #F8FAFC; font-family: Georgia, 'Times New Roman', serif; font-size: 49px; line-height: 1.05; letter-spacing: -1.35px; }
+    .header-line { position: absolute; right: 70px; top: 61px; width: 135px; height: 8px; background: #2E7CFF; }
+    .intro { position: absolute; left: 70px; top: 242px; width: 780px; color: #475569; font-size: 18px; line-height: 1.35; }
+    .proof-grid { position: absolute; left: 70px; top: 326px; width: 780px; min-height: 264px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; }
+    .proof { min-height: 127px; background: #FFFFFF; padding: 18px 20px 0 20px; border-top: 7px solid #CBD5E1; position: relative; }
+    .proof:nth-child(1) { border-top-color: #2E7CFF; }
+    .proof:nth-child(2) { border-top-color: #F59E0B; }
+    .proof:nth-child(3) { border-top-color: #F87171; }
+    .proof:nth-child(4) { border-top-color: #10233D; }
+    .num { position: absolute; right: 18px; top: 14px; color: #CBD5E1; font-family: Georgia, 'Times New Roman', serif; font-size: 37px; line-height: 1; }
+    .proof-title { color: #10233D; font-size: 16px; font-weight: 700; letter-spacing: 1.55px; text-transform: uppercase; }
+    .proof-copy { width: 286px; margin-top: 13px; color: #475569; font-size: 15px; line-height: 1.3; }
+    .ask { position: absolute; right: 70px; top: 242px; width: 310px; min-height: 350px; background: #2E7CFF; color: #FFFFFF; padding: 28px 26px 0 26px; }
+    .ask-label { color: #DCE9FF; font-size: 13px; font-weight: 700; letter-spacing: 2.2px; text-transform: uppercase; }
+    .ask-title { margin-top: 26px; font-family: Georgia, 'Times New Roman', serif; font-size: 34px; line-height: 1.07; letter-spacing: -0.6px; }
+    .ask-copy { margin-top: 26px; border-top: 5px solid #F59E0B; padding-top: 16px; color: #FFFFFF; font-size: 18px; line-height: 1.31; }
+    .ask-mini { margin-top: 28px; color: #DCE9FF; font-size: 14px; line-height: 1.35; }
+    .footer { position: absolute; left: 70px; bottom: 45px; width: 1140px; border-top: 3px solid #CBD5E1; padding-top: 16px; display: flex; gap: 22px; align-items: baseline; }
+    .footer strong { color: #10233D; font-size: 19px; }
+    .footer span { color: #64748B; font-size: 15px; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="header"></div>
+    <div class="kicker">10 · Judge strategy</div>
+    <div class="header-line"></div>
+    <h1>We win by being the agent<br/>that refuses to guess.</h1>
+
+    <div class="intro">IntentGuard is designed to make the judging case explicit: a concrete safety problem, a live and testable implementation, a differentiated decision model, and an honest security boundary.</div>
+
+    <div class="proof-grid">
+      <div class="proof">
+        <div class="num">01</div>
+        <div class="proof-title">Usefulness</div>
+        <div class="proof-copy">Stops a costly, understandable signing mistake at the exact point where value can move.</div>
+      </div>
+      <div class="proof">
+        <div class="num">02</div>
+        <div class="proof-title">Execution</div>
+        <div class="proof-copy">No-wallet live demo, typed decoding, deterministic rules, receipts, contracts, and tests.</div>
+      </div>
+      <div class="proof">
+        <div class="num">03</div>
+        <div class="proof-title">Originality</div>
+        <div class="proof-copy">Intent-to-effect verification—not another opaque “safe” label or generic risk dashboard.</div>
+      </div>
+      <div class="proof">
+        <div class="num">04</div>
+        <div class="proof-title">Security</div>
+        <div class="proof-copy">Read-only, non-custodial, fail closed, and explicit about what the MVP does not enforce.</div>
+      </div>
+    </div>
+
+    <div class="ask">
+      <div class="ask-label">Integration ask</div>
+      <div class="ask-title">Put IntentGuard anywhere an agent asks a human to approve value movement.</div>
+      <div class="ask-copy">Wallets · Launchpads · Base dApps · Orion agents</div>
+      <div class="ask-mini">Before value moves, prove the action matches intent.</div>
+    </div>
+
+    <div class="footer"><strong>Our differentiator:</strong><span>When evidence is incomplete, IntentGuard returns CANNOT VERIFY—not false confidence.</span></div>
+  </div>
+</body>
+</html>

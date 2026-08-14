@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F4F5F7; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F4F5F7; color: #10233D; font-family: Arial, Helvetica, sans-serif; position: relative; overflow: hidden; }
+    .header-band { position: absolute; left: 0; top: 0; width: 1280px; min-height: 214px; background: #10233D; }
+    .kicker { position: absolute; left: 70px; top: 48px; color: #F59E0B; font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    h1 { position: absolute; left: 70px; top: 79px; width: 720px; margin: 0; color: #F8FAFC; font-family: Georgia, 'Times New Roman', serif; font-size: 49px; line-height: 1.04; letter-spacing: -1.2px; }
+    .thesis { position: absolute; left: 74px; top: 183px; width: 700px; color: #CBD5E1; font-size: 17px; line-height: 1.3; }
+    .context-stage { position: absolute; right: 70px; top: 33px; width: 250px; min-height: 154px; background: #0B1220; border-top: 7px solid #2E7CFF; padding-top: 8px; }
+    .context-stage img { display: block; width: 232px; height: 128px; object-fit: contain; margin: 0 auto; }
+    .left-label { position: absolute; left: 70px; top: 250px; color: #64748B; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    .center-label { position: absolute; left: 492px; top: 250px; color: #2E7CFF; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    .right-label { position: absolute; left: 916px; top: 250px; color: #64748B; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    .surfaces { position: absolute; left: 70px; top: 286px; width: 300px; min-height: 258px; }
+    .surface { width: 300px; min-height: 74px; background: #FFFFFF; border-top: 6px solid #CBD5E1; margin-bottom: 12px; padding: 14px 17px 0 17px; }
+    .surface:nth-child(2) { border-top-color: #94A3B8; }
+    .surface:nth-child(3) { border-top-color: #64748B; }
+    .surface h3 { margin: 0; font-size: 17px; line-height: 1.1; }
+    .surface p { margin: 7px 0 0 0; color: #64748B; font-size: 14px; line-height: 1.2; }
+    .bridge { position: absolute; left: 393px; top: 306px; width: 68px; min-height: 212px; }
+    .bridge-line { position: absolute; left: 0; width: 54px; height: 5px; background: #F59E0B; }
+    .bridge-line:after { content: ''; position: absolute; right: -11px; top: -7px; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 12px solid #F59E0B; }
+    .b1 { top: 20px; } .b2 { top: 104px; } .b3 { top: 188px; }
+    .core { position: absolute; left: 490px; top: 286px; width: 332px; min-height: 258px; background: #2E7CFF; color: #FFFFFF; padding: 24px 24px 0 24px; }
+    .core-tag { color: #D6E5FF; font-size: 12px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; }
+    .core h2 { margin: 17px 0 18px 0; font-family: Georgia, 'Times New Roman', serif; font-size: 34px; line-height: 1.02; letter-spacing: -0.6px; }
+    .core-rule { width: 90px; height: 7px; background: #F59E0B; }
+    .core-points { margin-top: 17px; color: #FFFFFF; font-size: 15px; line-height: 1.38; }
+    .core-points strong { color: #FFFFFF; }
+    .outcomes { position: absolute; left: 916px; top: 286px; width: 294px; min-height: 258px; }
+    .outcome { width: 294px; min-height: 74px; margin-bottom: 12px; padding: 14px 17px 0 17px; background: #FFFFFF; border-top: 6px solid #2E7CFF; }
+    .outcome:nth-child(2) { border-top-color: #F59E0B; }
+    .outcome:nth-child(3) { border-top-color: #10233D; }
+    .outcome h3 { margin: 0; font-size: 16px; line-height: 1.1; }
+    .outcome p { margin: 7px 0 0 0; color: #64748B; font-size: 14px; line-height: 1.2; }
+    .right-bridge { position: absolute; left: 842px; top: 306px; width: 58px; min-height: 212px; }
+    .right-bridge .bridge-line { background: #2E7CFF; }
+    .right-bridge .bridge-line:after { border-left-color: #2E7CFF; }
+    .footer { position: absolute; left: 70px; bottom: 46px; width: 1140px; min-height: 82px; border-top: 3px solid #10233D; padding-top: 15px; display: grid; grid-template-columns: 250px 1fr; column-gap: 30px; }
+    .footer-label { color: #2E7CFF; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    .footer-copy { color: #334155; font-size: 18px; line-height: 1.27; }
+    .footer-copy strong { color: #10233D; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="header-band"></div>
+    <div class="kicker">09 · Orion fit</div>
+    <h1>Built for Orion’s<br/>agent economy.</h1>
+    <div class="thesis">IntentGuard is a reusable pre-signing trust layer: it gives agents and products a way to prove that a proposed value-moving action matches the user’s authorization.</div>
+    <div class="context-stage"><img src="/home/ubuntu/upload/search_images/tNjarVJXgSBs.jpg" alt="Orion Builder Hackathon announcement" /></div>
+
+    <div class="left-label">Integration surfaces</div>
+    <div class="center-label">IntentGuard layer</div>
+    <div class="right-label">Judge-visible outcomes</div>
+
+    <div class="surfaces">
+      <div class="surface"><h3>Orion agents</h3><p>Check a proposed action before requesting user confirmation.</p></div>
+      <div class="surface"><h3>Launchpads</h3><p>Make new-protocol actions easier to understand and safer to approve.</p></div>
+      <div class="surface"><h3>Wallets &amp; Base dApps</h3><p>Turn opaque prompts into explicit, evidence-backed intent checks.</p></div>
+    </div>
+
+    <div class="bridge"><div class="bridge-line b1"></div><div class="bridge-line b2"></div><div class="bridge-line b3"></div></div>
+    <div class="core">
+      <div class="core-tag">Confirm-first infrastructure</div>
+      <h2>Typed policy.<br/>Deterministic verdict.<br/>Evidence receipt.</h2>
+      <div class="core-rule"></div>
+      <div class="core-points"><strong>Risk management by design:</strong> explicit limits, fail-closed uncertainty, versioned rules, and independently verifiable receipts.</div>
+    </div>
+
+    <div class="right-bridge"><div class="bridge-line b1"></div><div class="bridge-line b2"></div><div class="bridge-line b3"></div></div>
+    <div class="outcomes">
+      <div class="outcome"><h3>Safer approvals</h3><p>Users see whether effect matches intent before they sign.</p></div>
+      <div class="outcome"><h3>Accountable autonomy</h3><p>Agents can show their work, limits, and evidence trail.</p></div>
+      <div class="outcome"><h3>Reusable integration</h3><p>One policy-and-receipt layer across products and workflows.</p></div>
+    </div>
+
+    <div class="footer">
+      <div class="footer-label">Commercial wedge</div>
+      <div class="footer-copy"><strong>API and integration revenue</strong> from agents, launchpads, wallets, and Base products that need safer autonomous actions—without taking custody or replacing their existing security stack.</div>
+    </div>
+  </div>
+</body>
+</html>

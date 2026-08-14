@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #111827; }
+    .slide-container { width: 1280px; min-height: 720px; background: #111827; color: #F8FAFC; font-family: Arial, Helvetica, sans-serif; position: relative; overflow: hidden; }
+    .header-rule { position: absolute; left: 64px; top: 54px; width: 1152px; height: 8px; background: #2E7CFF; }
+    .kicker { position: absolute; left: 66px; top: 84px; color: #F59E0B; font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    h1 { position: absolute; left: 64px; top: 112px; width: 720px; margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 48px; line-height: 1.02; letter-spacing: -1.2px; }
+    .premise { position: absolute; left: 68px; top: 226px; width: 670px; color: #CBD5E1; font-size: 19px; line-height: 1.35; }
+    .stages { position: absolute; left: 64px; top: 330px; width: 710px; min-height: 264px; }
+    .stage { position: absolute; top: 0; width: 202px; min-height: 242px; padding: 22px 20px; background: #F8FAFC; color: #10233D; }
+    .stage.one { left: 0; border-top: 9px solid #2E7CFF; }
+    .stage.two { left: 254px; border-top: 9px solid #2E7CFF; }
+    .stage.three { left: 508px; background: #F59E0B; border-top: 9px solid #F8FAFC; }
+    .number { font-family: Georgia, 'Times New Roman', serif; font-size: 40px; color: #2E7CFF; line-height: 0.9; }
+    .three .number { color: #10233D; }
+    .stage-label { margin-top: 18px; font-size: 13px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; }
+    .stage-copy { margin-top: 14px; font-size: 17px; line-height: 1.28; color: #334155; }
+    .three .stage-copy { color: #10233D; font-weight: 700; }
+    .arrow { position: absolute; top: 110px; width: 33px; height: 8px; background: #F59E0B; }
+    .arrow:after { content: ''; position: absolute; right: -11px; top: -7px; width: 0; height: 0; border-top: 11px solid transparent; border-bottom: 11px solid transparent; border-left: 12px solid #F59E0B; }
+    .a1 { left: 214px; } .a2 { left: 468px; }
+    .image-stage { position: absolute; right: 64px; top: 150px; width: 400px; min-height: 430px; background: #0B1220; border-top: 9px solid #F59E0B; padding-top: 18px; }
+    .image-stage img { display: block; width: 376px; height: 300px; object-fit: contain; margin: 0 auto; }
+    .image-caption { margin: 16px 18px 0; color: #E2E8F0; font-size: 16px; line-height: 1.3; }
+    .image-caption strong { color: #F59E0B; }
+    .footer { position: absolute; left: 64px; bottom: 50px; width: 710px; color: #94A3B8; font-size: 15px; letter-spacing: 0.3px; }
+    .footer strong { color: #F8FAFC; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="header-rule"></div>
+    <div class="kicker">02 · The product flow</div>
+    <h1>IntentGuard makes the mismatch impossible to miss.</h1>
+    <div class="premise">The user defines the goal first. IntentGuard turns it into explicit limits, decodes what the wallet requests, and compares the two before value moves.</div>
+
+    <div class="stages">
+      <div class="stage one">
+        <div class="number">01</div>
+        <div class="stage-label">State intent</div>
+        <div class="stage-copy">“Claim an airdrop. No token permissions.”</div>
+      </div>
+      <div class="arrow a1"></div>
+      <div class="stage two">
+        <div class="number">02</div>
+        <div class="stage-label">Decode request</div>
+        <div class="stage-copy">Calldata or typed data becomes token, spender, amount, deadline, and chain fields.</div>
+      </div>
+      <div class="arrow a2"></div>
+      <div class="stage three">
+        <div class="number">03</div>
+        <div class="stage-label">Apply policy</div>
+        <div class="stage-copy">Deterministic code returns MATCH, MISMATCH, or CANNOT VERIFY.</div>
+      </div>
+    </div>
+
+    <div class="image-stage">
+      <img src="/home/ubuntu/intentguard-mvp/presentation/assets/intentguard-mismatch-wireframe.png" alt="IntentGuard mismatch decision interface" />
+      <div class="image-caption"><strong>The engine decides.</strong> The model only explains the immutable evidence and verdict.</div>
+    </div>
+    <div class="footer"><strong>Confirm-first by design:</strong> no custody, no private keys, no arbitrary execution.</div>
+  </div>
+</body>
+</html>

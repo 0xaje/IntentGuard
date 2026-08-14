@@ -1,0 +1,32 @@
+flowchart LR
+  U[User / Judge] --> UI[IntentGuard Web App]
+  UI --> API[Analysis API]
+  API --> N[Intent Normalizer]
+  API --> D[Calldata + EIP-712 Decoder]
+  N --> P[Deterministic Policy Engine]
+  D --> P
+  P --> E[Evidence Fetcher]
+  E --> RPC[Base RPC]
+  E --> TR[Target Registry Adapter]
+  P --> S[Read-only Simulation]
+  S --> RPC
+  P --> V{Verdict}
+  V --> M[MATCH]
+  V --> X[MISMATCH]
+  V --> C[CANNOT VERIFY]
+  V --> EX[Constrained Explanation]
+  V --> R[Receipt Builder]
+  R --> A[Receipt Anchor Service]
+  A --> PR[Policy Registry]
+  A --> RR[Receipt Registry]
+  N -. no authority .-> LLM[LLM]
+  LLM -. typed explanation only .-> EX
+
+  classDef user fill:#10233d,stroke:#2e7cff,color:#fff;
+  classDef engine fill:#eff6ff,stroke:#2e7cff,color:#0b1b33;
+  classDef chain fill:#e8f1ff,stroke:#4f83ff,color:#0b1b33;
+  classDef verdict fill:#fff7ed,stroke:#f59e0b,color:#4a2a00;
+  class U user;
+  class UI,API,N,D,P,E,S,EX,R,A engine;
+  class RPC,TR,PR,RR chain;
+  class V,M,X,C verdict;

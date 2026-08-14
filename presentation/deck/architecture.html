@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #111827; }
+    .slide-container { width: 1280px; min-height: 720px; background: #111827; color: #F8FAFC; font-family: Arial, Helvetica, sans-serif; position: relative; overflow: hidden; }
+    .top-rule { position: absolute; left: 64px; top: 50px; width: 1152px; height: 8px; background: #2E7CFF; }
+    .eyebrow { position: absolute; left: 64px; top: 82px; color: #F59E0B; font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    .headline { position: absolute; left: 64px; top: 116px; width: 360px; margin: 0; color: #F8FAFC; font-family: Georgia, 'Times New Roman', serif; font-size: 45px; line-height: 1.04; letter-spacing: -1px; }
+    .lede { position: absolute; left: 68px; top: 270px; width: 330px; color: #C5D5EA; font-size: 18px; line-height: 1.38; }
+    .authority { position: absolute; left: 68px; top: 405px; width: 318px; border-top: 2px solid #334155; }
+    .authority-row { min-height: 64px; padding-top: 13px; border-bottom: 1px solid #334155; }
+    .tag { display: block; color: #2E7CFF; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
+    .copy { color: #E2E8F0; font-size: 15px; line-height: 1.2; }
+    .diagram-stage { position: absolute; left: 448px; top: 92px; width: 768px; min-height: 505px; background: #F4F5F7; border-top: 10px solid #F59E0B; }
+    .diagram-stage img { display: block; width: 748px; height: 470px; object-fit: contain; margin: 12px auto 0 auto; }
+    .bottom-strip { position: absolute; left: 64px; bottom: 46px; width: 1152px; min-height: 72px; background: #10233D; display: grid; grid-template-columns: 1.2fr 1fr 1fr 1.8fr; }
+    .bottom-cell { min-height: 72px; padding: 16px 18px 0 18px; border-right: 1px solid #334155; }
+    .bottom-cell:last-child { border-right: none; }
+    .mini-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 6px; }
+    .mini-value { font-size: 17px; font-weight: 700; }
+    .match { color: #77D6A3; }
+    .mismatch { color: #FF8A7A; }
+    .cannot { color: #F7C46C; }
+    .note { color: #C5D5EA; font-size: 15px; line-height: 1.2; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="top-rule"></div>
+    <div class="eyebrow">05 · Architecture</div>
+    <h1 class="headline">The agent investigates.<br/>Deterministic code decides.</h1>
+    <div class="lede">IntentGuard separates language from authority. The model can normalize a goal and explain evidence; only the typed decoder and policy engine issue the verdict.</div>
+    <div class="authority">
+      <div class="authority-row"><span class="tag">01 · Input</span><span class="copy">Human intent + wallet request</span></div>
+      <div class="authority-row"><span class="tag">02 · Evidence</span><span class="copy">Calldata, EIP-712, Base state, registry metadata</span></div>
+      <div class="authority-row"><span class="tag">03 · Decision</span><span class="copy">Versioned deterministic rules, not model confidence</span></div>
+    </div>
+    <div class="diagram-stage">
+      <img src="/home/ubuntu/intentguard-mvp/presentation/assets/intentguard_architecture.png" alt="IntentGuard end-to-end architecture from user intent through deterministic policy engine to evidence receipts" />
+    </div>
+    <div class="bottom-strip">
+      <div class="bottom-cell"><span class="mini-label match">MATCH</span><span class="mini-value">Policy satisfied</span></div>
+      <div class="bottom-cell"><span class="mini-label mismatch">MISMATCH</span><span class="mini-value">Hard limit violated</span></div>
+      <div class="bottom-cell"><span class="mini-label cannot">CANNOT VERIFY</span><span class="mini-value">Evidence incomplete</span></div>
+      <div class="bottom-cell"><span class="mini-label">Boundary</span><span class="note">The LLM may explain the result; it cannot change the result.</span></div>
+    </div>
+  </div>
+</body>
+</html>

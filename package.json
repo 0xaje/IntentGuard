@@ -1,0 +1,29 @@
+{
+  "name": "intentguard-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Non-custodial IntentGuard MVP: policy commitments, signed evidence receipts, and deterministic transaction-intent analysis.",
+  "scripts": {
+    "compile:contracts": "hardhat compile",
+    "test:contracts": "hardhat test",
+    "test:engine": "tsx --test engine/test/**/*.test.ts",
+    "test": "pnpm run compile:contracts && pnpm run test:contracts && pnpm run test:engine",
+    "build:engine": "tsc -p engine/tsconfig.json",
+    "lint:types": "tsc -p engine/tsconfig.json --noEmit",
+    "deploy:local": "hardhat run scripts/deploy.ts",
+    "deploy:testnet": "hardhat run scripts/deploy.ts --network baseSepolia",
+    "verify:testnet": "tsx scripts/verify-testnet.ts"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "6.1.0",
+    "@openzeppelin/contracts": "5.4.0",
+    "@types/node": "22.15.30",
+    "hardhat": "2.26.3",
+    "tsx": "4.20.3",
+    "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "ethers": "6.15.0",
+    "zod": "4.1.5"
+  }
+}

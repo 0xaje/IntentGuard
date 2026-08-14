@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F4F5F7; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F4F5F7; color: #10233D; font-family: Arial, Helvetica, sans-serif; position: relative; overflow: hidden; }
+    .header { position: absolute; left: 0; top: 0; width: 1280px; min-height: 212px; background: #10233D; }
+    .kicker { position: absolute; left: 70px; top: 49px; color: #F59E0B; font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+    h1 { position: absolute; left: 70px; top: 83px; width: 830px; margin: 0; color: #F8FAFC; font-family: Georgia, 'Times New Roman', serif; font-size: 51px; line-height: 1.04; letter-spacing: -1.3px; }
+    .header-note { position: absolute; right: 70px; top: 61px; width: 235px; border-top: 8px solid #2E7CFF; padding-top: 16px; color: #C5D5EA; font-size: 15px; line-height: 1.3; }
+    .receipt { position: absolute; left: 70px; top: 260px; width: 580px; min-height: 374px; background: #FFFFFF; border-top: 10px solid #2E7CFF; padding: 25px 28px 0 28px; }
+    .receipt-top { display: flex; justify-content: space-between; border-bottom: 2px solid #CBD5E1; padding-top: 1px; min-height: 65px; }
+    .receipt-title { font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #2E7CFF; }
+    .verdict { color: #C2410C; font-size: 18px; font-weight: 700; letter-spacing: 0.6px; }
+    .receipt-sub { position: absolute; left: 28px; top: 95px; color: #64748B; font-size: 14px; }
+    .hash-grid { position: absolute; left: 28px; top: 142px; width: 524px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 25px; row-gap: 19px; }
+    .hash-label { color: #64748B; font-size: 11px; letter-spacing: 1.4px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
+    .hash-value { color: #10233D; font-family: 'Courier New', monospace; font-size: 14px; white-space: nowrap; }
+    .receipt-rule { position: absolute; left: 28px; top: 282px; width: 524px; height: 2px; background: #CBD5E1; }
+    .receipt-bottom { position: absolute; left: 28px; top: 308px; width: 524px; display: grid; grid-template-columns: 1fr 1fr 1fr; }
+    .receipt-bottom div { border-right: 1px solid #CBD5E1; min-height: 44px; padding-right: 12px; }
+    .receipt-bottom div:nth-child(2), .receipt-bottom div:nth-child(3) { padding-left: 14px; }
+    .receipt-bottom div:last-child { border-right: none; }
+    .small-label { color: #64748B; font-size: 10px; letter-spacing: 1.2px; font-weight: 700; text-transform: uppercase; }
+    .small-value { margin-top: 5px; color: #10233D; font-size: 14px; font-weight: 700; }
+    .chain { position: absolute; left: 714px; top: 260px; width: 496px; min-height: 374px; }
+    .chain-kicker { color: #2E7CFF; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 17px; }
+    .step { position: relative; width: 496px; min-height: 72px; border-top: 2px solid #CBD5E1; padding: 15px 18px 0 72px; }
+    .step:last-child { border-bottom: 2px solid #CBD5E1; }
+    .step-no { position: absolute; left: 0; top: 14px; width: 48px; min-height: 42px; background: #10233D; color: #F8FAFC; font-family: Georgia, 'Times New Roman', serif; font-size: 23px; text-align: center; padding-top: 8px; }
+    .step h3 { margin: 0; font-size: 17px; color: #10233D; }
+    .step p { margin: 6px 0 0 0; color: #475569; font-size: 14px; line-height: 1.25; }
+    .step:nth-child(3) .step-no { background: #2E7CFF; }
+    .step:nth-child(5) .step-no { background: #F59E0B; color: #10233D; }
+    .footer { position: absolute; left: 70px; bottom: 47px; width: 1140px; min-height: 40px; border-top: 3px solid #F59E0B; padding-top: 13px; color: #334155; font-size: 17px; line-height: 1.25; }
+    .footer strong { color: #10233D; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="header"></div>
+    <div class="kicker">08 · Verifiable evidence</div>
+    <h1>Every verdict leaves<br/>a verifiable trail.</h1>
+    <div class="header-note">A receipt is proof of <strong>what was checked</strong>, under which policy and engine version, at a specific point in time.</div>
+
+    <div class="receipt">
+      <div class="receipt-top"><div class="receipt-title">IntentGuard receipt</div><div class="verdict">MISMATCH</div></div>
+      <div class="receipt-sub">Primary rule · IG-APPROVE-001 · unlimited allowance violates exact-approval policy</div>
+      <div class="hash-grid">
+        <div><div class="hash-label">Intent hash</div><div class="hash-value">0xabc…f9e</div></div>
+        <div><div class="hash-label">Request hash</div><div class="hash-value">0xdef…021</div></div>
+        <div><div class="hash-label">Evidence hash</div><div class="hash-value">0x123…8ac</div></div>
+        <div><div class="hash-label">Receipt ID</div><div class="hash-value">0x8d4…a71</div></div>
+      </div>
+      <div class="receipt-rule"></div>
+      <div class="receipt-bottom">
+        <div><div class="small-label">Engine</div><div class="small-value">v1.0.0</div></div>
+        <div><div class="small-label">Expires</div><div class="small-value">10 minutes</div></div>
+        <div><div class="small-label">State</div><div class="small-value">Revocable</div></div>
+      </div>
+    </div>
+
+    <div class="chain">
+      <div class="chain-kicker">Verification chain</div>
+      <div class="step"><div class="step-no">01</div><h3>Policy commitment</h3><p>The user’s versioned policy hash establishes the authorized limits without placing raw intent text on-chain.</p></div>
+      <div class="step"><div class="step-no">02</div><h3>Evaluator signature</h3><p>An authorized evaluator signs the EIP-712 receipt; the signature is bound to the receipt fields and chain.</p></div>
+      <div class="step"><div class="step-no">03</div><h3>Evidence hashes</h3><p>Intent, request, and evidence hashes make the exact decision inputs tamper-evident and reproducible.</p></div>
+      <div class="step"><div class="step-no">04</div><h3>Base Sepolia anchor</h3><p>The receipt is anchored with expiry and revocation state—without custody, asset transfers, or arbitrary calls.</p></div>
+    </div>
+
+    <div class="footer"><strong>Trust is inspectable:</strong> receipt contracts record commitments and proof, not funds—and expired or revoked receipts are never presented as current.</div>
+  </div>
+</body>
+</html>

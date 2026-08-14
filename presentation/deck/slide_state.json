@@ -1,0 +1,136 @@
+{
+  "project_info": {
+    "title": "IntentGuard",
+    "created": 1786718964.517,
+    "last_updated": 1786719075.084,
+    "total_slides": 12
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "state": "edited",
+      "pageNum": 1
+    },
+    {
+      "id": "problem",
+      "state": "edited",
+      "pageNum": 2
+    },
+    {
+      "id": "aha_moment",
+      "state": "edited",
+      "pageNum": 3
+    },
+    {
+      "id": "verdicts",
+      "state": "edited",
+      "pageNum": 4
+    },
+    {
+      "id": "wedge",
+      "state": "edited",
+      "pageNum": 5
+    },
+    {
+      "id": "architecture",
+      "state": "edited",
+      "pageNum": 6
+    },
+    {
+      "id": "safety_boundary",
+      "state": "edited",
+      "pageNum": 7
+    },
+    {
+      "id": "demo",
+      "state": "edited",
+      "pageNum": 8
+    },
+    {
+      "id": "receipts",
+      "state": "edited",
+      "pageNum": 9
+    },
+    {
+      "id": "orion_fit",
+      "state": "edited",
+      "pageNum": 10
+    },
+    {
+      "id": "win",
+      "state": "edited",
+      "pageNum": 11
+    },
+    {
+      "id": "closing",
+      "state": "edited",
+      "pageNum": 12
+    }
+  ],
+  "outline": [
+    {
+      "id": "cover",
+      "title": "IntentGuard",
+      "summary": "Title slide presenting IntentGuard as the transaction-intent firewall for autonomous finance, with Orion Builder Hackathon, Base, and confirm-first positioning."
+    },
+    {
+      "id": "problem",
+      "title": "The wallet shows a request. It does not show intent.",
+      "summary": "Show the gap between a user thinking they are claiming an airdrop and a wallet request that grants unlimited allowance."
+    },
+    {
+      "id": "aha_moment",
+      "title": "IntentGuard makes the mismatch impossible to miss.",
+      "summary": "Explain the product flow: state intent, decode request, and compare actual effect to hard limits.",
+      "image_plan": "/home/ubuntu/intentguard-mvp/presentation/assets/intentguard-mismatch-wireframe.png - Slide 2, product UI showing mismatch detection and rule verification"
+    },
+    {
+      "id": "verdicts",
+      "title": "One decision. Three outcomes. Zero false confidence.",
+      "summary": "Present MATCH, MISMATCH, and CANNOT VERIFY as the product’s memorable safety states.",
+      "image_plan": "/home/ubuntu/intentguard-mvp/presentation/assets/intentguard-cannot-verify-wireframe.png - Slide 3, product UI showing cannot verify and fail-closed state"
+    },
+    {
+      "id": "wedge",
+      "title": "This is intent fidelity—not another risk score.",
+      "summary": "Position IntentGuard against token research dashboards, wallet diagnostics, and generic transaction-security products."
+    },
+    {
+      "id": "architecture",
+      "title": "The agent investigates. Deterministic code decides.",
+      "summary": "Show the end-to-end architecture from intent normalization and decoding through evidence, policy engine, verdict, explanation, and receipt anchoring."
+    },
+    {
+      "id": "safety_boundary",
+      "title": "Safety is a product feature—and a trust boundary.",
+      "summary": "Explain the non-custodial, read-only, fail-closed, no-arbitrary-execution MVP boundary and its honest limitation around EOAs."
+    },
+    {
+      "id": "demo",
+      "title": "The demo proves the product in under 90 seconds.",
+      "summary": "Show the three core scenarios: exact approval passes, unlimited approval fails, EIP-2612 permit is decoded, and unknown selectors fail closed."
+    },
+    {
+      "id": "receipts",
+      "title": "Every verdict leaves a verifiable trail.",
+      "summary": "Explain versioned evidence hashes, policy commitments, evaluator-signed receipts, expiry, revocation, and Base Sepolia anchoring."
+    },
+    {
+      "id": "orion_fit",
+      "title": "Built for Orion’s agent economy.",
+      "summary": "Connect IntentGuard to Orion agents, launchpads, wallets, Base dApps, risk management, and integration revenue.",
+      "image_plan": "/home/ubuntu/upload/search_images/tNjarVJXgSBs.jpg - Slide 9, hackathon context and Orion agent economy banner"
+    },
+    {
+      "id": "win",
+      "title": "We win by being the agent that refuses to guess.",
+      "summary": "Map usefulness, execution, originality, and security proof to the judge rubric and state the integration ask."
+    },
+    {
+      "id": "closing",
+      "title": "Autonomous finance earns trust by proving what it means.",
+      "summary": "Closing slide with IntentGuard name, tagline, live demo, open-source engine, Base receipts, and Orion-ready message.",
+      "image_plan": "/home/ubuntu/upload/search_images/zWt1uZDk3c4x.png - Slide 11, closing brand slide with Base logo"
+    }
+  ]
+}
