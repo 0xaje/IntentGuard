@@ -72,8 +72,8 @@ export default function Home() {
             <a href="#method" onClick={(event) => { scrollToSection(event); setMenuOpen(false); }}>Method</a>
             <a href="#signal" onClick={(event) => { scrollToSection(event); setMenuOpen(false); }}>Signal</a>
             <a href="#principles" onClick={(event) => { scrollToSection(event); setMenuOpen(false); }}>Principles</a>
-            <a className="nav-action" href="#method" onClick={(event) => { scrollToSection(event); setMenuOpen(false); }}>
-              Read the method <ArrowUpRight size={15} strokeWidth={1.8} />
+            <a className="nav-action" href="/app" onClick={() => setMenuOpen(false)}>
+              Test an Agent Action <ArrowUpRight size={15} strokeWidth={1.8} />
             </a>
           </nav>
         </div>
@@ -94,7 +94,7 @@ export default function Home() {
             <h1>Read the intent before you route the action.</h1>
             <p className="hero-lede">IntentGuard helps teams turn ambiguous requests into decisions that can be inspected, explained, and responsibly moved forward.</p>
             <div className="hero-actions">
-              <a className="button-primary" href="#method" onClick={scrollToSection}>Explore the method <ArrowDownRight size={17} /></a>
+              <a className="button-primary" href="/app">Test an Agent Action <ArrowDownRight size={17} /></a>
               <a className="text-action" href="#principles" onClick={scrollToSection}>Why it matters <ArrowUpRight size={16} /></a>
             </div>
             <p className="hero-note"><ShieldCheck size={15} /> Built for teams where context is part of the control.</p>
@@ -166,7 +166,7 @@ export default function Home() {
           <div className="closing-mark"><SignalMark className="h-12 w-12 text-signal" /></div>
           <p className="eyebrow">A calmer way to handle ambiguity</p>
           <h2>See what the signal means.<br />Decide what happens next.</h2>
-          <a className="button-primary" href="#method" onClick={scrollToSection}>Read the method <ArrowUpRight size={17} /></a>
+          <a className="button-primary" href="/app">Test an Agent Action <ArrowUpRight size={17} /></a>
         </section>
       </main>
 

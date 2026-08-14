@@ -1,0 +1,57 @@
+# IntentGuard v0.1 implementation checklist
+
+## Audit and requirements
+
+- [x] Read the complete attached v0.1 specification and map every requirement to a project task.
+- [x] Inspect `ideas.md`, `verification.md`, `package.json`, source structure, environment handling, components, styling, and asset references.
+- [x] Run the existing landing page and preserve the current successful build before feature work.
+- [x] Preserve the Forensic Signal identity and avoid rebuilding the marketing page from scratch.
+
+## Product scope
+
+- [x] Build one Base-only end-to-end verification workflow.
+- [x] Keep persistence, accounts, multi-chain support, wallet custody, agent marketplace, tokenomics, and unnecessary infrastructure out of the public v0.1 workflow.
+- [x] Document and isolate the managed authentication and database scaffolding introduced solely to obtain the required server boundary; do not use it in the public v0.1 workflow.
+- [x] Keep the final security verdict deterministic and never delegate it to an LLM.
+
+## Intent composer and structured intent
+
+- [x] Add a dedicated `/app` experience with a natural-language intent composer.
+- [x] Add only examples that correspond to real supported workflows.
+- [x] Parse supported intent language into a deterministic, schema-validated structured intent.
+- [x] Display the interpreted constraints before verification.
+- [x] Make unsupported or ambiguous requests explicit rather than silently guessing.
+
+## Base integration and transaction inspection
+
+- [x] Define Base network constants and load RPC/API configuration from environment variables.
+- [x] Add a secure backend boundary if a secret-backed provider or server proxy is required.
+- [x] Never expose private keys, seed phrases, or credentials in the frontend.
+- [x] Accept or obtain a real Base-compatible transaction proposal without fabricating values.
+- [x] Decode available chain ID, destination, selector/function, token, amount, approval, recipient, value, and calldata fields where observable.
+- [x] Return `UNVERIFIABLE` when required evidence is unavailable instead of using a fake success.
+
+## Deterministic verification
+
+- [x] Implement explicit checks for chain, action, input asset, spend limit, slippage, approval, contract/recipient, and expected output where observable, with unavailable evidence called out explicitly.
+- [x] Produce evidence rows with verified, failed, and unavailable states.
+- [x] Restrict the final result to exactly `MATCH`, `MISMATCH`, or `UNVERIFIABLE`.
+- [x] Allow a local human-review acknowledgement only after displaying the structured intent, decoded transaction, and evidence trail; block it for mismatch and unverifiable states.
+- [x] Ensure human approval does not imply an on-chain submission unless a real wallet-confirmation flow is explicitly connected.
+
+## UI integration
+
+- [x] Update the landing-page primary CTA to `Test an Agent Action`.
+- [x] Connect the CTA to the real `/app` workflow.
+- [x] Keep the existing landing-page visual identity and responsive behavior.
+- [x] Add clear loading, validation, error, empty, mismatch, and unverifiable states without fake fallback content.
+- [x] Intentionally omit verification history because persistence would be unnecessary for v0.1 and any invented entries would violate the no-fake-data requirement.
+
+## Verification and delivery
+
+- [x] Run typecheck and production build after the secure backend upgrade baseline.
+- [x] Test live Base reads and failure modes with real observable responses.
+- [x] Test desktop and mobile layouts and keyboard-accessible approval/navigation states.
+- [x] Update documentation and verification records with actual results.
+- [ ] Commit every milestone and push the v0.1 branch through the authenticated repository workflow without destructive history rewrites.
+- [ ] Save a final project checkpoint before delivery.
