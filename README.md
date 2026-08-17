@@ -249,6 +249,43 @@ The EIP-712 Receipt Type Hash:
 
 ---
 
+## Modular Protocol Architecture
+
+The codebase is organized into decoupled, single-responsibility layers:
+
+```text
+intentguard/
+│
+├── client/              # React + Vite Forensic Signal UI
+│   ├── src/pages/       # Workspace & Verification consoles
+│   └── src/components/  # SignalMark, Origin trees, and Badges
+│
+├── server/              # Fast, non-custodial backend gateway
+│   ├── routers/         # tRPC API endpoints (intent, policy, receipts)
+│   ├── rpc/             # Real-time Base Mainnet JSON-RPC & QuoterV2 client
+│   ├── attestation/     # EIP-712 hashing & cryptographic signatures
+│   └── security/        # Non-custodial invariants & input sanitization
+│
+├── engine/              # Pure, deterministic TypeScript verification engine
+│   ├── decoder/         # Calldata parsing (Uniswap V3, ERC-20, Permits)
+│   ├── policy/          # Rule evaluation & fail-closed logic
+│   ├── evidence/        # Evidence models & discrete state definitions
+│   ├── canonical/       # Deterministic JSON canonicalization & keccak256
+│   └── receipt/         # Canonical receipt construction & verification
+│
+├── contracts/           # Smart contracts on Base Sepolia
+│   ├── interfaces/      # IIntentGuardTypes & registry interfaces
+│   ├── IntentGuardPolicyRegistry.sol
+│   ├── IntentGuardReceiptRegistry.sol
+│   └── IntentGuardTargetRegistry.sol
+│
+├── scripts/             # Hardhat deployment & attestation scripts
+├── test/                # Cross-package test suites & fixtures
+└── presentation/        # Judge Q&A playbooks, pitch deck, & demo scripts
+```
+
+---
+
 ## Repository Map
 
 | Path | Contents & Role |
