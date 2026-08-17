@@ -178,6 +178,33 @@ type ProposedRequest = {
 };
 ```
 
+### Explicit Actor & Key Separation
+
+To maximize security and prevent conflicts of interest, IntentGuard strictly isolates four distinct entities:
+
+```text
+┌───────────────────────────┐
+│     ORION / AI AGENT      │  ──► Proposes candidate action (ProposedRequest)
+└───────────────────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│    INTENTGUARD ENGINE     │  ──► Evaluates deterministically against IntentSpec + Evidence
+└───────────────────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│    ATTESTING EVALUATOR    │  ──► Signs EIP-712 receipt with EVALUATOR_ROLE on Base Sepolia
+└───────────────────────────┘
+```
+
+| Role | Entity / Key | Responsibility | Security Boundary |
+|---|---|---|---|
+| **Human Owner** | User Account / EOA | Declares intent constraints and spending caps. | Never signs unreviewed actions or shares private keys. |
+| **Proposing Agent** | Orion / AI Planner | Plans workflow and constructs candidate `ProposedRequest`. | **Zero custody; cannot evaluate or approve its own safety.** |
+| **Evaluation Engine** | IntentGuard Deterministic Code | Evaluates `IntentSpec + ProposedRequest + ObservableEvidence`. | **Pure deterministic computation; zero LLM verdict authority.** |
+| **Attesting Evaluator** | Key holding `EVALUATOR_ROLE` | Attests to canonical hashes and signs EIP-712 trust receipt. | **Gated by ReceiptRegistry on Base Sepolia; strictly revocable.** |
+
 ### Deterministic Confidence Semantics
 
 IntentGuard strictly rejects probabilistic "AI confidence scores". Instead, it applies discrete, deterministic evidence evaluation:
