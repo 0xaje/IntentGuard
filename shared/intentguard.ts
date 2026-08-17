@@ -47,9 +47,11 @@ export type AgentTraceStep = {
 
 export type EvidenceProvenance = {
   source: string;
+  chainId: number;
   blockNumber: number | null;
   blockHash: string | null;
   transactionHash: string | null;
+  transactionIndex: number | null;
   receiptStatus: "mined_success" | "mined_reverted" | "pending" | "missing" | null;
   contractAddress: string | null;
   decoder: string;

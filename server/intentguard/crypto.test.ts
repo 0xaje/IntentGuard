@@ -40,9 +40,23 @@ const verification: VerificationResult = {
   unavailableChecks: 0,
   observedAt: "2026-08-17T00:00:00.000Z",
   evidence: [
-    { id: "chain", label: "Network is Base", state: "verified", detail: "Base chain verified.", source: "Base RPC" },
-    { id: "execution", label: "Mined execution", state: "verified", detail: "Receipt succeeded.", source: "Transaction receipt" },
+    { id: "chain", label: "Network is Base", state: "verified", detail: "Base chain verified.", source: "Base RPC", blockNumber: 1, blockHash: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+    { id: "execution", label: "Mined execution", state: "verified", detail: "Receipt succeeded.", source: "Transaction receipt", blockNumber: 1, blockHash: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
   ],
+  provenance: {
+    source: "Base JSON-RPC",
+    chainId: 8453,
+    blockNumber: 1,
+    blockHash: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    transactionHash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    transactionIndex: 0,
+    receiptStatus: "mined_success",
+    contractAddress: recipient,
+    decoder: "ERC-20 transfer(address,uint256)",
+    decoderVersion: 1,
+    engineVersion: 1,
+    evidenceHash: "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  },
 };
 
 const inspection: TransactionInspection = {
@@ -85,6 +99,27 @@ describe("IntentGuard canonical trust hashes", () => {
   it("returns deterministic request and evidence hashes from structured observable data", () => {
     expect(hashRequest(inspection)).toBe(hashRequest({ ...inspection }));
     expect(hashEvidence(verification)).toBe(hashEvidence({ ...verification, evidence: [...verification.evidence].reverse() }));
+  });
+
+  it("changes the evidence hash when blockchain block anchoring context changes", () => {
+    expect(hashEvidence(verification)).not.toBe(
+      hashEvidence({
+        ...verification,
+        provenance: { ...verification.provenance, blockNumber: 2 },
+      }),
+    );
+    expect(hashEvidence(verification)).not.toBe(
+      hashEvidence({
+        ...verification,
+        provenance: { ...verification.provenance, blockHash: "0x0000000000000000000000000000000000000000000000000000000000000000" },
+      }),
+    );
+    expect(hashEvidence(verification)).not.toBe(
+      hashEvidence({
+        ...verification,
+        provenance: { ...verification.provenance, transactionIndex: 5 },
+      }),
+    );
   });
 });
 

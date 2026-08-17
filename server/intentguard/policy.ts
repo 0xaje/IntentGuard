@@ -38,10 +38,16 @@ function buildResult(
       ? "The observed transaction conflicts with one or more explicit intent constraints. No transaction has been approved by IntentGuard."
       : "IntentGuard could not establish every required fact from the available Base evidence. No transaction has been approved.";
 
+  const chainId = inspection?.networkChainId ? (Number.isNaN(Number(inspection.networkChainId)) ? parseInt(inspection.networkChainId, 16) : Number(inspection.networkChainId)) : 8453;
   const rawBlockNumber = inspection?.receipt.blockNumber ?? inspection?.transaction?.blockNumber ?? null;
   const blockNumber = rawBlockNumber ? Number(rawBlockNumber) : null;
-  const rawReceipt = inspection?.raw.receipt as { blockHash?: string } | undefined;
+  const rawReceipt = inspection?.raw.receipt as { blockHash?: string; transactionIndex?: string | number } | undefined;
+  const rawTx = inspection?.raw.transaction as { transactionIndex?: string | number } | undefined;
   const blockHash = rawReceipt?.blockHash ?? null;
+  const rawTxIndex = rawReceipt?.transactionIndex ?? rawTx?.transactionIndex ?? null;
+  const transactionIndex = rawTxIndex !== null && rawTxIndex !== undefined
+    ? (typeof rawTxIndex === "string" && rawTxIndex.startsWith("0x") ? parseInt(rawTxIndex, 16) : Number(rawTxIndex))
+    : null;
   const contractAddress = inspection?.transaction?.to ?? null;
 
   let decoderLabel = "None";
@@ -61,8 +67,15 @@ function buildResult(
           ? "missing" as const
           : null;
 
+  const validBlockNumber = Number.isFinite(blockNumber) ? blockNumber : null;
   const canonicalEvidencePayload = {
     schemaVersion: 1,
+    chainId,
+    blockNumber: validBlockNumber,
+    blockHash,
+    transactionHash: inspection?.transactionHash ?? transactionHash,
+    transactionIndex,
+    receiptStatus,
     verdict,
     passedChecks,
     failedChecks,
@@ -75,15 +88,19 @@ function buildResult(
         state: item.state,
         detail: item.detail,
         source: item.source,
+        blockNumber: item.blockNumber ?? validBlockNumber,
+        blockHash: item.blockHash ?? blockHash,
       })),
   };
   const evidenceHash = hashCanonical(canonicalEvidencePayload);
 
   const provenance: EvidenceProvenance = {
     source: "Base JSON-RPC",
-    blockNumber: Number.isFinite(blockNumber) ? blockNumber : null,
+    chainId,
+    blockNumber: validBlockNumber,
     blockHash,
     transactionHash: inspection?.transactionHash ?? transactionHash,
+    transactionIndex,
     receiptStatus,
     contractAddress,
     decoder: decoderLabel,

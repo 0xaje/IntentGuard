@@ -61,6 +61,12 @@ export function hashRequest(inspection: TransactionInspection): Hex {
 export function canonicalEvidence(result: VerificationResult) {
   return {
     schemaVersion: 1,
+    chainId: result.provenance?.chainId ?? 8453,
+    blockNumber: result.provenance?.blockNumber ?? null,
+    blockHash: result.provenance?.blockHash ?? null,
+    transactionHash: result.provenance?.transactionHash ?? null,
+    transactionIndex: result.provenance?.transactionIndex ?? null,
+    receiptStatus: result.provenance?.receiptStatus ?? null,
     verdict: result.verdict,
     passedChecks: result.passedChecks,
     failedChecks: result.failedChecks,
@@ -73,6 +79,8 @@ export function canonicalEvidence(result: VerificationResult) {
         state: item.state,
         detail: item.detail,
         source: item.source,
+        blockNumber: item.blockNumber ?? result.provenance?.blockNumber ?? null,
+        blockHash: item.blockHash ?? result.provenance?.blockHash ?? null,
       })),
   } as const;
 }
