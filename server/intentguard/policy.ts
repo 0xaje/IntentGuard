@@ -3,6 +3,11 @@ import {
   BASE_USDC_ADDRESS,
   BASE_WETH_ADDRESS,
   UNISWAP_V3_SWAP_ROUTER_02_ADDRESS,
+  PROTOCOL_VERSION,
+  POLICY_VERSION,
+  ENGINE_VERSION,
+  DECODER_VERSION,
+  RECEIPT_SCHEMA_VERSION,
   type EvidenceItem,
   type EvidenceProvenance,
   type StructuredIntent,
@@ -31,12 +36,12 @@ function buildResult(
   const conflictingChecks = evidenceItems.filter((item) => item.state === "CONFLICTING" || item.state === "failed").length;
   const insufficientChecks = evidenceItems.filter((item) => item.state === "INSUFFICIENT" || item.state === "unavailable").length;
   const verifiedChecks = evidenceItems.filter((item) => item.state === "VERIFIED" || item.state === "verified").length;
-  const verdict = conflictingChecks > 0 ? "MISMATCH" : insufficientChecks > 0 ? "CANNOT_VERIFY" : "MATCH";
+  const verdict: VerificationResult["verdict"] = conflictingChecks > 0 ? "MISMATCH" : insufficientChecks > 0 ? "CANNOT_VERIFY" : "MATCH";
   const summary = verdict === "MATCH"
     ? "The observed transaction satisfies every constraint that IntentGuard can verify from the available Base evidence."
     : verdict === "MISMATCH"
-      ? "The observed transaction conflicts with one or more explicit intent constraints. No transaction has been approved by IntentGuard."
-      : "IntentGuard could not establish every required fact from the available Base evidence. No transaction has been approved.";
+      ? `IntentGuard identified ${conflictingChecks} conflicting check${conflictingChecks > 1 ? "s" : ""} between the intent and the observed Base transaction.`
+      : `IntentGuard cannot verify the transaction because ${insufficientChecks} required check${insufficientChecks > 1 ? "s" : ""} could not be resolved from available Base RPC evidence.`;
 
   const chainId = inspection?.networkChainId ? (Number.isNaN(Number(inspection.networkChainId)) ? parseInt(inspection.networkChainId, 16) : Number(inspection.networkChainId)) : 8453;
   const rawBlockNumber = inspection?.receipt.blockNumber ?? inspection?.transaction?.blockNumber ?? null;
@@ -48,7 +53,7 @@ function buildResult(
   const transactionIndex = rawTxIndex !== null && rawTxIndex !== undefined
     ? (typeof rawTxIndex === "string" && rawTxIndex.startsWith("0x") ? parseInt(rawTxIndex, 16) : Number(rawTxIndex))
     : null;
-  const contractAddress = inspection?.transaction?.to ?? null;
+  const contractAddress = inspection?.decoded?.routerSwap ? UNISWAP_V3_SWAP_ROUTER_02_ADDRESS : inspection?.transaction?.to ?? null;
 
   let decoderLabel = "None";
   if (inspection?.decoded.kind === "transfer") decoderLabel = "ERC-20 transfer(address,uint256)";
@@ -67,11 +72,15 @@ function buildResult(
           ? "missing" as const
           : null;
 
-  const validBlockNumber = Number.isFinite(blockNumber) ? blockNumber : null;
   const canonicalEvidencePayload = {
     schemaVersion: 1,
+    protocolVersion: PROTOCOL_VERSION,
+    policyVersion: POLICY_VERSION,
+    engineVersion: ENGINE_VERSION,
+    decoderVersion: DECODER_VERSION,
+    receiptSchemaVersion: RECEIPT_SCHEMA_VERSION,
     chainId,
-    blockNumber: validBlockNumber,
+    blockNumber,
     blockHash,
     transactionHash: inspection?.transactionHash ?? transactionHash,
     transactionIndex,
@@ -91,7 +100,7 @@ function buildResult(
         state: item.state,
         detail: item.detail,
         source: item.source,
-        blockNumber: item.blockNumber ?? validBlockNumber,
+        blockNumber: item.blockNumber ?? blockNumber,
         blockHash: item.blockHash ?? blockHash,
       })),
   };
@@ -100,15 +109,18 @@ function buildResult(
   const provenance: EvidenceProvenance = {
     source: "Base JSON-RPC",
     chainId,
-    blockNumber: validBlockNumber,
+    protocolVersion: PROTOCOL_VERSION,
+    policyVersion: POLICY_VERSION,
+    engineVersion: ENGINE_VERSION,
+    decoderVersion: DECODER_VERSION,
+    receiptSchemaVersion: RECEIPT_SCHEMA_VERSION,
+    blockNumber,
     blockHash,
     transactionHash: inspection?.transactionHash ?? transactionHash,
     transactionIndex,
     receiptStatus,
     contractAddress,
     decoder: decoderLabel,
-    decoderVersion: 1,
-    engineVersion: 1,
     evidenceHash,
   };
 
@@ -118,6 +130,11 @@ function buildResult(
     summary,
     evidence: evidenceItems,
     provenance,
+    protocolVersion: PROTOCOL_VERSION,
+    policyVersion: POLICY_VERSION,
+    engineVersion: ENGINE_VERSION,
+    decoderVersion: DECODER_VERSION,
+    receiptSchemaVersion: RECEIPT_SCHEMA_VERSION,
     verifiedChecks,
     conflictingChecks,
     insufficientChecks,

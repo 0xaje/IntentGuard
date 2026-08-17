@@ -59,9 +59,20 @@ export type AgentTraceStep = {
   detail: string;
 };
 
+export const PROTOCOL_VERSION = 1;
+export const POLICY_VERSION = 1;
+export const ENGINE_VERSION = 1;
+export const DECODER_VERSION = 1;
+export const RECEIPT_SCHEMA_VERSION = 1;
+
 export type EvidenceProvenance = {
   source: string;
   chainId: number;
+  protocolVersion: number;
+  policyVersion: number;
+  engineVersion: number;
+  decoderVersion: number;
+  receiptSchemaVersion: number;
   blockNumber: number | null;
   blockHash: string | null;
   transactionHash: string | null;
@@ -69,8 +80,6 @@ export type EvidenceProvenance = {
   receiptStatus: "mined_success" | "mined_reverted" | "pending" | "missing" | null;
   contractAddress: string | null;
   decoder: string;
-  decoderVersion: number;
-  engineVersion: number;
   evidenceHash: string;
 };
 
@@ -80,6 +89,11 @@ export type VerificationResult = {
   summary: string;
   evidence: EvidenceItem[];
   provenance: EvidenceProvenance;
+  protocolVersion: number;
+  policyVersion: number;
+  engineVersion: number;
+  decoderVersion: number;
+  receiptSchemaVersion: number;
   verifiedChecks: number;
   conflictingChecks: number;
   insufficientChecks: number;

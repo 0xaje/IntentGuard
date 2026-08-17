@@ -73,20 +73,26 @@ IntentGuard explicitly distinguishes between three concepts often conflated in W
 
 ## Evidence Provenance & Forensic Origin
 
-Where did this evidence come from? Rather than presenting opaque analytical ratings, IntentGuard provides a strict, reproducible provenance tree:
+Where did this evidence come from? Rather than presenting opaque analytical ratings, IntentGuard provides a strict, reproducible provenance tree with first-class version anchoring:
 
 ```text
 Evidence
 ├── Source: Base JSON-RPC
+├── Chain ID: 8453 (Base Mainnet)
 ├── Block: 12345678 (anchored)
 ├── Transaction: 0x...
 ├── Receipt: mined_success (confirmed)
 ├── Contract: 0x...
 ├── Decoder: Uniswap V3 exactInputSingle / ERC-20 Transfer
-├── Decoder version: 1
+├── Protocol version: 1
+├── Policy version: 1
 ├── Engine version: 1
+├── Decoder version: 1
+├── Receipt schema version: 1 (EIP-712)
 └── Evidence hash: 0x...
 ```
+
+> **Why explicit versioning matters**: When a decoder or rule is updated in the future, past on-chain receipts remain unambiguous. A judge or verifier can always attest: *"This receipt was deterministically evaluated under decoder v1 and engine v1."*
 
 ---
 

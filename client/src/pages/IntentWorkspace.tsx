@@ -375,13 +375,28 @@ export default function IntentWorkspace() {
                 </div>
                 <div className="tree-node">
                   <span className="tree-branch">├──</span>
-                  <span className="tree-label">Decoder version:</span>
-                  <span className="tree-val">v{result.verification.provenance?.decoderVersion ?? 1}</span>
+                  <span className="tree-label">Protocol version:</span>
+                  <span className="tree-val">v{result.verification.provenance?.protocolVersion ?? 1}</span>
+                </div>
+                <div className="tree-node">
+                  <span className="tree-branch">├──</span>
+                  <span className="tree-label">Policy version:</span>
+                  <span className="tree-val">v{result.verification.provenance?.policyVersion ?? 1}</span>
                 </div>
                 <div className="tree-node">
                   <span className="tree-branch">├──</span>
                   <span className="tree-label">Engine version:</span>
                   <span className="tree-val">v{result.verification.provenance?.engineVersion ?? 1}</span>
+                </div>
+                <div className="tree-node">
+                  <span className="tree-branch">├──</span>
+                  <span className="tree-label">Decoder version:</span>
+                  <span className="tree-val">v{result.verification.provenance?.decoderVersion ?? 1}</span>
+                </div>
+                <div className="tree-node">
+                  <span className="tree-branch">├──</span>
+                  <span className="tree-label">Receipt schema:</span>
+                  <span className="tree-val">v{result.verification.provenance?.receiptSchemaVersion ?? 1} (EIP-712)</span>
                 </div>
                 <div className="tree-node">
                   <span className="tree-branch">└──</span>
