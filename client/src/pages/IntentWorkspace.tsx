@@ -162,10 +162,10 @@ export default function IntentWorkspace() {
         </div>
         <section className="app-intro">
           <div>
-            <p className="eyebrow"><ScanLine size={14} /> Base intent verification / v0.1</p>
+            <p className="eyebrow"><ScanLine size={14} /> Deterministic Intent Verification / Base</p>
             <h1>Test an agent action against the limits you actually set.</h1>
           </div>
-          <p>IntentGuard reads a supported Base intent, inspects a real transaction hash through Base RPC, and produces a deterministic evidence-backed verdict. It does not sign, submit, or move funds.</p>
+          <p>IntentGuard is a deterministic intent-verification and attestation layer for AI agent transactions on Base. It compares human-declared constraints with observable transaction behavior and produces a cryptographically verifiable verdict before or after execution, depending on available evidence.</p>
         </section>
 
         <div className="app-workspace-grid">
@@ -195,9 +195,9 @@ export default function IntentWorkspace() {
 
           <aside className="operation-boundary">
             <SignalMark className="h-10 w-10 text-signal" />
-            <p className="panel-kicker">Confirm-first boundary</p>
-            <h2>No wallet action happens here.</h2>
-            <p>This milestone inspects an already-proposed or mined Base transaction. Wallet confirmation is intentionally not connected, and IntentGuard never receives private keys or seed phrases.</p>
+            <p className="panel-kicker">Two distinct security stages</p>
+            <h2>Pre-execution vs. Post-execution</h2>
+            <p><strong>Pre-execution:</strong> Can this proposed transaction safely proceed according to declared intent? <br /><br /><strong>Post-execution:</strong> Did the transaction that actually executed remain consistent with declared intent? <br /><br />IntentGuard inspects observable calldata and mined Base RPC receipts to produce deterministic verdicts and signed attestations without ever touching private keys.</p>
           </aside>
         </div>
 

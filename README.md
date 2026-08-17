@@ -1,22 +1,46 @@
 # IntentGuard
 
-IntentGuard is a **non-custodial, read-only Base intent verification platform**. It parses structured intents, inspects on-chain Base Mainnet transactions, decodes supported transaction paths deterministically, and provides verifiable `MATCH`, `MISMATCH`, or `UNVERIFIABLE` verdicts accompanied by signed EIP-712 evidence receipts anchored to Base Sepolia smart contracts.
+IntentGuard is a deterministic intent-verification and attestation layer for AI agent transactions on Base. It compares human-declared constraints with observable transaction behavior and produces a cryptographically verifiable verdict before or after execution, depending on available evidence.
 
 The platform does not connect a wallet, request seed phrases or private keys, move funds, sign transactions on behalf of users, or fabricate blockchain evidence.
 
 ---
 
+## The Two Distinct Security Stages
+
+IntentGuard explicitly distinguishes between two different security problems in autonomous AI agent transactions:
+
+```text
+┌───────────────────────────────────────────────────────────────────────────────────┐
+│                                INTENTGUARD STAGES                                 │
+├─────────────────────────────────────────┬─────────────────────────────────────────┤
+│             PRE-EXECUTION               │             POST-EXECUTION              │
+│ "Can this proposed transaction safely   │ "Did the transaction that actually      │
+│  proceed according to declared intent?" │  executed remain consistent with intent?"│
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│ • Validates calldata against allowlist  │ • Inspects mined Base Mainnet receipts  │
+│ • Simulates quotes (Uniswap QuoterV2)   │ • Decodes emitted ERC-20 Transfer logs  │
+│ • Checks recipient & allowance bounds   │ • Measures actual executed slippage     │
+│ • Preflight deterministic policy pass   │ • EIP-712 Attestation anchored on Base  │
+└─────────────────────────────────────────┴─────────────────────────────────────────┘
+```
+
+> [!IMPORTANT]
+> **Honest Security Boundary**: Pre-execution and post-execution are different security problems. The current implementation is strongest at **post-execution / transaction evidence verification** (alongside read-only preflight simulation). IntentGuard does not pretend to have complete pre-execution custody protection (such as state-changing mempool interception or private enclave execution), but instead provides a verifiable attestation layer that integrates into agent guardrails and audit pipelines.
+
+---
+
 ## Key Capabilities
 
-| Capability | Behavior & Safety Guarantee |
-|---|---|
-| **Base Mainnet Inspection** | Reads live transaction, mined receipt, event log, and state data directly via server-side Base JSON-RPC. |
-| **Supported Transaction Decoding** | Decodes ERC-20 approvals (`approve`), transfers (`transfer`, `transferFrom`), and allowlisted Uniswap V3 `SwapRouter02.exactInputSingle` routes. |
-| **Evidence Enrichment** | Resolves router-path ERC-20 symbol/decimals through read-only calls and queries read-only QuoterV2 estimates where applicable. |
-| **Deterministic Verdicts** | Strict policy checks producing `MATCH`, `MISMATCH`, or `UNVERIFIABLE`. Missing evidence fails closed. |
-| **Cryptographic Trust Loop** | Computes canonical intent, request, and evidence hashes, and anchors EIP-712 evaluator-signed receipts to Base Sepolia contracts. |
-| **Interactive Forensic Signal UI** | Modern, responsive dashboard showing transaction signals, policy checks, raw evidence payloads, and review boundaries. |
-| **Human Review Boundary** | Gated non-signing review acknowledgement enabled only for verified `MATCH` results. |
+| Capability | Stage | Behavior & Safety Guarantee |
+|---|---|---|
+| **Base Mainnet Inspection** | Post-Execution | Reads live transaction, mined receipt, event logs, and state deltas directly via server-side Base JSON-RPC. |
+| **Supported Transaction Decoding** | Pre & Post | Decodes ERC-20 approvals (`approve`), transfers (`transfer`, `transferFrom`), and allowlisted Uniswap V3 `SwapRouter02.exactInputSingle` routes. |
+| **Evidence Enrichment** | Pre & Post | Resolves router-path ERC-20 symbol/decimals through read-only calls and queries read-only QuoterV2 estimates where applicable. |
+| **Deterministic Verdicts** | Pre & Post | Strict policy checks producing `MATCH`, `MISMATCH`, or `UNVERIFIABLE`. Missing evidence fails closed. |
+| **Cryptographic Trust Loop** | Attestation | Computes canonical intent, request, and evidence hashes, and anchors EIP-712 evaluator-signed receipts to Base Sepolia contracts. |
+| **Interactive Forensic Signal UI** | Both | Modern dashboard showing transaction signals, policy checks, raw evidence payloads, and review boundaries. |
+| **Human Review Boundary** | Operational | Gated non-signing review acknowledgement enabled only for verified `MATCH` results. |
 
 ---
 
