@@ -102,3 +102,57 @@ export type VerificationResult = {
   unavailableChecks: number;
   observedAt: string;
 };
+
+export type PolicyCommitmentData = {
+  policyId: string;
+  intentHash: string;
+  policyVersion: number;
+  policyOwner: string;
+  policyCommitter: string;
+  validFrom: number;
+  validUntil: number;
+  transactionHash: string;
+  blockNumber: string;
+  registryAddress: string;
+  explorerUrl: string;
+};
+
+export type ReceiptAttestationData = {
+  receiptId: string;
+  policyId: string;
+  intentHash: string;
+  requestHash: string;
+  evidenceHash: string;
+  chainId: number;
+  transactionSubject: string;
+  evaluator: string;
+  verdict: string | number;
+  policyVersion: number;
+  evaluatedAt: number;
+  expiresAt: number;
+  engineVersion: number;
+  decoderVersion: number;
+  signature: string;
+  transactionHash: string;
+  blockNumber: string;
+  registryAddress: string;
+  explorerUrl: string;
+};
+
+export type VerificationSession = {
+  sessionId: string;
+  createdAt: string;
+  intent: StructuredIntent;
+  policy: PolicyCommitmentData | null;
+  request: ProposedRequest;
+  evidence: EvidenceItem[];
+  provenance: EvidenceProvenance;
+  verdict: VerificationResult;
+  receipt: ReceiptAttestationData | null;
+  attestation: {
+    evaluator: string;
+    signature: string;
+    registryAddress: string;
+    anchored: boolean;
+  } | null;
+};

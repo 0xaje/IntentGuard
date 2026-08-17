@@ -184,6 +184,21 @@ type ProposedRequest = {
 };
 ```
 
+### The Unified `VerificationSession` Forensic Envelope
+
+To facilitate end-to-end auditability and single-bundle verification, IntentGuard organizes the entire trust lifecycle into a `VerificationSession`:
+
+```text
+VerificationSession
+│
+├── IntentSpec          ──► Human constraints & caps (source text, limits)
+├── PolicyCommitment    ──► On-chain policyId, intentHash, & committer
+├── ProposedRequest     ──► Agent target, calldata proposal, value, & nonce
+├── EvidencePacket      ──► Anchored Base RPC facts & discrete states
+├── VerificationResult  ──► Discrete check counts & MATCH / MISMATCH / CANNOT_VERIFY
+└── ReceiptAttestation  ──► EIP-712 evaluator signature & Base Sepolia anchor tx
+```
+
 ### Explicit Actor & Key Separation
 
 To maximize security and prevent conflicts of interest, IntentGuard strictly isolates four distinct entities:

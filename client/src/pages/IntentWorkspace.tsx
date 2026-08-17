@@ -1,9 +1,10 @@
 // Forensic Signal style reminder: show the evidence trail before the visual verdict; never imply a successful chain action or wallet approval that did not occur.
 import { useState, type FormEvent } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ArrowUpRight, Braces, Check, ChevronDown, CircleAlert, ExternalLink, FileCheck2, Loader2, ScanLine, ShieldAlert, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Braces, Check, ChevronDown, CircleAlert, Copy, ExternalLink, FileCheck2, Loader2, ScanLine, ShieldAlert, ShieldCheck } from "lucide-react";
 import SignalMark from "@/components/SignalMark";
 import { trpc } from "@/lib/trpc";
+import type { VerificationSession } from "@shared/intentguard";
 
 const examples = [
   {
@@ -75,6 +76,9 @@ export default function IntentWorkspace() {
   const [transactionHash, setTransactionHash] = useState("");
   const [clientError, setClientError] = useState<string | null>(null);
   const [humanReviewRecorded, setHumanReviewRecorded] = useState(false);
+  const [showSessionJson, setShowSessionJson] = useState(false);
+  const [sessionCopied, setSessionCopied] = useState(false);
+
   const parseIntent = trpc.intentGuard.parse.useMutation();
   const verifyIntent = trpc.intentGuard.verify.useMutation();
   const commitPolicy = trpc.intentGuard.commitPolicy.useMutation();
@@ -87,6 +91,65 @@ export default function IntentWorkspace() {
   const anchoredReceipt = anchorReceipt.data;
   const isWorking = parseIntent.isPending || verifyIntent.isPending || commitPolicy.isPending || anchorReceipt.isPending;
   const errorMessage = clientError ?? parseIntent.error?.message ?? verifyIntent.error?.message ?? commitPolicy.error?.message ?? anchorReceipt.error?.message ?? null;
+
+  const verificationSession: VerificationSession | null = result ? {
+    sessionId: `SESSION-${result.verification.receiptId}`,
+    createdAt: result.verification.observedAt,
+    intent: result.intent,
+    policy: policyCommitment ? {
+      policyId: policyCommitment.policyId,
+      intentHash: policyCommitment.intentHash,
+      policyVersion: policyCommitment.policyVersion,
+      policyOwner: policyCommitment.policyOwner,
+      policyCommitter: policyCommitment.policyCommitter,
+      validFrom: policyCommitment.validFrom,
+      validUntil: policyCommitment.validUntil,
+      transactionHash: policyCommitment.transactionHash,
+      blockNumber: policyCommitment.blockNumber,
+      registryAddress: policyCommitment.registryAddress,
+      explorerUrl: policyCommitment.explorerUrl,
+    } : null,
+    request: {
+      chainId: result.verification.provenance?.chainId ?? 8453,
+      from: result.inspection?.transaction?.from ?? undefined,
+      to: result.inspection?.transaction?.to ?? undefined,
+      value: result.inspection?.transaction?.valueEth ?? "0",
+      data: (result.inspection?.raw?.transaction?.input as `0x${string}`) ?? undefined,
+      transactionHash: (result.inspection?.transactionHash as `0x${string}`) ?? undefined,
+      agentId: "orion-agent-v1",
+      agentVersion: "1.0.0",
+    },
+    evidence: result.verification.evidence,
+    provenance: result.verification.provenance,
+    verdict: result.verification,
+    receipt: anchoredReceipt ? {
+      receiptId: anchoredReceipt.receipt.receiptId,
+      policyId: anchoredReceipt.receipt.policyId,
+      intentHash: anchoredReceipt.receipt.intentHash,
+      requestHash: anchoredReceipt.receipt.requestHash,
+      evidenceHash: anchoredReceipt.receipt.evidenceHash,
+      chainId: Number(anchoredReceipt.receipt.chainId),
+      transactionSubject: anchoredReceipt.receipt.transactionSubject,
+      evaluator: anchoredReceipt.receipt.evaluator,
+      verdict: anchoredReceipt.receipt.verdict,
+      policyVersion: Number(anchoredReceipt.receipt.policyVersion),
+      evaluatedAt: Number(anchoredReceipt.receipt.evaluatedAt),
+      expiresAt: Number(anchoredReceipt.receipt.expiresAt),
+      engineVersion: Number(anchoredReceipt.receipt.engineVersion),
+      decoderVersion: Number(anchoredReceipt.receipt.decoderVersion),
+      signature: anchoredReceipt.signature,
+      transactionHash: anchoredReceipt.transactionHash,
+      blockNumber: anchoredReceipt.blockNumber,
+      registryAddress: anchoredReceipt.registryAddress,
+      explorerUrl: anchoredReceipt.explorerUrl,
+    } : null,
+    attestation: anchoredReceipt ? {
+      evaluator: anchoredReceipt.receipt.evaluator,
+      signature: anchoredReceipt.signature,
+      registryAddress: anchoredReceipt.registryAddress,
+      anchored: true,
+    } : null,
+  } : null;
 
   function handleExtract(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -431,6 +494,40 @@ export default function IntentWorkspace() {
               </div>
               <button type="button" className="human-review-button" disabled={result.verification.verdict !== "MATCH" || humanReviewRecorded} onClick={() => setHumanReviewRecorded(true)}>{humanReviewRecorded ? "Review recorded locally" : result.verification.verdict === "MATCH" ? "Record human review" : "Approval unavailable"}</button>
             </article>
+
+            {verificationSession && (
+              <article className="session-bundle-card">
+                <div className="receipt-heading">
+                  <p className="panel-kicker">06 / End-to-end Forensic Session</p>
+                  <div className="session-actions" style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      type="button"
+                      className="button-subtle"
+                      onClick={() => {
+                        navigator.clipboard.writeText(JSON.stringify(verificationSession, null, 2));
+                        setSessionCopied(true);
+                        setTimeout(() => setSessionCopied(false), 2000);
+                      }}
+                    >
+                      {sessionCopied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy VerificationSession JSON</>}
+                    </button>
+                    <button
+                      type="button"
+                      className="button-subtle"
+                      onClick={() => setShowSessionJson((prev) => !prev)}
+                    >
+                      <Braces size={14} /> {showSessionJson ? "Hide JSON" : "Inspect VerificationSession"}
+                    </button>
+                  </div>
+                </div>
+                <p className="provenance-copy">Unified end-to-end envelope containing: <code>IntentSpec</code> + <code>PolicyCommitment</code> + <code>ProposedRequest</code> + <code>EvidencePacket</code> + <code>VerificationResult</code> + <code>ReceiptAttestation</code>.</p>
+                {showSessionJson && (
+                  <pre className="session-json-view" style={{ background: "rgba(0,0,0,0.6)", padding: "16px", borderRadius: "8px", overflowX: "auto", fontSize: "12px", fontFamily: "var(--font-mono)", border: "1px solid rgba(255,255,255,0.08)", marginTop: "12px" }}>
+                    <code>{JSON.stringify(verificationSession, null, 2)}</code>
+                  </pre>
+                )}
+              </article>
+            )}
           </section>
         )}
       </main>
