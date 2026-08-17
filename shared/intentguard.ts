@@ -25,6 +25,20 @@ export const structuredIntentSchema = z.object({
 
 export type StructuredIntent = z.infer<typeof structuredIntentSchema>;
 
+export const proposedRequestSchema = z.object({
+  chainId: z.number().default(BASE_MAINNET_CHAIN_ID),
+  from: addressSchema.optional(),
+  to: addressSchema.optional(),
+  value: z.string().optional(),
+  data: z.string().regex(/^0x[0-9a-fA-F]*$/).optional(),
+  nonce: z.union([z.number(), z.string()]).optional(),
+  transactionHash: transactionHashSchema.optional(),
+  agentId: z.string().optional(),
+  agentVersion: z.string().optional(),
+});
+
+export type ProposedRequest = z.infer<typeof proposedRequestSchema>;
+
 export type EvidenceState = "VERIFIED" | "CONFLICTING" | "INSUFFICIENT" | "verified" | "failed" | "unavailable";
 export type VerificationVerdict = "MATCH" | "MISMATCH" | "CANNOT_VERIFY" | "UNVERIFIABLE";
 

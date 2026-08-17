@@ -149,6 +149,35 @@ Evidence
 
 > **The Orion / Agent Boundary**: The autonomous agent does not need to execute transactions or hold custody. The agent's responsibility is solely to **produce a proposed action**. IntentGuard acts as the independent, uncompromised verification gate that deterministically proves whether that action matches the user's intent.
 
+### The Core Evaluation Triad
+
+IntentGuard evaluates three distinct, decoupled inputs to compute an immutable verdict:
+
+```text
+       IntentSpec (Human Constraints & Caps)
+                        +
+ProposedRequest (Agent Target, Calldata, Value, Nonce)
+                        +
+    ObservableEvidence (Base RPC, Receipts, Logs)
+                        ↓
+                VerificationResult
+```
+
+#### **Formal `ProposedRequest` Schema**
+```typescript
+type ProposedRequest = {
+  chainId: number;             // e.g. 8453 (Base Mainnet)
+  from?: Address;              // Transaction subject (EOA or Smart Account)
+  to?: Address;                // Destination contract or recipient
+  value?: string;              // Native value in wei
+  data?: Hex;                  // Encoded calldata
+  nonce?: number | string;     // Anti-replay / state nonce
+  transactionHash?: Hex;       // Mined / broadcast transaction identifier
+  agentId?: string;            // Proposing Orion / AI agent ID
+  agentVersion?: string;       // Agent model / prompt template version
+};
+```
+
 ### Deterministic Confidence Semantics
 
 IntentGuard strictly rejects probabilistic "AI confidence scores". Instead, it applies discrete, deterministic evidence evaluation:

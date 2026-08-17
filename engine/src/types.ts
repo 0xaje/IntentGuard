@@ -73,14 +73,19 @@ export type Eip712TypedData = {
 };
 
 export type ProposedRequest = {
-  schemaVersion: 1;
+  schemaVersion?: 1;
   chainId: number;
   from?: Address;
   to?: Address;
   valueWei?: string;
+  value?: string;
   data?: Hex;
+  nonce?: number | string;
+  transactionHash?: Hex | string;
+  agentId?: string;
+  agentVersion?: string;
   typedData?: Eip712TypedData;
-  source: "PASTE" | "FIXTURE" | "WALLET_ADAPTER";
+  source?: "PASTE" | "FIXTURE" | "WALLET_ADAPTER" | "ORION_AGENT" | "BASE_RPC";
 };
 
 export type AssetAmount = {
