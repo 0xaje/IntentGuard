@@ -13,7 +13,7 @@ const steps = [
     index: "01",
     label: "Pre-Execution",
     title: "Can this proposed transaction safely proceed?",
-    body: "Evaluates proposed calldata, contract allowlists, quoter simulations, and recipient parameters against human constraints before broadcast.",
+    body: "Evaluates proposed calldata, contract allowlists, read-only quote evidence, and recipient parameters against human constraints before broadcast.",
   },
   {
     index: "02",
@@ -108,7 +108,7 @@ export default function Home() {
           <div className="section-intro">
             <p className="eyebrow">The signal layer</p>
             <h2>Clarity is not a score. It is a traceable path.</h2>
-            <p>Most AI agent tools jump from prompt to broadcast without verifiable guardrails. IntentGuard separates the two different security questions: pre-execution simulation vs post-execution evidence auditing, producing deterministic verdicts backed by signed EIP-712 receipts.</p>
+            <p>Most AI agent tools jump from prompt to broadcast without verifiable guardrails. IntentGuard separates the two different security questions: pre-execution constraint inspection vs post-execution evidence auditing, producing deterministic verdicts backed by signed EIP-712 receipts.</p>
           </div>
           <div className="trace-panel">
             <img src={traceAsset} alt="Tracing paper, ruler, and orange annotation tab on a mineral paper surface" loading="lazy" />

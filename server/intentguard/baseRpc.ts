@@ -377,6 +377,15 @@ export async function getBaseHealth() {
   return { reachable: chainId.toLowerCase() === BASE_MAINNET_CHAIN_ID_HEX, chainId };
 }
 
+/**
+ * inspectBaseTransaction: Real-time Base RPC inspection, calldata decoding,
+ * receipt inspection, event analysis, and supported read-only quote evidence.
+ *
+ * CRITICAL DISTINCTION:
+ * - TRANSACTION EVIDENCE: Observable on-chain data (status, gas, mined logs, ERC-20 transfers).
+ * - CURRENT QUOTE: Point-in-time output estimate queried via read-only QuoterV2 at the current block state.
+ * - HISTORICAL SIMULATION: Not performed. We do not claim archive-state debug_trace re-execution.
+ */
 export async function inspectBaseTransaction(transactionHashInput: string): Promise<TransactionInspection> {
   const transactionHash = transactionHashSchema.parse(transactionHashInput).toLowerCase();
   const [networkChainId, transaction, receipt] = await Promise.all([

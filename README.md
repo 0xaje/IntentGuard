@@ -26,7 +26,30 @@ IntentGuard explicitly distinguishes between two different security problems in 
 ```
 
 > [!IMPORTANT]
-> **Honest Security Boundary**: Pre-execution and post-execution are different security problems. The current implementation is strongest at **post-execution / transaction evidence verification** (alongside read-only preflight simulation). IntentGuard does not pretend to have complete pre-execution custody protection (such as state-changing mempool interception or private enclave execution), but instead provides a verifiable attestation layer that integrates into agent guardrails and audit pipelines.
+> **Honest Security Boundary**: Pre-execution and post-execution are different security problems. The current implementation is strongest at **post-execution / transaction evidence verification** (alongside read-only preflight quote inspection). IntentGuard does not pretend to have complete pre-execution custody protection (such as state-changing mempool interception or private enclave execution), but instead provides a verifiable attestation layer that integrates into agent guardrails and audit pipelines.
+
+---
+
+## Critical Technical Distinction
+
+IntentGuard explicitly distinguishes between three concepts often conflated in Web3 transaction security:
+
+```text
+┌───────────────────────────────────────────────────────────────────────────────────┐
+│                               TECHNICAL DISTINCTIONS                              │
+├─────────────────────────┬─────────────────────────┬───────────────────────────────┤
+│  TRANSACTION EVIDENCE   │      CURRENT QUOTE      │     HISTORICAL SIMULATION     │
+├─────────────────────────┼─────────────────────────┼───────────────────────────────┤
+│ • Observable on-chain   │ • Read-only `eth_call`  │ • Re-executing transaction    │
+│   facts from mined block│   to Uniswap QuoterV2   │   at past historical block    │
+│ • Real logs & transfers │ • Latest block estimate │ • Archive debug_trace re-run  │
+│ • Status & real gas     │ • Point-in-time pricing │ • NOT claimed by IntentGuard  │
+│ • Authoritative evidence│ • Non-binding estimate  │ • (Requires heavy tracing node│
+└─────────────────────────┴─────────────────────────┴───────────────────────────────┘
+```
+
+> [!NOTE]
+> `inspectBaseTransaction` performs **real-time Base RPC inspection, calldata decoding, receipt inspection, event analysis, and supported read-only quote evidence**. It provides observable evidence and current market quotes—it does NOT claim archive-state historical re-execution simulation.
 
 ---
 
