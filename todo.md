@@ -117,4 +117,4 @@
 
 - [x] Diagnose why `npm start` does not serve the IntentGuard frontend in the IDE and verify the correct local development command and URL.
 - [x] Add only the minimal start-script or documentation change required to make the verified frontend startup path clear, then test, commit, push, and checkpoint it.
-- [ ] Commit, push, and checkpoint the verified `start:local` script and IDE frontend-startup guidance.
+- [x] Commit, push, and checkpoint the verified `start:local` script and IDE frontend-startup guidance.
