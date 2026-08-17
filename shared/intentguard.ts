@@ -34,6 +34,8 @@ export type EvidenceItem = {
   state: EvidenceState;
   detail: string;
   source: "Base RPC" | "Decoded calldata" | "Transaction receipt" | "Read-only QuoterV2" | "Deterministic policy";
+  blockNumber?: number | null;
+  blockHash?: string | null;
 };
 
 export type AgentTraceStep = {
@@ -43,11 +45,25 @@ export type AgentTraceStep = {
   detail: string;
 };
 
+export type EvidenceProvenance = {
+  source: string;
+  blockNumber: number | null;
+  blockHash: string | null;
+  transactionHash: string | null;
+  receiptStatus: "mined_success" | "mined_reverted" | "pending" | "missing" | null;
+  contractAddress: string | null;
+  decoder: string;
+  decoderVersion: number;
+  engineVersion: number;
+  evidenceHash: string;
+};
+
 export type VerificationResult = {
   receiptId: string;
   verdict: VerificationVerdict;
   summary: string;
   evidence: EvidenceItem[];
+  provenance: EvidenceProvenance;
   passedChecks: number;
   failedChecks: number;
   unavailableChecks: number;

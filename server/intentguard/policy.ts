@@ -4,16 +4,30 @@ import {
   BASE_WETH_ADDRESS,
   UNISWAP_V3_SWAP_ROUTER_02_ADDRESS,
   type EvidenceItem,
+  type EvidenceProvenance,
   type StructuredIntent,
   type VerificationResult,
 } from "@shared/intentguard";
+import { hashCanonical } from "../../engine/src/canonical";
 import { displayEth, displayUsdc, type TransactionInspection } from "./baseRpc";
 
-function evidence(id: string, label: string, state: EvidenceItem["state"], detail: string, source: EvidenceItem["source"]): EvidenceItem {
-  return { id, label, state, detail, source };
+function evidence(
+  id: string,
+  label: string,
+  state: EvidenceItem["state"],
+  detail: string,
+  source: EvidenceItem["source"],
+  blockNumber?: number | null,
+  blockHash?: string | null,
+): EvidenceItem {
+  return { id, label, state, detail, source, blockNumber: blockNumber ?? null, blockHash: blockHash ?? null };
 }
 
-function buildResult(transactionHash: string, evidenceItems: EvidenceItem[]): VerificationResult {
+function buildResult(
+  transactionHash: string,
+  evidenceItems: EvidenceItem[],
+  inspection?: TransactionInspection | null,
+): VerificationResult {
   const failedChecks = evidenceItems.filter((item) => item.state === "failed").length;
   const unavailableChecks = evidenceItems.filter((item) => item.state === "unavailable").length;
   const passedChecks = evidenceItems.filter((item) => item.state === "verified").length;
@@ -23,11 +37,76 @@ function buildResult(transactionHash: string, evidenceItems: EvidenceItem[]): Ve
     : verdict === "MISMATCH"
       ? "The observed transaction conflicts with one or more explicit intent constraints. No transaction has been approved by IntentGuard."
       : "IntentGuard could not establish every required fact from the available Base evidence. No transaction has been approved.";
-  return { receiptId: `IG-${transactionHash.slice(2, 10).toUpperCase()}`, verdict, summary, evidence: evidenceItems, passedChecks, failedChecks, unavailableChecks, observedAt: new Date().toISOString() };
+
+  const rawBlockNumber = inspection?.receipt.blockNumber ?? inspection?.transaction?.blockNumber ?? null;
+  const blockNumber = rawBlockNumber ? Number(rawBlockNumber) : null;
+  const rawReceipt = inspection?.raw.receipt as { blockHash?: string } | undefined;
+  const blockHash = rawReceipt?.blockHash ?? null;
+  const contractAddress = inspection?.transaction?.to ?? null;
+
+  let decoderLabel = "None";
+  if (inspection?.decoded.kind === "transfer") decoderLabel = "ERC-20 transfer(address,uint256)";
+  else if (inspection?.decoded.kind === "approve") decoderLabel = "ERC-20 approve(address,uint256)";
+  else if (inspection?.decoded.routerSwap) decoderLabel = "Uniswap V3 SwapRouter02 exactInputSingle";
+  else if (inspection?.decoded.kind === "unknown" && inspection.transaction) decoderLabel = "Raw Base Transaction Calldata";
+
+  const rawReceiptState = inspection?.receipt.state;
+  const receiptStatus = rawReceiptState === "success"
+    ? "mined_success" as const
+    : rawReceiptState === "failed"
+      ? "mined_reverted" as const
+      : rawReceiptState === "pending"
+        ? "pending" as const
+        : rawReceiptState === "missing"
+          ? "missing" as const
+          : null;
+
+  const canonicalEvidencePayload = {
+    schemaVersion: 1,
+    verdict,
+    passedChecks,
+    failedChecks,
+    unavailableChecks,
+    evidence: [...evidenceItems]
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map((item) => ({
+        id: item.id,
+        label: item.label,
+        state: item.state,
+        detail: item.detail,
+        source: item.source,
+      })),
+  };
+  const evidenceHash = hashCanonical(canonicalEvidencePayload);
+
+  const provenance: EvidenceProvenance = {
+    source: "Base JSON-RPC",
+    blockNumber: Number.isFinite(blockNumber) ? blockNumber : null,
+    blockHash,
+    transactionHash: inspection?.transactionHash ?? transactionHash,
+    receiptStatus,
+    contractAddress,
+    decoder: decoderLabel,
+    decoderVersion: 1,
+    engineVersion: 1,
+    evidenceHash,
+  };
+
+  return {
+    receiptId: `IG-${transactionHash.slice(2, 10).toUpperCase()}`,
+    verdict,
+    summary,
+    evidence: evidenceItems,
+    provenance,
+    passedChecks,
+    failedChecks,
+    unavailableChecks,
+    observedAt: new Date().toISOString(),
+  };
 }
 
 export function makeUnverifiableResult(transactionHash: string, detail: string): VerificationResult {
-  return buildResult(transactionHash, [evidence("base-data", "Base transaction data", "unavailable", detail, "Base RPC")]);
+  return buildResult(transactionHash, [evidence("base-data", "Base transaction data", "unavailable", detail, "Base RPC")], null);
 }
 
 function displayQuoteOutput(inspection: TransactionInspection) {
@@ -120,7 +199,7 @@ export function evaluateIntentAgainstTransaction(intent: StructuredIntent, inspe
     items.push(evidence("expected-output", "Expected output", "unavailable", outputDetail, inspection.simulation.state === "available" ? "Read-only QuoterV2" : "Deterministic policy"));
   }
 
-  return buildResult(inspection.transactionHash, items);
+  return buildResult(inspection.transactionHash, items, inspection);
 }
 
 export function baseTokenReference() {

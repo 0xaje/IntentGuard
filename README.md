@@ -59,14 +59,34 @@ IntentGuard explicitly distinguishes between three concepts often conflated in W
 |---|---|---|
 | **Base Mainnet Inspection** | Post-Execution | Reads live transaction, mined receipt, event logs, and state deltas directly via server-side Base JSON-RPC. |
 | **Supported Transaction Decoding** | Pre & Post | Decodes **ERC-20 approvals and supported permit evidence** (`approve`, `transfer`, `transferFrom`, ERC-2612 typed `Permit`), and allowlisted Uniswap V3 `SwapRouter02.exactInputSingle` routes. |
+| **Evidence Provenance & Block Anchoring** | Forensic | Anchors every verified fact to an immutable Base block number/hash, transaction hash, destination contract, decoder version, and cryptographic evidence hash. |
 | **Evidence Enrichment** | Pre & Post | Resolves router-path ERC-20 symbol/decimals through read-only calls and queries read-only QuoterV2 estimates where applicable. |
 | **Deterministic Verdicts** | Pre & Post | Strict policy checks producing `MATCH`, `MISMATCH`, or `UNVERIFIABLE`. Missing evidence fails closed. |
 | **Cryptographic Trust Loop** | Attestation | Computes canonical intent, request, and evidence hashes, and anchors EIP-712 evaluator-signed receipts to Base Sepolia contracts. |
-| **Interactive Forensic Signal UI** | Both | Modern dashboard showing transaction signals, policy checks, raw evidence payloads, and review boundaries. |
+| **Interactive Forensic Signal UI** | Both | Modern dashboard showing transaction signals, policy checks, raw evidence payloads, provenance tree, and review boundaries. |
 | **Human Review Boundary** | Operational | Gated non-signing review acknowledgement enabled only for verified `MATCH` results. |
 
 > [!TIP]
 > **Permit Scope Note**: The current core engine explicitly decodes **ERC-20 approvals and standard ERC-2612 permit typed data**. Universal Uniswap Permit2 (`PermitSingle`/`PermitBatch`) is not advertised as completed in this core package and is scheduled as a dedicated standalone decoder module.
+
+---
+
+## Evidence Provenance & Forensic Origin
+
+Where did this evidence come from? Rather than presenting opaque analytical ratings, IntentGuard provides a strict, reproducible provenance tree:
+
+```text
+Evidence
+├── Source: Base JSON-RPC
+├── Block: 12345678 (anchored)
+├── Transaction: 0x...
+├── Receipt: mined_success (confirmed)
+├── Contract: 0x...
+├── Decoder: Uniswap V3 exactInputSingle / ERC-20 Transfer
+├── Decoder version: 1
+├── Engine version: 1
+└── Evidence hash: 0x...
+```
 
 ---
 

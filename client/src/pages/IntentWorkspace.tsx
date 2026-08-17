@@ -274,6 +274,69 @@ export default function IntentWorkspace() {
               <article className="trace-panel-app"><div className="receipt-heading"><p className="panel-kicker">Agent trace</p><span>actual operations</span></div><ol>{result.trace.map((step) => <li key={step.id} className={`trace-${step.state}`}><span>{step.id}</span><div><strong>{step.label}</strong><p>{step.detail}</p></div></li>)}</ol></article>
             </div>
 
+            <article className="provenance-panel" aria-labelledby="provenance-title">
+              <div className="receipt-heading">
+                <p className="panel-kicker" id="provenance-title">05 / Evidence Provenance</p>
+                <span>Forensic origin trace</span>
+              </div>
+              <p className="provenance-intro">
+                Where did this evidence come from? Every observed fact is anchored to an immutable Base block, deterministic calldata decoder, and verified source hash:
+              </p>
+              <div className="provenance-tree" role="region" aria-label="Evidence origin tree">
+                <div className="tree-node">
+                  <span className="tree-branch">├──</span>
+                  <span className="tree-label">Source:</span>
+                  <strong className="tree-val">{result.verification.provenance?.source ?? "Base JSON-RPC"}</strong>
+                </div>
+                <div className="tree-node">
+                  <span className="tree-branch">├──</span>
+                  <span className="tree-label">Block:</span>
+                  <span className="tree-val">
+                    {result.verification.provenance?.blockNumber ? (
+                      <span className="tree-block-badge">Block #{result.verification.provenance.blockNumber} (anchored)</span>
+                    ) : (
+                      "Pending / Unmined"
+                    )}
+                  </span>
+                </div>
+                <div className="tree-node">
+                  <span className="tree-branch">├──</span>
+                  <span className="tree-label">Transaction:</span>
+                  <span className="tree-val address-value">{result.verification.provenance?.transactionHash ? shortHash(result.verification.provenance.transactionHash) : "Unavailable"}</span>
+                </div>
+                <div className="tree-node">
+                  <span className="tree-branch">├──</span>
+                  <span className="tree-label">Receipt status:</span>
+                  <strong className="tree-val">{result.verification.provenance?.receiptStatus ?? "Unavailable"}</strong>
+                </div>
+                <div className="tree-node">
+                  <span className="tree-branch">├──</span>
+                  <span className="tree-label">Contract:</span>
+                  <span className="tree-val address-value">{result.verification.provenance?.contractAddress ? shortHash(result.verification.provenance.contractAddress) : "None"}</span>
+                </div>
+                <div className="tree-node">
+                  <span className="tree-branch">├──</span>
+                  <span className="tree-label">Decoder:</span>
+                  <strong className="tree-val">{result.verification.provenance?.decoder ?? "Direct Decoder"}</strong>
+                </div>
+                <div className="tree-node">
+                  <span className="tree-branch">├──</span>
+                  <span className="tree-label">Decoder version:</span>
+                  <span className="tree-val">v{result.verification.provenance?.decoderVersion ?? 1}</span>
+                </div>
+                <div className="tree-node">
+                  <span className="tree-branch">├──</span>
+                  <span className="tree-label">Engine version:</span>
+                  <span className="tree-val">v{result.verification.provenance?.engineVersion ?? 1}</span>
+                </div>
+                <div className="tree-node">
+                  <span className="tree-branch">└──</span>
+                  <span className="tree-label">Evidence hash:</span>
+                  <span className="tree-val address-value">{result.verification.provenance?.evidenceHash ? shortHash(result.verification.provenance.evidenceHash) : "Not generated"}</span>
+                </div>
+              </div>
+            </article>
+
             <article className="intent-receipt"><div className="receipt-heading"><p className="panel-kicker">Intent receipt</p><span>Verified at {new Date(result.verification.observedAt).toLocaleString()}</span></div><div className="receipt-grid"><div><span>ID</span><strong>{result.verification.receiptId}</strong></div><div><span>Intent</span><strong>{result.intent.action.toUpperCase()} / {result.intent.maxSpendUsdc} USDC / BASE</strong></div><div><span>Result</span><strong className={`receipt-${result.verification.verdict.toLowerCase()}`}>{result.verification.verdict}</strong></div><div><span>Approval boundary</span><strong>NO SIGNATURE REQUESTED</strong></div></div></article>
             <article className="trust-loop-panel" aria-labelledby="trust-loop-title">
               <div className="receipt-heading"><p className="panel-kicker" id="trust-loop-title">Verification receipt</p><span>Base Sepolia attestation infrastructure</span></div>
