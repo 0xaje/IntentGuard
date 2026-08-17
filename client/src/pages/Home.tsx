@@ -3,11 +3,10 @@ import { useState } from "react";
 import { ArrowDownRight, ArrowUpRight, Check, Menu, ScanLine, ShieldCheck, X } from "lucide-react";
 import SignalMark from "@/components/SignalMark";
 
-const markAsset = "/manus-storage/intentguard-mark_5497d1c4.png";
-const heroAsset = "/manus-storage/intentguard-hero_512b3033.jpg";
-const traceAsset = "/manus-storage/intentguard-trace_c8ccbc8d.jpg";
-const railAsset = "/manus-storage/intentguard-rail_27021b42.jpg";
-const decisionAsset = "/manus-storage/intentguard-decision_a00a10bd.jpg";
+const heroAsset = "/images/hero.jpg";
+const traceAsset = "/images/trace.jpg";
+const railAsset = "/images/rail.jpg";
+const decisionAsset = "/images/decision.jpg";
 
 const steps = [
   {
@@ -49,7 +48,7 @@ export default function Home() {
         <div className="header-inner">
           <a className="brand-lockup" href="#top" onClick={scrollToSection} aria-label="IntentGuard home">
             <span className="brand-mark-frame">
-              <img src={markAsset} alt="" className="brand-mark-image" />
+              <SignalMark className="h-5 w-5 text-foreground" />
             </span>
             <span className="brand-name">
               <span>Intent</span>

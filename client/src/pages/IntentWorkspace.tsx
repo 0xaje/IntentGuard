@@ -5,8 +5,6 @@ import { ArrowLeft, ArrowUpRight, Braces, Check, ChevronDown, CircleAlert, Exter
 import SignalMark from "@/components/SignalMark";
 import { trpc } from "@/lib/trpc";
 
-const markAsset = "/manus-storage/intentguard-mark_5497d1c4.png";
-
 const examples = [
   {
     label: "1% swap guardrail",
@@ -145,7 +143,7 @@ export default function IntentWorkspace() {
       <header className="app-header">
         <div className="app-header-inner">
           <Link href="/" className="brand-lockup" aria-label="Return to IntentGuard landing page">
-            <span className="brand-mark-frame"><img src={markAsset} alt="" className="brand-mark-image" /></span>
+            <span className="brand-mark-frame"><SignalMark className="h-5 w-5 text-foreground" /></span>
             <span className="brand-name"><span>Intent</span><span className="brand-name-muted">Guard</span></span>
           </Link>
           <div className="app-header-context"><span>Base Mainnet</span><span className={`rpc-indicator ${baseHealth.data?.status === "reachable" ? "is-live" : ""}`} /> {baseHealth.isLoading ? "Checking RPC" : baseHealth.data?.status === "reachable" ? "Live RPC" : "RPC unavailable"}</div>
