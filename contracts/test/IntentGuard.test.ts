@@ -10,7 +10,7 @@ const RECEIPT_TYPES = {
     { name: "requestHash", type: "bytes32" },
     { name: "evidenceHash", type: "bytes32" },
     { name: "chainId", type: "uint256" },
-    { name: "subject", type: "address" },
+    { name: "transactionSubject", type: "address" },
     { name: "evaluator", type: "address" },
     { name: "verdict", type: "uint8" },
     { name: "policyVersion", type: "uint64" },
@@ -49,16 +49,19 @@ async function deployFixture(): Promise<Fixture> {
   const target = await Target.deploy(await admin.getAddress());
   await target.waitForDeployment();
 
-  const policyHash = ethers.id("policy-v1");
+  const intentHash = ethers.id("intent-v1");
+  const subjectAddress = await subject.getAddress();
   const policyId = await policy.connect(subject).commitPolicy.staticCall(
-    policyHash,
+    intentHash,
+    subjectAddress,
     1,
     0,
     0,
     "ipfs://intentguard/policy-v1",
   );
   await policy.connect(subject).commitPolicy(
-    policyHash,
+    intentHash,
+    subjectAddress,
     1,
     0,
     0,
@@ -81,7 +84,7 @@ async function makeReceipt(fixture: Fixture, overrides: Partial<Record<string, u
     requestHash: overrides.requestHash ?? ethers.id("request"),
     evidenceHash: overrides.evidenceHash ?? ethers.id("evidence"),
     chainId: overrides.chainId ?? Number(network.chainId),
-    subject: overrides.subject ?? await fixture.subject.getAddress(),
+    transactionSubject: overrides.transactionSubject ?? await fixture.subject.getAddress(),
     evaluator: overrides.evaluator ?? await fixture.evaluator.getAddress(),
     verdict: overrides.verdict ?? 0,
     policyVersion: overrides.policyVersion ?? 1,
@@ -108,8 +111,9 @@ describe("IntentGuardPolicyRegistry", function () {
     const fixture = await deployFixture();
     const policy = await fixture.policy.getPolicy(fixture.policyId);
 
-    expect(policy[0].owner).to.equal(await fixture.subject.getAddress());
-    expect(policy[0].policyHash).to.equal(ethers.id("policy-v1"));
+    expect(policy[0].policyOwner).to.equal(await fixture.subject.getAddress());
+    expect(policy[0].committer).to.equal(await fixture.subject.getAddress());
+    expect(policy[0].intentHash).to.equal(ethers.id("intent-v1"));
     expect(policy[1]).to.equal(false);
     expect(await fixture.policy.isPolicyActive(fixture.policyId)).to.equal(true);
 

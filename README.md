@@ -130,7 +130,7 @@ IntentGuard operates under strict non-custodial, deterministic boundaries. **Int
 
 The EIP-712 Receipt Type Hash:
 ```text
-0x5c788492ed74a4250160711fd75d8e65b3e4d1b2499ff212473192503136d645
+0x018c9f3900967057c49face3f3c0b093f4f06eddaac8c90913abaaa53e4d6dfe
 ```
 
 ---

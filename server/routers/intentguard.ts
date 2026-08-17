@@ -26,16 +26,16 @@ const receiptAnchorInput = z.object({
 
 const BASE_SEPOLIA_CHAIN_ID = 84532;
 const POLICY_REGISTRY_ABI = [
-  "function commitPolicy(bytes32 policyHash,uint64 version,uint64 validAfter,uint64 validUntil,string metadataURI) returns (bytes32 policyId)",
-  "function getPolicy(bytes32 policyId) view returns ((bytes32 policyHash,address owner,uint64 version,uint64 validAfter,uint64 validUntil,string metadataURI),bool revoked)",
+  "function commitPolicy(bytes32 intentHash,address policyOwner,uint64 version,uint64 validFrom,uint64 validUntil,string metadataURI) returns (bytes32 policyId)",
+  "function getPolicy(bytes32 policyId) view returns ((bytes32 policyId,bytes32 intentHash,address policyOwner,address committer,uint64 validFrom,uint64 validUntil,uint256 nonce,uint64 version,string metadataURI),bool revoked)",
   "function isPolicyActive(bytes32 policyId) view returns (bool)",
   "function nextNonce(address owner) view returns (uint256)",
 ] as const;
 const RECEIPT_REGISTRY_ABI = [
   "function EVALUATOR_ROLE() view returns (bytes32)",
   "function hasRole(bytes32 role,address account) view returns (bool)",
-  "function anchorReceipt((bytes32 receiptId,bytes32 policyId,bytes32 intentHash,bytes32 requestHash,bytes32 evidenceHash,uint256 chainId,address subject,address evaluator,uint8 verdict,uint64 policyVersion,uint64 evaluatedAt,uint64 expiresAt,uint32 engineVersion,uint32 decoderVersion) receipt,bytes evaluatorSignature) returns (bytes32)",
-  "function getReceipt(bytes32 receiptId) view returns ((bytes32 receiptId,bytes32 policyId,bytes32 intentHash,bytes32 requestHash,bytes32 evidenceHash,uint256 chainId,address subject,address evaluator,uint8 verdict,uint64 policyVersion,uint64 evaluatedAt,uint64 expiresAt,uint32 engineVersion,uint32 decoderVersion),bool revoked)",
+  "function anchorReceipt((bytes32 receiptId,bytes32 policyId,bytes32 intentHash,bytes32 requestHash,bytes32 evidenceHash,uint256 chainId,address transactionSubject,address evaluator,uint8 verdict,uint64 policyVersion,uint64 evaluatedAt,uint64 expiresAt,uint32 engineVersion,uint32 decoderVersion) receipt,bytes evaluatorSignature) returns (bytes32)",
+  "function getReceipt(bytes32 receiptId) view returns ((bytes32 receiptId,bytes32 policyId,bytes32 intentHash,bytes32 requestHash,bytes32 evidenceHash,uint256 chainId,address transactionSubject,address evaluator,uint8 verdict,uint64 policyVersion,uint64 evaluatedAt,uint64 expiresAt,uint32 engineVersion,uint32 decoderVersion),bool revoked)",
   "function isReceiptValid(bytes32 receiptId) view returns (bool)",
 ] as const;
 
@@ -58,34 +58,26 @@ async function trustLoopRuntime(): Promise<TrustLoopRuntime> {
     ["EVALUATOR_PRIVATE_KEY", ENV.evaluatorPrivateKey],
     ["POLICY_REGISTRY_ADDRESS", ENV.policyRegistryAddress],
     ["RECEIPT_REGISTRY_ADDRESS", ENV.receiptRegistryAddress],
-  ].filter(([, value]) => !value).map(([name]) => name);
-  if (missing.length > 0) trustLoopConfigurationError(`Trust-loop infrastructure is not configured. Missing: ${missing.join(", ")}.`);
-
-  let provider: JsonRpcProvider;
-  let evaluator: Wallet;
-  let policyRegistryAddress: string;
-  let receiptRegistryAddress: string;
-  try {
-    provider = new JsonRpcProvider(ENV.baseSepoliaRpcUrl, BASE_SEPOLIA_CHAIN_ID, { staticNetwork: true });
-    evaluator = new Wallet(ENV.evaluatorPrivateKey, provider);
-    policyRegistryAddress = getAddress(ENV.policyRegistryAddress);
-    receiptRegistryAddress = getAddress(ENV.receiptRegistryAddress);
-  } catch {
-    trustLoopConfigurationError("Trust-loop infrastructure contains an invalid Base Sepolia URL, evaluator key, or registry address.");
+  ].filter(([, value]) => !value);
+  if (missing.length > 0) {
+    trustLoopConfigurationError(`Trust-loop infrastructure is not configured. Missing: ${missing.map(([key]) => key).join(", ")}.`);
   }
 
-  const network = await provider.getNetwork().catch(() => trustLoopConfigurationError("Unable to reach the configured Base Sepolia RPC endpoint."));
-  if (Number(network.chainId) !== BASE_SEPOLIA_CHAIN_ID) {
-    trustLoopConfigurationError(`Configured registry RPC returned chain ID ${network.chainId}; expected Base Sepolia (${BASE_SEPOLIA_CHAIN_ID}).`);
+  const provider = new JsonRpcProvider(ENV.baseSepoliaRpcUrl);
+  const network = await provider.getNetwork().catch(() => null);
+  if (!network || Number(network.chainId) !== BASE_SEPOLIA_CHAIN_ID) {
+    trustLoopConfigurationError(`Configured RPC did not resolve to Base Sepolia (84532). Observed: ${network?.chainId ?? "unreachable"}`);
   }
 
+  const evaluator = new Wallet(ENV.evaluatorPrivateKey, provider);
+  const policyRegistryAddress = getAddress(ENV.policyRegistryAddress);
+  const receiptRegistryAddress = getAddress(ENV.receiptRegistryAddress);
   const [policyCode, receiptCode] = await Promise.all([
     provider.getCode(policyRegistryAddress),
     provider.getCode(receiptRegistryAddress),
-  ]).catch(() => trustLoopConfigurationError("Unable to read the configured Base Sepolia registry bytecode."));
-  if (policyCode === "0x" || receiptCode === "0x") {
-    trustLoopConfigurationError("Configured Base Sepolia registry address has no deployed bytecode.");
-  }
+  ]);
+  if (!policyCode || policyCode === "0x") trustLoopConfigurationError(`Policy registry contract not found at ${policyRegistryAddress}`);
+  if (!receiptCode || receiptCode === "0x") trustLoopConfigurationError(`Receipt registry contract not found at ${receiptRegistryAddress}`);
 
   return {
     provider,
@@ -97,8 +89,8 @@ async function trustLoopRuntime(): Promise<TrustLoopRuntime> {
   };
 }
 
-function computePolicyId(committer: string, nonce: bigint, policyHash: string, version: number) {
-  return keccak256(AbiCoder.defaultAbiCoder().encode(["address", "uint256", "bytes32", "uint64"], [committer, nonce, policyHash, version]));
+function computePolicyId(policyOwner: string, committer: string, nonce: bigint, intentHash: string, version: number) {
+  return keccak256(AbiCoder.defaultAbiCoder().encode(["address", "address", "uint256", "bytes32", "uint64"], [policyOwner, committer, nonce, intentHash, version]));
 }
 
 function mutableReceiptTypes(typedData: ReturnType<typeof receiptTypedDataForRegistry>) {
@@ -171,16 +163,17 @@ export const intentGuardRouter = router({
     if (!latest) trustLoopConfigurationError("Unable to read the current Base Sepolia block for the policy validity window.");
 
     const policyVersion = 1;
-    const validAfter = Number(latest.timestamp);
-    const validUntil = validAfter + input.validForSeconds;
-    const policyHash = hashIntent(input.intent, policyVersion);
+    const validFrom = Number(latest.timestamp);
+    const validUntil = validFrom + input.validForSeconds;
+    const intentHash = hashIntent(input.intent, policyVersion);
     const committer = await runtime.evaluator.getAddress();
-    const nonce = BigInt(await runtime.policy.nextNonce(committer));
-    const policyId = computePolicyId(committer, nonce, policyHash, policyVersion);
+    const policyOwner = committer;
+    const nonce = BigInt(await runtime.policy.nextNonce(policyOwner));
+    const policyId = computePolicyId(policyOwner, committer, nonce, intentHash, policyVersion);
 
     let transaction;
     try {
-      transaction = await runtime.policy.commitPolicy(policyHash, policyVersion, validAfter, validUntil, input.metadataUri);
+      transaction = await runtime.policy.commitPolicy(intentHash, policyOwner, policyVersion, validFrom, validUntil, input.metadataUri);
     } catch {
       throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Base Sepolia policy commitment submission failed; no policy is reported as committed." });
     }
@@ -189,17 +182,18 @@ export const intentGuardRouter = router({
 
     const [stored, revoked] = await runtime.policy.getPolicy(policyId);
     const active = await runtime.policy.isPolicyActive(policyId);
-    if (revoked || !active || stored.policyHash.toLowerCase() !== policyHash.toLowerCase() || stored.owner.toLowerCase() !== committer.toLowerCase() || Number(stored.version) !== policyVersion) {
+    if (revoked || !active || stored.intentHash.toLowerCase() !== intentHash.toLowerCase() || stored.policyOwner.toLowerCase() !== policyOwner.toLowerCase() || stored.committer.toLowerCase() !== committer.toLowerCase() || Number(stored.version) !== policyVersion) {
       throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Confirmed policy commitment did not pass on-chain readback validation." });
     }
 
     return {
       status: "COMMITTED" as const,
       policyId,
-      intentHash: policyHash,
+      intentHash,
       policyVersion,
+      policyOwner: policyOwner.toLowerCase(),
       policyCommitter: committer.toLowerCase(),
-      validAfter,
+      validFrom,
       validUntil,
       registryAddress: runtime.policyRegistryAddress,
       transactionHash: confirmed.hash,
@@ -228,7 +222,7 @@ export const intentGuardRouter = router({
     const policyVersion = Number(policy.version);
     const expectedIntentHash = hashIntent(intent, policyVersion);
     if (!active || revoked) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Receipt cannot be anchored because the referenced policy is not active." });
-    if (policy.policyHash.toLowerCase() !== expectedIntentHash.toLowerCase()) {
+    if (policy.intentHash.toLowerCase() !== expectedIntentHash.toLowerCase()) {
       throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Receipt cannot be anchored because the supplied intent does not match the committed canonical policy hash." });
     }
 
@@ -269,7 +263,7 @@ export const intentGuardRouter = router({
 
     const [stored, receiptRevoked] = await runtime.receipt.getReceipt(trustReceipt.receipt.receiptId);
     const valid = await runtime.receipt.isReceiptValid(trustReceipt.receipt.receiptId);
-    if (receiptRevoked || !valid || stored.receiptId.toLowerCase() !== trustReceipt.receipt.receiptId.toLowerCase() || stored.subject.toLowerCase() !== trustReceipt.receipt.subject || stored.evaluator.toLowerCase() !== evaluatorAddress.toLowerCase() || stored.policyId.toLowerCase() !== input.policyId.toLowerCase()) {
+    if (receiptRevoked || !valid || stored.receiptId.toLowerCase() !== trustReceipt.receipt.receiptId.toLowerCase() || stored.transactionSubject.toLowerCase() !== trustReceipt.receipt.transactionSubject || stored.evaluator.toLowerCase() !== evaluatorAddress.toLowerCase() || stored.policyId.toLowerCase() !== input.policyId.toLowerCase()) {
       throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Confirmed receipt anchoring did not pass on-chain readback validation." });
     }
 
@@ -283,8 +277,9 @@ export const intentGuardRouter = router({
       blockNumber: confirmed.blockNumber.toString(),
       registryAddress: runtime.receiptRegistryAddress,
       explorerUrl: `https://sepolia.basescan.org/tx/${confirmed.hash}`,
-      policyCommitter: policy.owner.toLowerCase(),
-      transactionSubject: trustReceipt.receipt.subject,
+      policyOwner: policy.policyOwner.toLowerCase(),
+      policyCommitter: policy.committer.toLowerCase(),
+      transactionSubject: trustReceipt.receipt.transactionSubject,
     };
   }),
 });

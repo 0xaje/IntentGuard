@@ -102,11 +102,12 @@ describe("IntentGuard EIP-712 receipts", () => {
       expiresAt: 1_700_000_600,
     });
     const typed = receiptTypedDataForRegistry(registry, trustReceipt.receipt);
-    const signature = await signer.signTypedData(typed.domain, typed.types, typed.value);
-    expect(receiptTypeHash()).toBe("0x5c788492ed74a4250160711fd75d8e65b3e4d1b2499ff212473192503136d645");
+    const types = { Receipt: typed.types.Receipt.map((field) => ({ name: field.name, type: field.type })) };
+    const signature = await signer.signTypedData(typed.domain, types, typed.value);
+    expect(receiptTypeHash()).toBe("0x018c9f3900967057c49face3f3c0b093f4f06eddaac8c90913abaaa53e4d6dfe");
     expect(receiptEip712Digest(registry, trustReceipt.receipt)).toMatch(/^0x[0-9a-f]{64}$/);
     expect(recoverReceiptEvaluator(registry, trustReceipt.receipt, signature)).toBe(signer.address.toLowerCase());
-    expect(trustReceipt.receipt.subject).toBe(subject);
+    expect(trustReceipt.receipt.transactionSubject).toBe(subject);
     expect(trustReceipt.receipt.policyId).toBe(ZERO_HASH);
   });
 });

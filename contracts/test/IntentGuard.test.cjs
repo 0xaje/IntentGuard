@@ -9,7 +9,7 @@ const RECEIPT_TYPES = {
     { name: "requestHash", type: "bytes32" },
     { name: "evidenceHash", type: "bytes32" },
     { name: "chainId", type: "uint256" },
-    { name: "subject", type: "address" },
+    { name: "transactionSubject", type: "address" },
     { name: "evaluator", type: "address" },
     { name: "verdict", type: "uint8" },
     { name: "policyVersion", type: "uint64" },
@@ -36,15 +36,17 @@ async function deployFixture() {
   const target = await Target.deploy(await admin.getAddress());
   await target.waitForDeployment();
 
-  const policyHash = ethers.id("intentguard-policy-v1");
+  const intentHash = ethers.id("intentguard-policy-v1");
+  const adminAddress = await admin.getAddress();
   const policyId = await policy.connect(admin).commitPolicy.staticCall(
-    policyHash,
+    intentHash,
+    adminAddress,
     1,
     0,
     0,
     "ipfs://intentguard/policy-v1",
   );
-  await policy.connect(admin).commitPolicy(policyHash, 1, 0, 0, "ipfs://intentguard/policy-v1");
+  await policy.connect(admin).commitPolicy(intentHash, adminAddress, 1, 0, 0, "ipfs://intentguard/policy-v1");
 
   await receipt.connect(admin).grantRole(await receipt.EVALUATOR_ROLE(), await evaluator.getAddress());
   return { admin, subject, evaluator, outsider, policy, receipt, target, policyId };
@@ -60,7 +62,7 @@ async function makeReceipt(fixture, overrides = {}) {
     requestHash: ethers.id("request"),
     evidenceHash: ethers.id("evidence"),
     chainId: Number(network.chainId),
-    subject: await fixture.subject.getAddress(),
+    transactionSubject: await fixture.subject.getAddress(),
     evaluator: await fixture.evaluator.getAddress(),
     verdict: 0,
     policyVersion: 1,
@@ -91,9 +93,11 @@ describe("IntentGuardPolicyRegistry", function () {
     const fixture = await deployFixture();
     const [policyCommitment, revoked] = await fixture.policy.getPolicy(fixture.policyId);
 
-    expect(policyCommitment.owner).to.equal(await fixture.admin.getAddress());
+    expect(policyCommitment.policyOwner).to.equal(await fixture.admin.getAddress());
+    expect(policyCommitment.committer).to.equal(await fixture.admin.getAddress());
+    expect(await fixture.policy.policyOwner(fixture.policyId)).to.equal(await fixture.admin.getAddress());
     expect(await fixture.policy.policyCommitter(fixture.policyId)).to.equal(await fixture.admin.getAddress());
-    expect(policyCommitment.policyHash).to.equal(ethers.id("intentguard-policy-v1"));
+    expect(policyCommitment.intentHash).to.equal(ethers.id("intentguard-policy-v1"));
     expect(revoked).to.equal(false);
     expect(await fixture.policy.isPolicyActive(fixture.policyId)).to.equal(true);
 
@@ -115,14 +119,14 @@ describe("IntentGuardReceiptRegistry", function () {
     const record = await makeReceipt(fixture);
     const signature = await signReceipt(fixture.receipt, fixture.evaluator, record);
 
-    expect(await fixture.policy.policyCommitter(fixture.policyId)).to.not.equal(record.subject);
+    expect(await fixture.policy.policyCommitter(fixture.policyId)).to.not.equal(record.transactionSubject);
     await expect(fixture.receipt.connect(fixture.outsider).anchorReceipt(record, signature))
       .to.emit(fixture.receipt, "ReceiptAnchored")
       .withArgs(
         record.receiptId,
         fixture.policyId,
         record.intentHash,
-        record.subject,
+        record.transactionSubject,
         record.evaluator,
         0,
         record.evaluatedAt,
@@ -131,7 +135,7 @@ describe("IntentGuardReceiptRegistry", function () {
       );
 
     const [stored, revoked] = await fixture.receipt.getReceipt(record.receiptId);
-    expect(stored.subject).to.equal(record.subject);
+    expect(stored.transactionSubject).to.equal(record.transactionSubject);
     expect(stored.evaluator).to.equal(record.evaluator);
     expect(revoked).to.equal(false);
     expect(await fixture.receipt.isReceiptValid(record.receiptId)).to.equal(true);

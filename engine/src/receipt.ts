@@ -73,13 +73,16 @@ export function analyze(input: AnalysisInput, options: PolicyOptions): AnalysisR
 export function makeReceipt(args: {
   analysis: AnalysisResult;
   policyId?: Hex;
-  subject: string;
+  subject?: string;
+  transactionSubject?: string;
   evaluator: string;
   policyVersion?: number;
   receiptId?: Hex;
 }): CanonicalReceipt {
   const receiptId = args.receiptId ?? (`0x${Buffer.from(randomBytes(32)).toString("hex")}` as Hex);
   const chainId: ChainId = args.analysis.intent.chainId;
+  const rawSubject = args.transactionSubject ?? args.subject ?? "0x0000000000000000000000000000000000000000";
+  const normalizedSubject = normalizeAddress(rawSubject);
 
   return {
     schemaVersion: 1,
@@ -89,7 +92,8 @@ export function makeReceipt(args: {
     requestHash: args.analysis.requestHash,
     evidenceHash: args.analysis.evidenceHash,
     chainId,
-    subject: normalizeAddress(args.subject),
+    transactionSubject: normalizedSubject,
+    subject: normalizedSubject,
     evaluator: normalizeAddress(args.evaluator),
     verdict: args.analysis.verdict,
     policyVersion: args.policyVersion ?? 0,
@@ -117,7 +121,7 @@ export const RECEIPT_TYPES = {
     { name: "requestHash", type: "bytes32" },
     { name: "evidenceHash", type: "bytes32" },
     { name: "chainId", type: "uint256" },
-    { name: "subject", type: "address" },
+    { name: "transactionSubject", type: "address" },
     { name: "evaluator", type: "address" },
     { name: "verdict", type: "uint8" },
     { name: "policyVersion", type: "uint64" },
@@ -151,7 +155,7 @@ export function receiptTypedData(args: {
       requestHash: args.receipt.requestHash,
       evidenceHash: args.receipt.evidenceHash,
       chainId: args.receipt.chainId,
-      subject: args.receipt.subject,
+      transactionSubject: args.receipt.transactionSubject ?? args.receipt.subject!,
       evaluator: args.receipt.evaluator,
       verdict: verdictNumber(args.receipt.verdict),
       policyVersion: args.receipt.policyVersion,
@@ -170,7 +174,7 @@ export function receiptStruct(receipt: CanonicalReceipt): {
   requestHash: Hex;
   evidenceHash: Hex;
   chainId: number;
-  subject: string;
+  transactionSubject: string;
   evaluator: string;
   verdict: number;
   policyVersion: number;
@@ -186,7 +190,7 @@ export function receiptStruct(receipt: CanonicalReceipt): {
     requestHash: receipt.requestHash,
     evidenceHash: receipt.evidenceHash,
     chainId: receipt.chainId,
-    subject: receipt.subject,
+    transactionSubject: receipt.transactionSubject ?? receipt.subject!,
     evaluator: receipt.evaluator,
     verdict: verdictNumber(receipt.verdict),
     policyVersion: receipt.policyVersion,

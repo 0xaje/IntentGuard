@@ -15,11 +15,14 @@ interface IIntentGuardTypes {
     }
 
     struct PolicyCommitment {
-        bytes32 policyHash;
-        address owner;
-        uint64 version;
-        uint64 validAfter;
+        bytes32 policyId;
+        bytes32 intentHash;
+        address policyOwner;
+        address committer;
+        uint64 validFrom;
         uint64 validUntil;
+        uint256 nonce;
+        uint64 version;
         string metadataURI;
     }
 
@@ -30,7 +33,7 @@ interface IIntentGuardTypes {
         bytes32 requestHash;
         bytes32 evidenceHash;
         uint256 chainId;
-        address subject;
+        address transactionSubject;
         address evaluator;
         Verdict verdict;
         uint64 policyVersion;
@@ -52,9 +55,10 @@ interface IIntentGuardTypes {
 
 interface IIntentGuardPolicyRegistry is IIntentGuardTypes {
     function commitPolicy(
-        bytes32 policyHash,
+        bytes32 intentHash,
+        address policyOwner,
         uint64 version,
-        uint64 validAfter,
+        uint64 validFrom,
         uint64 validUntil,
         string calldata metadataURI
     ) external returns (bytes32 policyId);

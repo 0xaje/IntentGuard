@@ -8,7 +8,7 @@ export const CRYPTO_ENGINE_VERSION = 1_000_000;
 export const CRYPTO_DECODER_VERSION = 1_000_000;
 export const ZERO_HASH = `0x${"00".repeat(32)}` as Hex;
 
-export const RECEIPT_TYPE_STRING = "Receipt(bytes32 receiptId,bytes32 policyId,bytes32 intentHash,bytes32 requestHash,bytes32 evidenceHash,uint256 chainId,address subject,address evaluator,uint8 verdict,uint64 policyVersion,uint64 evaluatedAt,uint64 expiresAt,uint32 engineVersion,uint32 decoderVersion)";
+export const RECEIPT_TYPE_STRING = "Receipt(bytes32 receiptId,bytes32 policyId,bytes32 intentHash,bytes32 requestHash,bytes32 evidenceHash,uint256 chainId,address transactionSubject,address evaluator,uint8 verdict,uint64 policyVersion,uint64 evaluatedAt,uint64 expiresAt,uint32 engineVersion,uint32 decoderVersion)";
 
 function scaledDecimal(value: number, decimals: number, field: string) {
   if (!Number.isFinite(value) || value < 0) throw new Error(`${field} must be a non-negative finite number.`);
@@ -126,7 +126,7 @@ export function buildTrustReceipt(input: TrustReceiptInput): TrustReceipt {
     requestHash,
     evidenceHash,
     chainId: 84532,
-    subject: normalizedSubject,
+    transactionSubject: normalizedSubject,
     evaluator: normalizedEvaluator,
     verdict: input.verification.verdict,
     policyVersion: input.policyVersion,
@@ -144,6 +144,7 @@ export function buildTrustReceipt(input: TrustReceiptInput): TrustReceipt {
     requestHash,
     evidenceHash,
     chainId: 84532,
+    transactionSubject: normalizedSubject,
     subject: normalizedSubject,
     evaluator: normalizedEvaluator,
     verdict: toRegistryVerdict(input.verification.verdict),

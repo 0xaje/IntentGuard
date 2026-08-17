@@ -186,7 +186,8 @@ export type CanonicalReceipt = {
   requestHash: Hex;
   evidenceHash: Hex;
   chainId: number;
-  subject: Address;
+  transactionSubject: Address;
+  subject?: Address;
   evaluator: Address;
   verdict: Verdict;
   policyVersion: number;

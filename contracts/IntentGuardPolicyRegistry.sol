@@ -23,17 +23,19 @@ contract IntentGuardPolicyRegistry is AccessControl, IIntentGuardPolicyRegistry 
 
     event PolicyCommitted(
         bytes32 indexed policyId,
-        bytes32 indexed policyHash,
-        address indexed owner,
+        bytes32 indexed intentHash,
+        address indexed policyOwner,
+        address committer,
         uint64 version,
-        uint64 validAfter,
+        uint64 validFrom,
         uint64 validUntil,
         string metadataURI
     );
 
     event PolicyRevoked(
         bytes32 indexed policyId,
-        address indexed owner,
+        address indexed policyOwner,
+        address indexed revoker,
         uint64 revokedAt
     );
 
@@ -44,41 +46,47 @@ contract IntentGuardPolicyRegistry is AccessControl, IIntentGuardPolicyRegistry 
     }
 
     function commitPolicy(
-        bytes32 policyHash,
+        bytes32 intentHash,
+        address policyOwnerParam,
         uint64 version,
-        uint64 validAfter,
+        uint64 validFrom,
         uint64 validUntil,
         string calldata metadataURI
     ) external returns (bytes32 policyId) {
-        if (policyHash == bytes32(0)) revert InvalidPolicyHash();
-        if (validUntil != 0 && validUntil < validAfter) {
+        if (intentHash == bytes32(0)) revert InvalidPolicyHash();
+        if (validUntil != 0 && validUntil < validFrom) {
             revert InvalidValidityWindow();
         }
         if (bytes(metadataURI).length > MAX_METADATA_URI_LENGTH) {
             revert MetadataURITooLong();
         }
 
-        uint256 nonce = _nonces[msg.sender]++;
-        policyId = keccak256(abi.encode(msg.sender, nonce, policyHash, version));
-        if (_policies[policyId].owner != address(0)) {
+        address effectiveOwner = policyOwnerParam == address(0) ? msg.sender : policyOwnerParam;
+        uint256 nonce = _nonces[effectiveOwner]++;
+        policyId = keccak256(abi.encode(effectiveOwner, msg.sender, nonce, intentHash, version));
+        if (_policies[policyId].policyOwner != address(0)) {
             revert PolicyAlreadyExists(policyId);
         }
 
         _policies[policyId] = PolicyCommitment({
-            policyHash: policyHash,
-            owner: msg.sender,
-            version: version,
-            validAfter: validAfter,
+            policyId: policyId,
+            intentHash: intentHash,
+            policyOwner: effectiveOwner,
+            committer: msg.sender,
+            validFrom: validFrom,
             validUntil: validUntil,
+            nonce: nonce,
+            version: version,
             metadataURI: metadataURI
         });
 
         emit PolicyCommitted(
             policyId,
-            policyHash,
+            intentHash,
+            effectiveOwner,
             msg.sender,
             version,
-            validAfter,
+            validFrom,
             validUntil,
             metadataURI
         );
@@ -86,14 +94,18 @@ contract IntentGuardPolicyRegistry is AccessControl, IIntentGuardPolicyRegistry 
 
     function revokePolicy(bytes32 policyId) external {
         PolicyCommitment storage policy = _policies[policyId];
-        if (policy.owner == address(0)) revert PolicyNotFound(policyId);
-        if (policy.owner != msg.sender && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
+        if (policy.policyOwner == address(0)) revert PolicyNotFound(policyId);
+        if (
+            policy.policyOwner != msg.sender &&
+            policy.committer != msg.sender &&
+            !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)
+        ) {
             revert NotPolicyOwner();
         }
         if (_revoked[policyId]) revert PolicyIsRevoked(policyId);
 
         _revoked[policyId] = true;
-        emit PolicyRevoked(policyId, policy.owner, uint64(block.timestamp));
+        emit PolicyRevoked(policyId, policy.policyOwner, msg.sender, uint64(block.timestamp));
     }
 
     function getPolicy(bytes32 policyId)
@@ -106,17 +118,17 @@ contract IntentGuardPolicyRegistry is AccessControl, IIntentGuardPolicyRegistry 
     }
 
     function policyOwner(bytes32 policyId) external view returns (address) {
-        return _policies[policyId].owner;
+        return _policies[policyId].policyOwner;
     }
 
     function policyCommitter(bytes32 policyId) external view returns (address) {
-        return _policies[policyId].owner;
+        return _policies[policyId].committer;
     }
 
     function isPolicyActive(bytes32 policyId) public view returns (bool) {
         PolicyCommitment memory policy = _policies[policyId];
-        if (policy.owner == address(0) || _revoked[policyId]) return false;
-        if (block.timestamp < policy.validAfter) return false;
+        if (policy.policyOwner == address(0) || _revoked[policyId]) return false;
+        if (block.timestamp < policy.validFrom) return false;
         if (policy.validUntil != 0 && block.timestamp > policy.validUntil) return false;
         return true;
     }

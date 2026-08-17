@@ -12,7 +12,7 @@ const RECEIPT_TYPES = {
     { name: "requestHash", type: "bytes32" },
     { name: "evidenceHash", type: "bytes32" },
     { name: "chainId", type: "uint256" },
-    { name: "subject", type: "address" },
+    { name: "transactionSubject", type: "address" },
     { name: "evaluator", type: "address" },
     { name: "verdict", type: "uint8" },
     { name: "policyVersion", type: "uint64" },
@@ -25,8 +25,8 @@ const RECEIPT_TYPES = {
 
 const POLICY_ABI = [
   "function DEFAULT_ADMIN_ROLE() view returns (bytes32)",
-  "function commitPolicy(bytes32 policyHash,uint64 version,uint64 validAfter,uint64 validUntil,string metadataURI) returns (bytes32 policyId)",
-  "function getPolicy(bytes32 policyId) view returns ((bytes32 policyHash,address owner,uint64 version,uint64 validAfter,uint64 validUntil,string metadataURI),bool revoked)",
+  "function commitPolicy(bytes32 intentHash,address policyOwner,uint64 version,uint64 validFrom,uint64 validUntil,string metadataURI) returns (bytes32 policyId)",
+  "function getPolicy(bytes32 policyId) view returns ((bytes32 policyId,bytes32 intentHash,address policyOwner,address committer,uint64 validFrom,uint64 validUntil,uint256 nonce,uint64 version,string metadataURI),bool revoked)",
   "function isPolicyActive(bytes32 policyId) view returns (bool)",
   "function nextNonce(address owner) view returns (uint256)",
   "function hasRole(bytes32 role,address account) view returns (bool)",
@@ -36,10 +36,10 @@ const RECEIPT_ABI = [
   "function DEFAULT_ADMIN_ROLE() view returns (bytes32)",
   "function EVALUATOR_ROLE() view returns (bytes32)",
   "function PAUSER_ROLE() view returns (bytes32)",
-  "function anchorReceipt((bytes32 receiptId,bytes32 policyId,bytes32 intentHash,bytes32 requestHash,bytes32 evidenceHash,uint256 chainId,address subject,address evaluator,uint8 verdict,uint64 policyVersion,uint64 evaluatedAt,uint64 expiresAt,uint32 engineVersion,uint32 decoderVersion) receipt,bytes evaluatorSignature) returns (bytes32)",
+  "function anchorReceipt((bytes32 receiptId,bytes32 policyId,bytes32 intentHash,bytes32 requestHash,bytes32 evidenceHash,uint256 chainId,address transactionSubject,address evaluator,uint8 verdict,uint64 policyVersion,uint64 evaluatedAt,uint64 expiresAt,uint32 engineVersion,uint32 decoderVersion) receipt,bytes evaluatorSignature) returns (bytes32)",
   "function isReceiptValid(bytes32 receiptId) view returns (bool)",
   "function revokeReceipt(bytes32 receiptId)",
-  "function getReceipt(bytes32 receiptId) view returns ((bytes32 receiptId,bytes32 policyId,bytes32 intentHash,bytes32 requestHash,bytes32 evidenceHash,uint256 chainId,address subject,address evaluator,uint8 verdict,uint64 policyVersion,uint64 evaluatedAt,uint64 expiresAt,uint32 engineVersion,uint32 decoderVersion),bool revoked)",
+  "function getReceipt(bytes32 receiptId) view returns ((bytes32 receiptId,bytes32 policyId,bytes32 intentHash,bytes32 requestHash,bytes32 evidenceHash,uint256 chainId,address transactionSubject,address evaluator,uint8 verdict,uint64 policyVersion,uint64 evaluatedAt,uint64 expiresAt,uint32 engineVersion,uint32 decoderVersion),bool revoked)",
   "function hasRole(bytes32 role,address account) view returns (bool)",
 ];
 
@@ -73,10 +73,10 @@ function assertTrue(condition: boolean, label: string): void {
   console.log(`PASS  ${label}`);
 }
 
-function computePolicyId(owner: string, nonce: bigint, policyHash: string, version: number): string {
+function computePolicyId(policyOwner: string, committer: string, nonce: bigint, intentHash: string, version: number): string {
   const encoded = AbiCoder.defaultAbiCoder().encode(
-    ["address", "uint256", "bytes32", "uint64"],
-    [owner, nonce, policyHash, version],
+    ["address", "address", "uint256", "bytes32", "uint64"],
+    [policyOwner, committer, nonce, intentHash, version],
   );
   return keccak256(encoded);
 }
@@ -135,9 +135,10 @@ async function main(): Promise<void> {
   const policyHash = keccak256(Buffer.from(`intentguard-testnet-policy-${Date.now()}`));
   const policyVersion = 1;
   const nonce = BigInt(await policy.nextNonce(subject));
-  const policyId = computePolicyId(subject, nonce, policyHash, policyVersion);
+  const policyId = computePolicyId(subject, subject, nonce, policyHash, policyVersion);
   const policyTx = await policy.commitPolicy(
     policyHash,
+    subject,
     policyVersion,
     0,
     0,
@@ -149,10 +150,11 @@ async function main(): Promise<void> {
 
   const latest = await provider.getBlock("latest");
   if (!latest) throw new Error("Unable to read latest Base Sepolia block");
-  const receiptId = zeroPadValue(keccak256(Buffer.from(`intentguard-testnet-receipt-${Date.now()}`)), 32);
-  const intentHash = keccak256(Buffer.from("intentguard-testnet-intent"));
+  const receiptId = keccak256(Buffer.from(`intentguard-testnet-receipt-${Date.now()}`));
+  const intentHash = policyHash;
   const requestHash = keccak256(Buffer.from("intentguard-testnet-request"));
   const evidenceHash = keccak256(Buffer.from("intentguard-testnet-evidence"));
+  const evaluatedAt = Number(latest.timestamp);
   const testReceipt = {
     receiptId,
     policyId,
@@ -160,12 +162,12 @@ async function main(): Promise<void> {
     requestHash,
     evidenceHash,
     chainId: BASE_SEPOLIA_CHAIN_ID,
-    subject,
+    transactionSubject: subject,
     evaluator: evaluatorAddress,
     verdict: 1,
     policyVersion,
-    evaluatedAt: latest.timestamp,
-    expiresAt: latest.timestamp + 600,
+    evaluatedAt,
+    expiresAt: evaluatedAt + 600,
     engineVersion: 1_000_000,
     decoderVersion: 1_000_000,
   };

@@ -20,7 +20,7 @@ contract IntentGuardReceiptRegistry is
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
     bytes32 public constant RECEIPT_TYPEHASH = keccak256(
-        "Receipt(bytes32 receiptId,bytes32 policyId,bytes32 intentHash,bytes32 requestHash,bytes32 evidenceHash,uint256 chainId,address subject,address evaluator,uint8 verdict,uint64 policyVersion,uint64 evaluatedAt,uint64 expiresAt,uint32 engineVersion,uint32 decoderVersion)"
+        "Receipt(bytes32 receiptId,bytes32 policyId,bytes32 intentHash,bytes32 requestHash,bytes32 evidenceHash,uint256 chainId,address transactionSubject,address evaluator,uint8 verdict,uint64 policyVersion,uint64 evaluatedAt,uint64 expiresAt,uint32 engineVersion,uint32 decoderVersion)"
     );
 
     IIntentGuardPolicyRegistry public immutable policyRegistry;
@@ -46,7 +46,7 @@ contract IntentGuardReceiptRegistry is
         bytes32 indexed receiptId,
         bytes32 indexed policyId,
         bytes32 indexed intentHash,
-        address subject,
+        address transactionSubject,
         address evaluator,
         Verdict verdict,
         uint64 evaluatedAt,
@@ -116,7 +116,7 @@ contract IntentGuardReceiptRegistry is
             receipt.receiptId,
             receipt.policyId,
             receipt.intentHash,
-            receipt.subject,
+            receipt.transactionSubject,
             receipt.evaluator,
             receipt.verdict,
             receipt.evaluatedAt,
@@ -130,7 +130,7 @@ contract IntentGuardReceiptRegistry is
         if (receipt.receiptId == bytes32(0)) revert ReceiptNotFound(receiptId);
         if (_revoked[receiptId]) revert ReceiptAlreadyRevoked(receiptId);
         if (
-            msg.sender != receipt.subject &&
+            msg.sender != receipt.transactionSubject &&
             msg.sender != receipt.evaluator &&
             !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)
         ) {
@@ -193,7 +193,7 @@ contract IntentGuardReceiptRegistry is
             receipt.requestHash == bytes32(0) ||
             receipt.evidenceHash == bytes32(0)
         ) revert InvalidReceipt();
-        if (receipt.subject == address(0)) revert InvalidSubject();
+        if (receipt.transactionSubject == address(0)) revert InvalidSubject();
         if (receipt.evaluator == address(0)) revert InvalidEvaluator();
         if (uint8(receipt.verdict) > uint8(Verdict.CANNOT_VERIFY)) {
             revert InvalidReceipt();
@@ -214,7 +214,7 @@ contract IntentGuardReceiptRegistry is
                 receipt.requestHash,
                 receipt.evidenceHash,
                 receipt.chainId,
-                receipt.subject,
+                receipt.transactionSubject,
                 receipt.evaluator,
                 uint8(receipt.verdict),
                 receipt.policyVersion,
