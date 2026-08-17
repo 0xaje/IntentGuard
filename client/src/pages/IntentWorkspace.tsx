@@ -1,19 +1,38 @@
 // Forensic Signal style reminder: show the evidence trail before the visual verdict; never imply a successful chain action or wallet approval that did not occur.
 import { useState, type FormEvent } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ArrowUpRight, Braces, Check, ChevronDown, CircleAlert, Copy, Download, ExternalLink, FileCheck2, Loader2, ScanLine, ShieldAlert, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Braces, Check, ChevronDown, CircleAlert, Copy, Download, ExternalLink, FileCheck2, Loader2, Play, ScanLine, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
 import SignalMark from "@/components/SignalMark";
 import { trpc } from "@/lib/trpc";
 import type { VerificationSession } from "@shared/intentguard";
 
-const examples = [
+const demoScenarios = [
   {
-    label: "1% swap guardrail",
+    id: "legit-swap",
+    label: "Swap with 1% Slippage",
+    badge: "Swap Guardrail",
+    badgeClass: "badge-swap",
     text: "Swap $100 USDC for ETH on Base. Maximum slippage 1%. Don't allow unlimited approvals.",
+    hash: "0x3d67f5dfbbef7d398687b328a649ef9b8b0e8ce13e54b60de3cf7f79435b80fe",
+    hint: "Uniswap V3 exact input swap bounded to declared slippage."
   },
   {
-    label: "Tighter execution rule",
-    text: "Swap 50 USDC for ETH on Base. Maximum slippage 0.5%. Don't allow unlimited approvals.",
+    id: "unlimited-approval",
+    label: "Unlimited Approval Block",
+    badge: "Exploit Protection",
+    badgeClass: "badge-exploit",
+    text: "Swap 50 USDC for ETH on Base. Never allow unlimited token approvals.",
+    hash: "0x89c45667c29bc995b0373e34b9d038234850875c7c00e1cf518c0678d8f796a3",
+    hint: "IntentGuard flags 2^256-1 unlimited spender allowance as CONFLICTING."
+  },
+  {
+    id: "exact-transfer",
+    label: "25 USDC Transfer Cap",
+    badge: "Spend Cap",
+    badgeClass: "badge-transfer",
+    text: "Transfer 25 USDC on Base to 0x1111111111111111111111111111111111111111. Never spend more than 25 USDC.",
+    hash: "0x1b5cb4e83e87903848b89e7769dbad773dfc29c8e88f0a02796dc6a014902188",
+    hint: "Direct transfer with strict recipient and cap match."
   },
 ];
 
@@ -72,8 +91,9 @@ function verdictLabel(verdict: "MATCH" | "MISMATCH" | "CANNOT_VERIFY" | "UNVERIF
 }
 
 export default function IntentWorkspace() {
-  const [intentText, setIntentText] = useState(examples[0].text);
-  const [transactionHash, setTransactionHash] = useState("");
+  const [intentText, setIntentText] = useState(demoScenarios[0].text);
+  const [transactionHash, setTransactionHash] = useState(demoScenarios[0].hash);
+  const [activeScenarioId, setActiveScenarioId] = useState<string | null>(demoScenarios[0].id);
   const [clientError, setClientError] = useState<string | null>(null);
   const [humanReviewRecorded, setHumanReviewRecorded] = useState(false);
   const [showSessionJson, setShowSessionJson] = useState(false);
@@ -151,8 +171,20 @@ export default function IntentWorkspace() {
     } : null,
   } : null;
 
-  function handleExtract(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function loadScenario(scenario: typeof demoScenarios[0]) {
+    setActiveScenarioId(scenario.id);
+    setIntentText(scenario.text);
+    setTransactionHash(scenario.hash);
+    setClientError(null);
+    setHumanReviewRecorded(false);
+    parseIntent.reset();
+    verifyIntent.reset();
+    commitPolicy.reset();
+    anchorReceipt.reset();
+  }
+
+  function handleExtract(event?: FormEvent<HTMLFormElement>) {
+    if (event) event.preventDefault();
     setClientError(null);
     setHumanReviewRecorded(false);
     verifyIntent.reset();
@@ -163,12 +195,12 @@ export default function IntentWorkspace() {
 
   function handleVerify() {
     const normalizedHash = transactionHash.trim();
-    if (!currentIntent) {
-      setClientError("Review the structured intent before asking IntentGuard to verify a transaction.");
+    if (!intentText.trim()) {
+      setClientError("Please declare a user intent in natural language before verification.");
       return;
     }
     if (!/^0x[a-fA-F0-9]{64}$/.test(normalizedHash)) {
-      setClientError("Paste a real 32-byte Base transaction hash beginning with 0x.");
+      setClientError("Please provide a valid 32-byte Base transaction hash starting with 0x.");
       return;
     }
     setClientError(null);
@@ -261,85 +293,212 @@ export default function IntentWorkspace() {
           </div>
         </div>
 
+        {/* Quick Demo Scenarios */}
+        <section className="scenarios-container" aria-labelledby="scenarios-title">
+          <div className="scenarios-heading">
+            <span id="scenarios-title"><Sparkles size={13} style={{ display: "inline", marginRight: "4px" }} /> Quick Test Scenarios (1-Click Load)</span>
+            <small style={{ color: "#78817b", fontFamily: "var(--font-mono)", fontSize: "0.65rem" }}>Select a preset to test instant deterministic verification</small>
+          </div>
+          <div className="scenarios-grid">
+            {demoScenarios.map((scenario) => (
+              <button
+                key={scenario.id}
+                type="button"
+                className={`scenario-card ${activeScenarioId === scenario.id ? "is-active" : ""}`}
+                onClick={() => loadScenario(scenario)}
+              >
+                <div className="scenario-top">
+                  <span className={`scenario-badge ${scenario.badgeClass}`}>{scenario.badge}</span>
+                  <Play size={12} style={{ color: activeScenarioId === scenario.id ? "#e7653d" : "#78817b" }} />
+                </div>
+                <strong>{scenario.label}</strong>
+                <p className="scenario-hint">{scenario.hint}</p>
+              </button>
+            ))}
+          </div>
+        </section>
+
         <div className="chain-of-custody" aria-label="Verification workflow sequence">
-          <span>01 / INTENT</span><i /><span>02 / POLICY</span><i /><span>03 / REQUEST</span><i /><span>04 / EVIDENCE</span><i /><span>05 / VERDICT</span><i /><span>06 / RECEIPT</span><i /><span>07 / PROOF</span>
+          <span>01 / INTENT</span><i /><span>02 / PROPOSAL</span><i /><span>03 / POLICY</span><i /><span>04 / EVIDENCE</span><i /><span>05 / VERDICT</span><i /><span>06 / RECEIPT</span><i /><span>07 / PROOF</span>
         </div>
 
+        {/* 2-Column Unified Console */}
         <div className="app-workspace-grid">
-          <section className="composer-panel" aria-labelledby="composer-title">
-            <div className="panel-heading">
-              <span className="panel-index">01</span>
-              <div><p className="panel-kicker">01 / INTENT</p><h2 id="composer-title">Human constraint</h2></div>
+          {/* Column 1: Human Intent */}
+          <section className="console-card" aria-labelledby="intent-console-title">
+            <div>
+              <div className="console-header">
+                <p className="panel-kicker">01 / Human Intent</p>
+                <h2 id="intent-console-title">Declare human limits & caps</h2>
+                <p>Natural-language instructions defining maximum spend, allowable tokens, slippage caps, and approval restrictions.</p>
+              </div>
+              <form onSubmit={handleExtract} className="intent-form">
+                <label htmlFor="intent-text">Natural language prompt (Base chain explicit)</label>
+                <textarea
+                  id="intent-text"
+                  value={intentText}
+                  onChange={(event) => {
+                    setIntentText(event.target.value);
+                    setActiveScenarioId(null);
+                    setClientError(null);
+                    commitPolicy.reset();
+                    anchorReceipt.reset();
+                  }}
+                  rows={4}
+                  maxLength={600}
+                  spellCheck="false"
+                  placeholder="e.g. Swap $100 USDC for ETH on Base. Maximum slippage 1%. Don't allow unlimited approvals."
+                />
+                <div className="example-row" aria-label="Quick intent templates">
+                  {demoScenarios.map((scenario) => (
+                    <button
+                      key={scenario.id}
+                      type="button"
+                      className="example-chip"
+                      onClick={() => {
+                        setIntentText(scenario.text);
+                        setClientError(null);
+                      }}
+                    >
+                      {scenario.label}
+                    </button>
+                  ))}
+                </div>
+              </form>
             </div>
-            <form onSubmit={handleExtract} className="intent-form">
-              <label htmlFor="intent-text">Declare user intent in natural language. Base must be explicit.</label>
-              <textarea id="intent-text" value={intentText} onChange={(event) => { setIntentText(event.target.value); setClientError(null); commitPolicy.reset(); anchorReceipt.reset(); }} rows={7} maxLength={600} spellCheck="false" />
-              <div className="example-row" aria-label="Supported example intents">
-                {examples.map((example) => (
-                  <button key={example.label} type="button" className="example-chip" onClick={() => { setIntentText(example.text); setClientError(null); parseIntent.reset(); verifyIntent.reset(); commitPolicy.reset(); anchorReceipt.reset(); }}>
-                    {example.label}
-                  </button>
-                ))}
-              </div>
-              <div className="composer-actions">
-                <button className="button-primary" type="submit" disabled={isWorking}>
-                  {parseIntent.isPending ? <><Loader2 size={16} className="animate-spin" /> Extracting constraints</> : <>Extract constraints <ArrowUpRight size={16} /></>}
-                </button>
-                <p>Supported now: Base USDC→ETH swaps and Base USDC transfers to a real EVM address.</p>
-              </div>
-            </form>
+            <div className="composer-actions">
+              <button
+                className="button-primary"
+                type="button"
+                onClick={() => handleExtract()}
+                disabled={isWorking || !intentText.trim()}
+              >
+                {parseIntent.isPending ? <><Loader2 size={15} className="animate-spin" /> Extracting</> : <>Extract Policy Limits <ArrowUpRight size={15} /></>}
+              </button>
+              <p>Supported: Base USDC→ETH swaps & USDC transfers.</p>
+            </div>
           </section>
 
-          <aside className="operation-boundary">
-            <SignalMark className="h-10 w-10 text-signal" />
-            <p className="panel-kicker">Deterministic Trust Guardrail</p>
-            <h2>Agent proposes; IntentGuard evaluates.</h2>
-            <p><strong>Non-custodial boundary:</strong> The agent never holds user funds or private keys. The agent simply proposes candidate calldata and transactions. <br /><br /><strong>Independent attestation:</strong> IntentGuard deterministically verifies observed facts against the human policy, signs an EIP-712 trust receipt, and anchors it to Base Sepolia.</p>
-          </aside>
+          {/* Column 2: Agent Proposal & Verification Action */}
+          <section className="console-card console-card-secondary" aria-labelledby="proposal-console-title">
+            <div>
+              <div className="console-header">
+                <p className="panel-kicker">02 / Agent Action Proposal</p>
+                <h2 id="proposal-console-title">Proposed calldata or tx hash</h2>
+                <p>The Orion / AI Agent proposes candidate actions. IntentGuard independently checks whether that proposal matches the human policy.</p>
+              </div>
+              <div className="hash-form">
+                <label htmlFor="transaction-hash">Base transaction hash / proposed calldata</label>
+                <div className="hash-control">
+                  <input
+                    id="transaction-hash"
+                    value={transactionHash}
+                    onChange={(event) => {
+                      setTransactionHash(event.target.value);
+                      setActiveScenarioId(null);
+                      setClientError(null);
+                    }}
+                    placeholder="0x…"
+                    inputMode="text"
+                    autoComplete="off"
+                    spellCheck="false"
+                  />
+                </div>
+                <p className="form-note">Pastes a real 32-byte Base Mainnet transaction hash or proposed action to verify against the intent.</p>
+              </div>
+            </div>
+            <div className="hash-actions">
+              <button
+                type="button"
+                className="button-primary"
+                onClick={handleVerify}
+                disabled={isWorking || !transactionHash.trim()}
+                style={{ width: "100%", justifyContent: "center" }}
+              >
+                {verifyIntent.isPending ? (
+                  <><Loader2 size={16} className="animate-spin" /> Inspecting Base RPC…</>
+                ) : (
+                  <>Run IntentGuard Verification <FileCheck2 size={16} /></>
+                )}
+              </button>
+            </div>
+          </section>
         </div>
 
-        {errorMessage && <div className="app-error" role="alert"><CircleAlert size={18} /><div><strong>No verification decision was made.</strong><span>{errorMessage}</span></div></div>}
+        {errorMessage && (
+          <div className="app-error" role="alert">
+            <CircleAlert size={18} />
+            <div>
+              <strong>Verification Request Error</strong>
+              <span>{errorMessage}</span>
+            </div>
+          </div>
+        )}
 
+        {/* Step 03: Structured Policy Table */}
         {currentIntent && (
           <section className="intent-review-section" aria-labelledby="intent-review-title">
-            <div className="section-kicker-row"><p className="eyebrow">02 / POLICY</p><p className="mono-note">schema validated</p></div>
+            <div className="section-kicker-row">
+              <p className="eyebrow">03 / Structured Policy</p>
+              <p className="mono-note">schema validated</p>
+            </div>
             <div className="intent-review-grid">
               <div className="intent-summary">
-                <p className="panel-kicker">02 / POLICY</p>
-                <h2 id="intent-review-title">Cryptographic policy commitment</h2>
-                <p>All verdicts below are calculated from these stated constraints and the observable Base transaction evidence.</p>
+                <p className="panel-kicker">03 / POLICY</p>
+                <h2 id="intent-review-title">Enforceable policy limits</h2>
+                <p>All verdicts below are calculated deterministically from these stated constraints and observable blockchain facts.</p>
               </div>
               <dl className="constraint-list">
                 <div><dt>Action</dt><dd>{currentIntent.action.toUpperCase()}</dd></div>
                 <div><dt>Chain</dt><dd>BASE / 8453</dd></div>
-                <div><dt>Input</dt><dd>UP TO {currentIntent.maxSpendUsdc} USDC</dd></div>
-                <div><dt>Desired output</dt><dd>{currentIntent.outputToken ?? "NOT SPECIFIED"}</dd></div>
-                <div><dt>Maximum slippage</dt><dd>{currentIntent.maxSlippagePercent === null ? "NOT APPLICABLE" : `${currentIntent.maxSlippagePercent}%`}</dd></div>
-                <div><dt>Unlimited approval</dt><dd className={currentIntent.prohibitUnlimitedApproval ? "policy-blocked" : ""}>{currentIntent.prohibitUnlimitedApproval ? "BLOCKED" : "NOT RESTRICTED"}</dd></div>
+                <div><dt>Spend Cap</dt><dd>UP TO {currentIntent.maxSpendUsdc} USDC</dd></div>
+                <div><dt>Desired Output</dt><dd>{currentIntent.outputToken ?? "NOT SPECIFIED"}</dd></div>
+                <div><dt>Max Slippage</dt><dd>{currentIntent.maxSlippagePercent === null ? "NOT APPLICABLE" : `${currentIntent.maxSlippagePercent}%`}</dd></div>
+                <div><dt>Unlimited Approval</dt><dd className={currentIntent.prohibitUnlimitedApproval ? "policy-blocked" : ""}>{currentIntent.prohibitUnlimitedApproval ? "BLOCKED" : "NOT RESTRICTED"}</dd></div>
                 {currentIntent.recipient && <div><dt>Recipient</dt><dd className="address-value">{currentIntent.recipient}</dd></div>}
               </dl>
             </div>
           </section>
         )}
 
-        <section className="transaction-entry-section" aria-labelledby="transaction-title">
-          <div className="panel-heading"><span className="panel-index">03</span><div><p className="panel-kicker">03 / REQUEST</p><h2 id="transaction-title">Agent proposal (Orion / AI Agent)</h2></div></div>
-          <p className="transaction-entry-copy">The autonomous agent does not evaluate its own safety or hold custody—it simply <strong>produces a proposed action</strong>. IntentGuard independently checks whether this real Base transaction or calldata matches the human instruction before or after execution.</p>
-          <div className="hash-form">
-            <label htmlFor="transaction-hash">Base transaction hash / proposed calldata</label>
-            <div className="hash-control"><input id="transaction-hash" value={transactionHash} onChange={(event) => { setTransactionHash(event.target.value); setClientError(null); }} placeholder="0x…" inputMode="text" autoComplete="off" spellCheck="false" /><button type="button" className="button-primary" onClick={handleVerify} disabled={isWorking || !currentIntent}>{verifyIntent.isPending ? <><Loader2 size={16} className="animate-spin" /> Inspecting Base</> : <>Verify agent action <FileCheck2 size={16} /></>}</button></div>
-            {!currentIntent && <p className="form-note">Extract and review the intent first. No verification request will be sent until the policy is visible.</p>}
-          </div>
-        </section>
+        {/* Progress Indicator */}
+        {verifyIntent.isPending && (
+          <section className="verification-progress inspector-progress" aria-live="polite" aria-busy="true" aria-label="Live Base transaction inspection in progress">
+            <div className="inspection-progress-heading">
+              <Loader2 size={18} className="animate-spin" />
+              <div>
+                <strong>Live Base inspection is in progress.</strong>
+                <span>The server will return transaction, receipt, router, quote, and policy evidence together.</span>
+              </div>
+            </div>
+            <ol className="inspection-stage-list">
+              {inspectionStages.map((stage) => (
+                <li key={stage.id} className="stage-pending">
+                  <span>{stage.id}</span>
+                  <div>
+                    <strong>{stage.label}</strong>
+                    <small>{stage.detail}</small>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div className="inspection-progress-meter is-indeterminate" aria-hidden="true"><i /></div>
+          </section>
+        )}
 
-        {verifyIntent.isPending && <section className="verification-progress inspector-progress" aria-live="polite" aria-busy="true" aria-label="Live Base transaction inspection in progress"><div className="inspection-progress-heading"><Loader2 size={18} className="animate-spin" /><div><strong>Live Base inspection is in progress.</strong><span>The server will return transaction, receipt, router, quote, and policy evidence together. No stage is marked complete until that evidence arrives.</span></div></div><ol className="inspection-stage-list">{inspectionStages.map((stage) => <li key={stage.id} className="stage-pending"><span>{stage.id}</span><div><strong>{stage.label}</strong><small>{stage.detail}</small></div></li>)}</ol><div className="inspection-progress-meter is-indeterminate" aria-hidden="true"><i /></div></section>}
-
+        {/* Step 04 - 07: Output & Verification Report */}
         {result && (
           <section className="verification-output" aria-labelledby="verification-title">
-            <div className="section-kicker-row"><p className="eyebrow">04 / EVIDENCE & 05 / VERDICT</p><p className="mono-note">{result.verification.receiptId}</p></div>
+            <div className="section-kicker-row">
+              <p className="eyebrow">04 / EVIDENCE & 05 / VERDICT</p>
+              <p className="mono-note">{result.verification.receiptId}</p>
+            </div>
+
             <div className="verdict-grid">
               <article className={`verdict-card verdict-${result.verification.verdict.toLowerCase()}`}>
-                <div className="verdict-icon">{result.verification.verdict === "MATCH" ? <ShieldCheck size={29} /> : <ShieldAlert size={29} />}</div>
+                <div className="verdict-icon">
+                  {result.verification.verdict === "MATCH" ? <ShieldCheck size={32} /> : <ShieldAlert size={32} />}
+                </div>
                 <p className="panel-kicker">05 / VERDICT</p>
                 <h2 id="verification-title">{verdictLabel(result.verification.verdict)}</h2>
                 <p>{result.verification.summary}</p>
@@ -351,18 +510,39 @@ export default function IntentWorkspace() {
               </article>
 
               <article className="transaction-panel">
-                <div className="receipt-heading"><p className="panel-kicker">04 / EVIDENCE: Blockchain facts</p>{result.inspection && <a href={`https://basescan.org/tx/${result.inspection.transactionHash}`} target="_blank" rel="noreferrer">View on BaseScan <ExternalLink size={13} /></a>}</div>
-                {result.inspection ? <dl className="transaction-list">
-                  <div><dt>Network</dt><dd>{result.inspection.networkChainId === "0x2105" ? "Base / 8453" : result.inspection.networkChainId}</dd></div>
-                  <div><dt>Transaction</dt><dd className="address-value">{shortHash(result.inspection.transactionHash)}</dd></div>
-                  <div><dt>To contract</dt><dd className="address-value">{shortHash(result.inspection.transaction?.to)}</dd></div>
-                  <div><dt>Function</dt><dd>{result.inspection.decoded.kind === "unknown" ? "UNRESOLVED" : result.inspection.decoded.kind.toUpperCase()} {result.inspection.decoded.selector ?? ""}</dd></div>
-                  <div><dt>Token</dt><dd>{result.inspection.decoded.routerSwap ? result.inspection.tokenMetadata.input?.symbol ?? "UNRESOLVED" : result.inspection.decoded.token ?? "NOT IDENTIFIED"}</dd></div>
-                  <div><dt>Observed input</dt><dd>{result.inspection.decoded.routerSwap ? formatTokenAmount(result.inspection.decoded.routerSwap.amountInRaw, result.inspection.tokenMetadata.input) : formatUsdc(result.inspection.observations.spentUsdcRaw ?? result.inspection.decoded.amountRaw)}</dd></div>
-                  <div><dt>Receipt</dt><dd>{result.inspection.receipt.state.toUpperCase()}</dd></div>
-                  {result.inspection.decoded.routerSwap && <><div><dt>Allowlisted path</dt><dd className="address-value">{formatTokenLabel(result.inspection.decoded.routerSwap.tokenIn, result.inspection.tokenMetadata.input)} → {formatTokenLabel(result.inspection.decoded.routerSwap.tokenOut, result.inspection.tokenMetadata.output)} / {result.inspection.decoded.routerSwap.fee}</dd></div><div><dt>Current quote</dt><dd>{result.inspection.simulation.state === "available" ? formatTokenAmount(result.inspection.simulation.amountOutRaw, result.inspection.tokenMetadata.output) : "UNAVAILABLE"}</dd></div></>}
-                </dl> : <div className="unavailable-transaction"><CircleAlert size={20} /><p>Transaction data was unavailable. IntentGuard did not turn the missing evidence into a successful result.</p></div>}
-                {result.inspection && <details className="raw-evidence-details"><summary><span><Braces size={15} /> Raw evidence packet</span><span>{result.inspection.raw.receipt?.logs.length ?? 0} receipt logs <ChevronDown size={14} /></span></summary><p>This packet contains the returned RPC fields, the full decoded calldata object, read-only token metadata, and read-only quote request/result metadata. It is inspectable evidence only; it never contains signing material.</p><pre>{JSON.stringify({ baseRpc: result.inspection.raw, decodedCalldata: result.inspection.decoded, tokenMetadata: result.inspection.tokenMetadata, readOnlySimulation: result.inspection.simulation }, null, 2)}</pre></details>}
+                <div className="receipt-heading">
+                  <p className="panel-kicker">04 / EVIDENCE: Blockchain facts</p>
+                  {result.inspection && <a href={`https://basescan.org/tx/${result.inspection.transactionHash}`} target="_blank" rel="noreferrer">View on BaseScan <ExternalLink size={13} /></a>}
+                </div>
+                {result.inspection ? (
+                  <dl className="transaction-list">
+                    <div><dt>Network</dt><dd>{result.inspection.networkChainId === "0x2105" ? "Base / 8453" : result.inspection.networkChainId}</dd></div>
+                    <div><dt>Transaction</dt><dd className="address-value">{shortHash(result.inspection.transactionHash)}</dd></div>
+                    <div><dt>To Contract</dt><dd className="address-value">{shortHash(result.inspection.transaction?.to)}</dd></div>
+                    <div><dt>Function</dt><dd>{result.inspection.decoded.kind === "unknown" ? "UNRESOLVED" : result.inspection.decoded.kind.toUpperCase()} {result.inspection.decoded.selector ?? ""}</dd></div>
+                    <div><dt>Token</dt><dd>{result.inspection.decoded.routerSwap ? result.inspection.tokenMetadata.input?.symbol ?? "UNRESOLVED" : result.inspection.decoded.token ?? "NOT IDENTIFIED"}</dd></div>
+                    <div><dt>Observed Spend</dt><dd>{result.inspection.decoded.routerSwap ? formatTokenAmount(result.inspection.decoded.routerSwap.amountInRaw, result.inspection.tokenMetadata.input) : formatUsdc(result.inspection.observations.spentUsdcRaw ?? result.inspection.decoded.amountRaw)}</dd></div>
+                    <div><dt>Receipt State</dt><dd>{result.inspection.receipt.state.toUpperCase()}</dd></div>
+                    {result.inspection.decoded.routerSwap && (
+                      <>
+                        <div><dt>Allowlisted Path</dt><dd className="address-value">{formatTokenLabel(result.inspection.decoded.routerSwap.tokenIn, result.inspection.tokenMetadata.input)} → {formatTokenLabel(result.inspection.decoded.routerSwap.tokenOut, result.inspection.tokenMetadata.output)} / {result.inspection.decoded.routerSwap.fee}</dd></div>
+                        <div><dt>Current Quote</dt><dd>{result.inspection.simulation.state === "available" ? formatTokenAmount(result.inspection.simulation.amountOutRaw, result.inspection.tokenMetadata.output) : "UNAVAILABLE"}</dd></div>
+                      </>
+                    )}
+                  </dl>
+                ) : (
+                  <div className="unavailable-transaction">
+                    <CircleAlert size={20} />
+                    <p>Transaction data was unavailable. IntentGuard did not turn the missing evidence into a successful result.</p>
+                  </div>
+                )}
+                {result.inspection && (
+                  <details className="raw-evidence-details">
+                    <summary><span><Braces size={15} /> Raw evidence packet</span><span>{result.inspection.raw.receipt?.logs.length ?? 0} receipt logs <ChevronDown size={14} /></span></summary>
+                    <p>This packet contains the returned RPC fields, the full decoded calldata object, read-only token metadata, and read-only quote request/result metadata.</p>
+                    <pre>{JSON.stringify({ baseRpc: result.inspection.raw, decodedCalldata: result.inspection.decoded, tokenMetadata: result.inspection.tokenMetadata, readOnlySimulation: result.inspection.simulation }, null, 2)}</pre>
+                  </details>
+                )}
               </article>
             </div>
 
@@ -403,6 +583,7 @@ export default function IntentWorkspace() {
               </article>
             )}
 
+            {/* Deterministic Evaluation Checks */}
             <div className="result-details-grid">
               <article className="evidence-panel">
                 <div className="receipt-heading">
@@ -455,9 +636,26 @@ export default function IntentWorkspace() {
                   })}
                 </ul>
               </article>
-              <article className="trace-panel-app"><div className="receipt-heading"><p className="panel-kicker">Agent trace</p><span>actual operations</span></div><ol>{result.trace.map((step) => <li key={step.id} className={`trace-${step.state}`}><span>{step.id}</span><div><strong>{step.label}</strong><p>{step.detail}</p></div></li>)}</ol></article>
+              <article className="trace-panel-app">
+                <div className="receipt-heading">
+                  <p className="panel-kicker">Agent trace</p>
+                  <span>actual operations</span>
+                </div>
+                <ol>
+                  {result.trace.map((step) => (
+                    <li key={step.id} className={`trace-${step.state}`}>
+                      <span>{step.id}</span>
+                      <div>
+                        <strong>{step.label}</strong>
+                        <p>{step.detail}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </article>
             </div>
 
+            {/* Provenance Origin Tree */}
             <article className="provenance-panel" aria-labelledby="provenance-title">
               <div className="receipt-heading">
                 <p className="panel-kicker" id="provenance-title">06 / RECEIPT: Provenance Origin Tree</p>
@@ -536,10 +734,26 @@ export default function IntentWorkspace() {
               </div>
             </article>
 
-            <article className="intent-receipt"><div className="receipt-heading"><p className="panel-kicker">06 / RECEIPT: EIP-712 attestation</p><span>Verified at {new Date(result.verification.observedAt).toLocaleString()}</span></div><div className="receipt-grid"><div><span>ID</span><strong>{result.verification.receiptId}</strong></div><div><span>Intent</span><strong>{result.intent.action.toUpperCase()} / {result.intent.maxSpendUsdc} USDC / BASE</strong></div><div><span>Result</span><strong className={`receipt-${result.verification.verdict.toLowerCase()}`}>{result.verification.verdict}</strong></div><div><span>Approval boundary</span><strong>NO SIGNATURE REQUESTED</strong></div></div></article>
+            {/* EIP-712 Receipt Summary */}
+            <article className="intent-receipt">
+              <div className="receipt-heading">
+                <p className="panel-kicker">06 / RECEIPT: EIP-712 attestation</p>
+                <span>Verified at {new Date(result.verification.observedAt).toLocaleString()}</span>
+              </div>
+              <div className="receipt-grid">
+                <div><span>ID</span><strong>{result.verification.receiptId}</strong></div>
+                <div><span>Intent</span><strong>{result.intent.action.toUpperCase()} / {result.intent.maxSpendUsdc} USDC / BASE</strong></div>
+                <div><span>Result</span><strong className={`receipt-${result.verification.verdict.toLowerCase()}`}>{result.verification.verdict}</strong></div>
+                <div><span>Approval boundary</span><strong>NO SIGNATURE REQUESTED</strong></div>
+              </div>
+            </article>
 
+            {/* Step 07: Base Sepolia Registry & Trust Loop */}
             <article className="trust-loop-panel" aria-labelledby="trust-loop-title">
-              <div className="receipt-heading"><p className="panel-kicker" id="trust-loop-title">07 / PROOF: Base Sepolia Registry</p><span>On-chain trust loop</span></div>
+              <div className="receipt-heading">
+                <p className="panel-kicker" id="trust-loop-title">07 / PROOF: Base Sepolia Registry</p>
+                <span>On-chain trust loop</span>
+              </div>
               <p className="trust-loop-copy">The Base Mainnet verdict remains a read-only inspection. The controls below commit the canonical policy and anchor a signed, independently attributable receipt on Base Sepolia only after transaction confirmation and on-chain readback validation.</p>
               <div className="trust-loop-grid">
                 <div><span>Policy</span><strong className={policyCommitment ? "trust-confirmed" : "trust-pending"}>{policyCommitment ? "COMMITTED" : "NOT COMMITTED"}</strong>{policyCommitment ? <><small>{shortHash(policyCommitment.policyId)}</small><a href={policyCommitment.explorerUrl} target="_blank" rel="noreferrer">Commitment tx <ExternalLink size={12} /></a></> : <small>No policy transaction has been confirmed.</small>}</div>
@@ -551,10 +765,19 @@ export default function IntentWorkspace() {
               </div>
               <div className="trust-loop-actions">
                 <div><p className="panel-kicker">No wallet execution</p><p>IntentGuard uses server-held infrastructure credentials only. It never requests the transaction sender’s private key, seed phrase, or wallet signature.</p></div>
-                {!policyCommitment ? <button type="button" className="button-primary" disabled={isWorking || !currentIntent} onClick={handleCommitPolicy}>{commitPolicy.isPending ? <><Loader2 size={16} className="animate-spin" /> Committing policy</> : <>Commit reviewed policy <FileCheck2 size={16} /></>}</button> : <button type="button" className="button-primary" disabled={isWorking || !result.inspection || Boolean(anchoredReceipt)} onClick={handleAnchorReceipt}>{anchorReceipt.isPending ? <><Loader2 size={16} className="animate-spin" /> Anchoring receipt</> : anchoredReceipt ? <>Receipt anchored <Check size={16} /></> : <>Anchor verification receipt <FileCheck2 size={16} /></>}</button>}
+                {!policyCommitment ? (
+                  <button type="button" className="button-primary" disabled={isWorking || !currentIntent} onClick={handleCommitPolicy}>
+                    {commitPolicy.isPending ? <><Loader2 size={16} className="animate-spin" /> Committing policy</> : <>Commit reviewed policy <FileCheck2 size={16} /></>}
+                  </button>
+                ) : (
+                  <button type="button" className="button-primary" disabled={isWorking || !result.inspection || Boolean(anchoredReceipt)} onClick={handleAnchorReceipt}>
+                    {anchorReceipt.isPending ? <><Loader2 size={16} className="animate-spin" /> Anchoring receipt</> : anchoredReceipt ? <>Receipt anchored <Check size={16} /></> : <>Anchor verification receipt <FileCheck2 size={16} /></>}
+                  </button>
+                )}
               </div>
             </article>
 
+            {/* Verifiable Session Export */}
             {verificationSession && (
               <article className="session-bundle-card">
                 <div className="receipt-heading">
