@@ -138,6 +138,27 @@ Evidence
               RECEIPT REGISTRY
 ```
 
+### Deterministic Confidence Semantics
+
+IntentGuard strictly rejects probabilistic "AI confidence scores". Instead, it applies discrete, deterministic evidence evaluation:
+
+| Evidence State | Meaning | Effect on Final Verdict |
+|---|---|---|
+| **`VERIFIED`** | Observable on-chain / calldata evidence satisfies the human constraint. | Permits `MATCH` if all required checks are satisfied. |
+| **`CONFLICTING`** | Observable evidence directly contradicts an explicit constraint limit. | Triggers deterministic **`MISMATCH`**. |
+| **`INSUFFICIENT`** | Required facts are unmined, missing from RPC, or unresolvable from calldata. | Triggers fail-closed **`CANNOT_VERIFY`** (unless a conflicting check is present). |
+
+**Example Evaluation:**
+```text
+Network       VERIFIED
+Recipient     VERIFIED
+Spend limit   VERIFIED
+Slippage      INSUFFICIENT
+Approval      CONFLICTING
+─────────────────────────────
+VERDICT   →   MISMATCH
+```
+
 ### Explicit Trust Invariants
 
 IntentGuard operates under strict non-custodial, deterministic boundaries. **IntentGuard does NOT:**

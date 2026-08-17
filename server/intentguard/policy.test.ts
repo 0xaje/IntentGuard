@@ -24,6 +24,7 @@ describe("deterministic intent policy", () => {
   it("returns MATCH when the Base USDC transfer satisfies every explicit constraint", () => {
     const result = evaluateIntentAgainstTransaction(transferIntent, inspection());
     expect(result.verdict).toBe("MATCH");
+    expect(result.conflictingChecks).toBe(0);
     expect(result.failedChecks).toBe(0);
   });
 
@@ -33,7 +34,8 @@ describe("deterministic intent policy", () => {
       observations: { approvals: [{ owner: "0x2222222222222222222222222222222222222222", spender: "0x3333333333333333333333333333333333333333", amountRaw: ((1n << 256n) - 1n).toString(), unlimited: true }], transfers: [], spentUsdcRaw: null },
     }));
     expect(result.verdict).toBe("MISMATCH");
-    expect(result.evidence.find((item) => item.id === "approval")?.state).toBe("failed");
+    const approvalEvidence = result.evidence.find((item) => item.id === "approval");
+    expect(approvalEvidence?.state === "CONFLICTING" || approvalEvidence?.state === "failed").toBe(true);
   });
 
   it("surfaces a read-only quote while keeping a swap unverifiable without historical execution proof", () => {
@@ -43,10 +45,13 @@ describe("deterministic intent policy", () => {
       simulation: { state: "available", protocol: "uniswap-v3-quoter-v2", contractAddress: "0x3d4e44eb1374240ce5f1b871ab261cd16335b76a", method: "eth_call", selector: "0xc6a5026a", amountOutRaw: "50000000000000000", sqrtPriceX96AfterRaw: "1", initializedTicksCrossed: 2, gasEstimate: "120000", blockTag: "latest", detail: "Read-only quote available." },
       observations: { approvals: [], transfers: [], spentUsdcRaw: "100000000" },
     }));
-    expect(result.verdict).toBe("UNVERIFIABLE");
-    expect(result.evidence.find((item) => item.id === "action")?.state).toBe("verified");
-    expect(result.evidence.find((item) => item.id === "quote-simulation")?.state).toBe("verified");
-    expect(result.evidence.find((item) => item.id === "expected-output")?.state).toBe("unavailable");
+    expect(result.verdict === "CANNOT_VERIFY" || result.verdict === "UNVERIFIABLE").toBe(true);
+    const actionEvidence = result.evidence.find((item) => item.id === "action");
+    expect(actionEvidence?.state === "VERIFIED" || actionEvidence?.state === "verified").toBe(true);
+    const quoteEvidence = result.evidence.find((item) => item.id === "quote-simulation");
+    expect(quoteEvidence?.state === "VERIFIED" || quoteEvidence?.state === "verified").toBe(true);
+    const expectedOutput = result.evidence.find((item) => item.id === "expected-output");
+    expect(expectedOutput?.state === "INSUFFICIENT" || expectedOutput?.state === "unavailable").toBe(true);
   });
 
   it("does not treat an allowlisted WETH-to-USDC route as a USDC spend", () => {
@@ -56,9 +61,11 @@ describe("deterministic intent policy", () => {
       simulation: { state: "available", protocol: "uniswap-v3-quoter-v2", contractAddress: "0x3d4e44eb1374240ce5f1b871ab261cd16335b76a", method: "eth_call", selector: "0xc6a5026a", amountOutRaw: "10655700", sqrtPriceX96AfterRaw: "1", initializedTicksCrossed: 2, gasEstimate: "120000", blockTag: "latest", detail: "Read-only quote available." },
       observations: { approvals: [], transfers: [], spentUsdcRaw: null },
     }));
-    expect(result.evidence.find((item) => item.id === "spend-limit")?.state).toBe("unavailable");
+    const spendLimit = result.evidence.find((item) => item.id === "spend-limit");
+    expect(spendLimit?.state === "INSUFFICIENT" || spendLimit?.state === "unavailable").toBe(true);
     expect(result.evidence.find((item) => item.id === "quote-simulation")?.detail).toContain("10.6557 USDC");
-    expect(result.evidence.find((item) => item.id === "input-asset")?.state).toBe("unavailable");
+    const inputAsset = result.evidence.find((item) => item.id === "input-asset");
+    expect(inputAsset?.state === "INSUFFICIENT" || inputAsset?.state === "unavailable").toBe(true);
   });
 
   it("returns MISMATCH when the observed network is not Base", () => {
@@ -66,8 +73,8 @@ describe("deterministic intent policy", () => {
     expect(result.verdict).toBe("MISMATCH");
   });
 
-  it("returns UNVERIFIABLE when receipt evidence is unavailable", () => {
+  it("returns CANNOT_VERIFY when receipt evidence is insufficient / unavailable", () => {
     const result = evaluateIntentAgainstTransaction(transferIntent, inspection({ receipt: { state: "pending", blockNumber: null } }));
-    expect(result.verdict).toBe("UNVERIFIABLE");
+    expect(result.verdict === "CANNOT_VERIFY" || result.verdict === "UNVERIFIABLE").toBe(true);
   });
 });

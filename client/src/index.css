@@ -280,9 +280,17 @@
   .raw-evidence-details pre { max-height: 320px; overflow: auto; margin: 0 0 1rem; border: 1px solid #d6d0c6; background: #e8e1d7; padding: .9rem; color: #293b47; font: .64rem/1.5 "IBM Plex Mono", monospace; white-space: pre-wrap; word-break: break-word; }
   .result-details-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: 3rem; padding-top: 3.8rem; }
   .evidence-list, .trace-panel-app ol { margin: 1.15rem 0 0; padding: 0; list-style: none; }
-  .evidence-list li { display: grid; grid-template-columns: 25px 1fr; gap: .7rem; padding: .9rem 0; border-top: 1px solid #e2dbd0; }
-  .evidence-state { display: grid; width: 20px; height: 20px; place-items: center; margin-top: .03rem; border: 1px solid currentColor; border-radius: 50%; font-family: "IBM Plex Mono", monospace; font-size: .72rem; }
+  .evidence-list li { display: grid; grid-template-columns: 100px 1fr; gap: 1rem; align-items: start; padding: .9rem 0; border-top: 1px solid #e2dbd0; }
+  .evidence-state-badge { display: inline-flex; align-items: center; justify-content: center; width: fit-content; padding: .2rem .5rem; border-radius: 3px; font-family: "IBM Plex Mono", monospace; font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .badge-verified { background: rgba(98, 113, 93, .14); color: #495e43; border: 1px solid rgba(98, 113, 93, .3); }
+  .badge-conflicting { background: rgba(200, 78, 49, .14); color: #c84e31; border: 1px solid rgba(200, 78, 49, .3); }
+  .badge-insufficient { background: rgba(165, 128, 66, .14); color: #8a6423; border: 1px solid rgba(165, 128, 66, .3); }
+  .count-verified { color: #495e43; font-weight: 700; }
+  .count-conflicting { color: #c84e31; font-weight: 700; }
+  .count-insufficient { color: #8a6423; font-weight: 700; }
   .evidence-verified { color: #62715d; }
+  .evidence-conflicting { color: #c84e31; }
+  .evidence-insufficient { color: #a58042; }
   .evidence-failed { color: #c84e31; }
   .evidence-unavailable { color: #a58042; }
   .evidence-list strong, .trace-panel-app strong { color: #182a39; font-size: .85rem; }

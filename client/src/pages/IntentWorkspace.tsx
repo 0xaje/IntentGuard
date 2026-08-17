@@ -64,7 +64,7 @@ function formatTokenLabel(address: string, metadata: TokenMetadataView) {
   return metadata?.state === "available" && metadata.symbol ? `${metadata.symbol} / ${shortHash(address)}` : shortHash(address);
 }
 
-function verdictLabel(verdict: "MATCH" | "MISMATCH" | "UNVERIFIABLE") {
+function verdictLabel(verdict: "MATCH" | "MISMATCH" | "CANNOT_VERIFY" | "UNVERIFIABLE") {
   if (verdict === "MATCH") return "Intent match";
   if (verdict === "MISMATCH") return "Intent mismatch";
   return "Cannot verify";
@@ -250,7 +250,11 @@ export default function IntentWorkspace() {
                 <p className="panel-kicker">04 / Verdict</p>
                 <h2 id="verification-title">{verdictLabel(result.verification.verdict)}</h2>
                 <p>{result.verification.summary}</p>
-                <div className="verdict-counts"><span>{result.verification.passedChecks} passed</span><span>{result.verification.failedChecks} failed</span><span>{result.verification.unavailableChecks} unavailable</span></div>
+                <div className="verdict-counts">
+                  <span className="count-verified">{result.verification.verifiedChecks ?? result.verification.passedChecks} VERIFIED</span>
+                  <span className="count-conflicting">{result.verification.conflictingChecks ?? result.verification.failedChecks} CONFLICTING</span>
+                  <span className="count-insufficient">{result.verification.insufficientChecks ?? result.verification.unavailableChecks} INSUFFICIENT</span>
+                </div>
               </article>
 
               <article className="transaction-panel">
@@ -270,7 +274,57 @@ export default function IntentWorkspace() {
             </div>
 
             <div className="result-details-grid">
-              <article className="evidence-panel"><div className="receipt-heading"><p className="panel-kicker">Evidence</p><span>{result.verification.evidence.length} checks</span></div><ul className="evidence-list">{result.verification.evidence.map((item) => <li key={item.id} className={`evidence-${item.state}`}><span className="evidence-state">{item.state === "verified" ? <Check size={14} /> : item.state === "failed" ? <CircleAlert size={14} /> : "?"}</span><div><strong>{item.label}</strong><p>{item.detail}</p><small>{item.source}</small>{result.inspection && <details className="evidence-row-details"><summary>Inspect source fields <ChevronDown size={13} /></summary><dl><div><dt>Evidence source</dt><dd>{item.source}</dd></div><div><dt>Transaction</dt><dd className="address-value">{result.inspection.transactionHash}</dd></div><div><dt>Selector</dt><dd>{result.inspection.decoded.selector ?? "Unavailable"}</dd></div><div><dt>Destination</dt><dd className="address-value">{result.inspection.transaction?.to ?? "Unavailable"}</dd></div>{result.inspection.decoded.routerSwap && <><div><dt>Token in</dt><dd className="address-value">{result.inspection.decoded.routerSwap.tokenIn}</dd></div><div><dt>Token out</dt><dd className="address-value">{result.inspection.decoded.routerSwap.tokenOut}</dd></div><div><dt>Fee / recipient</dt><dd>{result.inspection.decoded.routerSwap.fee} / {shortHash(result.inspection.decoded.routerSwap.recipient)}</dd></div><div><dt>Amount in / minimum</dt><dd>{result.inspection.decoded.routerSwap.amountInRaw} / {result.inspection.decoded.routerSwap.amountOutMinimumRaw}</dd></div><div><dt>Price limit</dt><dd>{result.inspection.decoded.routerSwap.sqrtPriceLimitX96Raw}</dd></div></>}{item.source === "Read-only QuoterV2" && <><div><dt>Quote state / block</dt><dd>{result.inspection.simulation.state.toUpperCase()} / {result.inspection.simulation.blockTag ?? "not requested"}</dd></div><div><dt>Quote contract</dt><dd className="address-value">{result.inspection.simulation.contractAddress ?? "Unavailable"}</dd></div><div><dt>Method / selector</dt><dd>{result.inspection.simulation.method ?? "Unavailable"} / {result.inspection.simulation.selector ?? "Unavailable"}</dd></div><div><dt>Output / gas estimate</dt><dd>{result.inspection.simulation.amountOutRaw ?? "Unavailable"} / {result.inspection.simulation.gasEstimate ?? "Unavailable"}</dd></div></>}</dl></details>}</div></li>)}</ul></article>
+              <article className="evidence-panel">
+                <div className="receipt-heading">
+                  <p className="panel-kicker">Evidence state</p>
+                  <span>{result.verification.evidence.length} deterministic checks</span>
+                </div>
+                <ul className="evidence-list">
+                  {result.verification.evidence.map((item) => {
+                    const normState = item.state === "VERIFIED" || item.state === "verified" ? "VERIFIED" : item.state === "CONFLICTING" || item.state === "failed" ? "CONFLICTING" : "INSUFFICIENT";
+                    return (
+                      <li key={item.id} className={`evidence-${normState.toLowerCase()}`}>
+                        <span className={`evidence-state-badge badge-${normState.toLowerCase()}`}>
+                          {normState}
+                        </span>
+                        <div>
+                          <strong>{item.label}</strong>
+                          <p>{item.detail}</p>
+                          <small>{item.source}</small>
+                          {result.inspection && (
+                            <details className="evidence-row-details">
+                              <summary>Inspect source fields <ChevronDown size={13} /></summary>
+                              <dl>
+                                <div><dt>Evidence source</dt><dd>{item.source}</dd></div>
+                                <div><dt>Transaction</dt><dd className="address-value">{result.inspection.transactionHash}</dd></div>
+                                <div><dt>Selector</dt><dd>{result.inspection.decoded.selector ?? "Unavailable"}</dd></div>
+                                <div><dt>Destination</dt><dd className="address-value">{result.inspection.transaction?.to ?? "Unavailable"}</dd></div>
+                                {result.inspection.decoded.routerSwap && (
+                                  <>
+                                    <div><dt>Token in</dt><dd className="address-value">{result.inspection.decoded.routerSwap.tokenIn}</dd></div>
+                                    <div><dt>Token out</dt><dd className="address-value">{result.inspection.decoded.routerSwap.tokenOut}</dd></div>
+                                    <div><dt>Fee / recipient</dt><dd>{result.inspection.decoded.routerSwap.fee} / {shortHash(result.inspection.decoded.routerSwap.recipient)}</dd></div>
+                                    <div><dt>Amount in / minimum</dt><dd>{result.inspection.decoded.routerSwap.amountInRaw} / {result.inspection.decoded.routerSwap.amountOutMinimumRaw}</dd></div>
+                                    <div><dt>Price limit</dt><dd>{result.inspection.decoded.routerSwap.sqrtPriceLimitX96Raw}</dd></div>
+                                  </>
+                                )}
+                                {item.source === "Read-only QuoterV2" && (
+                                  <>
+                                    <div><dt>Quote state / block</dt><dd>{result.inspection.simulation.state.toUpperCase()} / {result.inspection.simulation.blockTag ?? "not requested"}</dd></div>
+                                    <div><dt>Quote contract</dt><dd className="address-value">{result.inspection.simulation.contractAddress ?? "Unavailable"}</dd></div>
+                                    <div><dt>Method / selector</dt><dd>{result.inspection.simulation.method ?? "Unavailable"} / {result.inspection.simulation.selector ?? "Unavailable"}</dd></div>
+                                    <div><dt>Output / gas estimate</dt><dd>{result.inspection.simulation.amountOutRaw ?? "Unavailable"} / {result.inspection.simulation.gasEstimate ?? "Unavailable"}</dd></div>
+                                  </>
+                                )}
+                              </dl>
+                            </details>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </article>
               <article className="trace-panel-app"><div className="receipt-heading"><p className="panel-kicker">Agent trace</p><span>actual operations</span></div><ol>{result.trace.map((step) => <li key={step.id} className={`trace-${step.state}`}><span>{step.id}</span><div><strong>{step.label}</strong><p>{step.detail}</p></div></li>)}</ol></article>
             </div>
 

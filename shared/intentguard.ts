@@ -25,8 +25,8 @@ export const structuredIntentSchema = z.object({
 
 export type StructuredIntent = z.infer<typeof structuredIntentSchema>;
 
-export type EvidenceState = "verified" | "failed" | "unavailable";
-export type VerificationVerdict = "MATCH" | "MISMATCH" | "UNVERIFIABLE";
+export type EvidenceState = "VERIFIED" | "CONFLICTING" | "INSUFFICIENT" | "verified" | "failed" | "unavailable";
+export type VerificationVerdict = "MATCH" | "MISMATCH" | "CANNOT_VERIFY" | "UNVERIFIABLE";
 
 export type EvidenceItem = {
   id: string;
@@ -66,6 +66,9 @@ export type VerificationResult = {
   summary: string;
   evidence: EvidenceItem[];
   provenance: EvidenceProvenance;
+  verifiedChecks: number;
+  conflictingChecks: number;
+  insufficientChecks: number;
   passedChecks: number;
   failedChecks: number;
   unavailableChecks: number;
