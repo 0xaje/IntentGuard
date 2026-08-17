@@ -111,7 +111,8 @@ export type DecodedEffect = {
   assetsOut?: AssetAmount[];
   nativeValueWei?: string;
   abiSource: "LOCAL_VERIFIED" | "REGISTRY" | "RAW_SELECTOR" | "NONE";
-  decodeConfidence: "EXACT" | "PARTIAL" | "UNKNOWN";
+  decodeResolution?: "EXACT" | "PARTIAL" | "UNKNOWN";
+  decodeConfidence?: "EXACT" | "PARTIAL" | "UNKNOWN";
   typedDataDomain?: Record<string, unknown>;
 };
 
@@ -126,7 +127,7 @@ export type EvidenceKind =
   | "SIMULATION"
   | "POLICY_COMPARISON";
 
-export type EvidenceStatus = "PASS" | "FAIL" | "WARNING" | "UNAVAILABLE";
+export type EvidenceStatus = "VERIFIED" | "CONFLICTING" | "INSUFFICIENT" | "PASS" | "FAIL" | "WARNING" | "UNAVAILABLE";
 
 export type EvidenceItem = {
   id: string;
