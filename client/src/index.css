@@ -338,6 +338,25 @@
   .trust-loop-actions .panel-kicker { margin-bottom: .35rem; }
   .trust-loop-actions .button-primary { flex: 0 0 auto; border: 0; }
   .human-review-panel { display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; margin-top: 1.4rem; padding: 1.25rem; border: 1px solid #d6d0c6; border-left: 4px solid #182a39; background: rgba(236, 231, 222, .62); }
+
+  /* Why blocked / Intent Violation Breakdown Card */
+  .violation-breakdown-card { margin-top: 1.6rem; padding: 1.3rem; border: 1px solid rgba(200, 78, 49, .4); border-left: 4px solid #c84e31; background: rgba(200, 78, 49, .06); border-radius: 4px; }
+  .violation-header { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: 1rem; }
+  .violation-header h4 { margin: 0; color: #c84e31; font-family: "IBM Plex Mono", monospace; font-size: .82rem; font-weight: 700; letter-spacing: .06em; }
+  .violation-header p { margin: .2rem 0 0; color: #66716e; font-size: .78rem; line-height: 1.4; }
+  .violation-grid { display: grid; gap: 1rem; }
+  .violation-item { padding: .9rem 1rem; background: rgba(255, 255, 255, .6); border: 1px solid rgba(200, 78, 49, .2); border-radius: 3px; display: grid; gap: .45rem; }
+  .violation-row { display: flex; align-items: baseline; gap: .8rem; font-size: .78rem; flex-wrap: wrap; }
+  .violation-label { color: #78817b; font-family: "IBM Plex Mono", monospace; font-size: .66rem; text-transform: uppercase; min-width: 140px; }
+  .violation-val { color: #182a39; font-weight: 600; word-break: break-word; }
+  .violation-row code { font-family: "IBM Plex Mono", monospace; font-size: .72rem; color: #c84e31; background: rgba(200, 78, 49, .1); padding: .1rem .4rem; border-radius: 2px; }
+
+  /* Session Bundle Card */
+  .session-bundle-card { margin-top: 1.8rem; padding: 1.4rem; border: 1px solid #d6d0c6; background: #f0ebe2; border-radius: 4px; }
+  .session-bundle-card .receipt-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .8rem; margin-bottom: .6rem; }
+  .session-actions { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+  .button-subtle { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .8rem; border: 1px solid #d6d0c6; background: #e8e2d8; color: #182a39; font-family: "IBM Plex Mono", monospace; font-size: .68rem; font-weight: 600; cursor: pointer; border-radius: 3px; text-transform: uppercase; letter-spacing: .04em; }
+  .button-subtle:hover { background: #ded7cc; border-color: #182a39; color: #e7653d; }
   .human-review-panel h3 { margin: 0; color: #182a39; font-size: 1.25rem; letter-spacing: -.045em; }
   .human-review-panel p:last-child { max-width: 640px; margin: .55rem 0 0; color: #66716e; font-size: .81rem; line-height: 1.45; }
   .human-review-button { flex: 0 0 auto; border: 1px solid #182a39; background: #182a39; color: #f5f0e8; padding: .75rem .9rem; font-family: "IBM Plex Mono", monospace; font-size: .62rem; text-transform: uppercase; letter-spacing: .07em; }

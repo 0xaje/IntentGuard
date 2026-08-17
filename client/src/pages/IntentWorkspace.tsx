@@ -1,7 +1,7 @@
 // Forensic Signal style reminder: show the evidence trail before the visual verdict; never imply a successful chain action or wallet approval that did not occur.
 import { useState, type FormEvent } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ArrowUpRight, Braces, Check, ChevronDown, CircleAlert, Copy, ExternalLink, FileCheck2, Loader2, ScanLine, ShieldAlert, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Braces, Check, ChevronDown, CircleAlert, Copy, Download, ExternalLink, FileCheck2, Loader2, ScanLine, ShieldAlert, ShieldCheck } from "lucide-react";
 import SignalMark from "@/components/SignalMark";
 import { trpc } from "@/lib/trpc";
 import type { VerificationSession } from "@shared/intentguard";
@@ -201,44 +201,78 @@ export default function IntentWorkspace() {
     anchorReceipt.mutate({ text: intentText, transactionHash: normalizedHash, policyId: policyCommitment.policyId, receiptValidForSeconds: 86_400 });
   }
 
+  function downloadSessionJson() {
+    if (!verificationSession) return;
+    const blob = new Blob([JSON.stringify(verificationSession, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${verificationSession.sessionId}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="app-shell">
       <header className="app-header">
         <div className="app-header-inner">
-          <Link href="/" className="brand-lockup" aria-label="Return to IntentGuard landing page">
-            <span className="brand-mark-frame"><SignalMark className="h-5 w-5 text-foreground" /></span>
-            <span className="brand-name"><span>Intent</span><span className="brand-name-muted">Guard</span></span>
-          </Link>
-          <div className="app-header-context"><span>Base Mainnet</span><span className={`rpc-indicator ${baseHealth.data?.status === "reachable" ? "is-live" : ""}`} /> {baseHealth.isLoading ? "Checking RPC" : baseHealth.data?.status === "reachable" ? "Live RPC" : "RPC unavailable"}</div>
-          <Link href="/" className="app-return"><ArrowLeft size={15} /> Field guide</Link>
+          <div className="app-brand-lockup">
+            <Link href="/" className="app-home-link" aria-label="Return to IntentGuard landing page">
+              <SignalMark className="h-6 w-6 text-signal" />
+              <span className="app-wordmark">IntentGuard</span>
+            </Link>
+            <div className="app-header-context">
+              <span className="context-separator">/</span>
+              <span className="context-label">Agent-Compatible Transaction Verification</span>
+            </div>
+          </div>
+          <div className="app-status-bar">
+            <div className="status-indicator">
+              <span className={`status-dot ${baseHealth.data?.status === "reachable" ? "status-online" : "status-offline"}`} />
+              <span className="status-text">{baseHealth.data?.status === "reachable" ? "Base RPC connected" : baseHealth.data?.status === "wrong-network" ? "Base RPC (Network mismatch)" : "Base RPC offline"}</span>
+            </div>
+            <Link href="/" className="back-link"><ArrowLeft size={14} /> Back to Overview</Link>
+          </div>
         </div>
       </header>
 
-      <main className="app-main section-shell">
-        <div className="app-signal-rail" aria-hidden="true">
-          <span>IG / BASE / 01</span>
-          <i className="rail-active" />
-          <i />
-          <i />
-          <i />
-          <i />
-        </div>
-        <section className="app-intro">
+      <main className="app-main">
+        <div className="app-intro">
           <div>
-            <p className="eyebrow"><ScanLine size={14} /> Deterministic Intent Verification / Base</p>
-            <h1>Test an agent action against the limits you actually set.</h1>
+            <p className="eyebrow">Deterministic Trust Lifecycle</p>
+            <h1>Prove that an AI agent did what the human actually asked.</h1>
+            <p className="app-intro-copy">
+              A deterministic trust layer for AI agents that converts human intent into enforceable constraints, independently evaluates proposed blockchain actions, and produces cryptographically verifiable receipts.
+            </p>
           </div>
-          <p>IntentGuard is a deterministic intent-verification and attestation layer for AI agent transactions on Base. It compares human-declared constraints with observable transaction behavior and produces a cryptographically verifiable verdict before or after execution, depending on available evidence.</p>
-        </section>
+          <div className="app-meta-box">
+            <div className="meta-row">
+              <span className="meta-label">Protocol</span>
+              <span className="meta-val">v1 (Base / 8453)</span>
+            </div>
+            <div className="meta-row">
+              <span className="meta-label">Registry</span>
+              <span className="meta-val">Base Sepolia (84532)</span>
+            </div>
+            <div className="meta-row">
+              <span className="meta-label">Model</span>
+              <span className="meta-val">Zero Custody • Fail-Closed</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="chain-of-custody" aria-label="Verification workflow sequence">
+          <span>01 / INTENT</span><i /><span>02 / POLICY</span><i /><span>03 / REQUEST</span><i /><span>04 / EVIDENCE</span><i /><span>05 / VERDICT</span><i /><span>06 / RECEIPT</span><i /><span>07 / PROOF</span>
+        </div>
 
         <div className="app-workspace-grid">
           <section className="composer-panel" aria-labelledby="composer-title">
             <div className="panel-heading">
               <span className="panel-index">01</span>
-              <div><p className="panel-kicker">Human intent</p><h2 id="composer-title">What are you trying to do?</h2></div>
+              <div><p className="panel-kicker">01 / INTENT</p><h2 id="composer-title">Human constraint</h2></div>
             </div>
             <form onSubmit={handleExtract} className="intent-form">
-              <label htmlFor="intent-text">Use natural language. Base must be explicit.</label>
+              <label htmlFor="intent-text">Declare user intent in natural language. Base must be explicit.</label>
               <textarea id="intent-text" value={intentText} onChange={(event) => { setIntentText(event.target.value); setClientError(null); commitPolicy.reset(); anchorReceipt.reset(); }} rows={7} maxLength={600} spellCheck="false" />
               <div className="example-row" aria-label="Supported example intents">
                 {examples.map((example) => (
@@ -258,9 +292,9 @@ export default function IntentWorkspace() {
 
           <aside className="operation-boundary">
             <SignalMark className="h-10 w-10 text-signal" />
-            <p className="panel-kicker">Two distinct security stages</p>
-            <h2>Pre-execution vs. Post-execution</h2>
-            <p><strong>Pre-execution:</strong> Can this proposed transaction safely proceed according to declared intent? <br /><br /><strong>Post-execution:</strong> Did the transaction that actually executed remain consistent with declared intent? <br /><br />IntentGuard inspects observable calldata and mined Base RPC receipts to produce deterministic verdicts and signed attestations without ever touching private keys.</p>
+            <p className="panel-kicker">Deterministic Trust Guardrail</p>
+            <h2>Agent proposes; IntentGuard evaluates.</h2>
+            <p><strong>Non-custodial boundary:</strong> The agent never holds user funds or private keys. The agent simply proposes candidate calldata and transactions. <br /><br /><strong>Independent attestation:</strong> IntentGuard deterministically verifies observed facts against the human policy, signs an EIP-712 trust receipt, and anchors it to Base Sepolia.</p>
           </aside>
         </div>
 
@@ -268,11 +302,11 @@ export default function IntentWorkspace() {
 
         {currentIntent && (
           <section className="intent-review-section" aria-labelledby="intent-review-title">
-            <div className="section-kicker-row"><p className="eyebrow">Review before inspection</p><p className="mono-note">schema validated</p></div>
+            <div className="section-kicker-row"><p className="eyebrow">02 / POLICY</p><p className="mono-note">schema validated</p></div>
             <div className="intent-review-grid">
               <div className="intent-summary">
-                <p className="panel-kicker">02 / Structured intent</p>
-                <h2 id="intent-review-title">These are the limits IntentGuard will enforce.</h2>
+                <p className="panel-kicker">02 / POLICY</p>
+                <h2 id="intent-review-title">Cryptographic policy commitment</h2>
                 <p>All verdicts below are calculated from these stated constraints and the observable Base transaction evidence.</p>
               </div>
               <dl className="constraint-list">
@@ -288,15 +322,11 @@ export default function IntentWorkspace() {
           </section>
         )}
 
-        <div className="chain-of-custody" aria-label="Verification workflow sequence">
-          <span>01 / Human intent</span><i /><span>02 / Policy commitment</span><i /><span>03 / Orion agent proposal</span><i /><span>04 / Deterministic verification</span><i /><span>05 / Provenance</span><i /><span>06 / Attestation</span>
-        </div>
-
         <section className="transaction-entry-section" aria-labelledby="transaction-title">
-          <div className="panel-heading"><span className="panel-index">03</span><div><p className="panel-kicker">Orion / AI Agent proposal</p><h2 id="transaction-title">The agent proposes; IntentGuard verifies.</h2></div></div>
-          <p className="transaction-entry-copy">The autonomous agent does not evaluate its own safety or hold custody—it simply <strong>produces a proposed action</strong>. IntentGuard independently checks whether this real Base transaction or calldata matches the human instruction before/after execution.</p>
+          <div className="panel-heading"><span className="panel-index">03</span><div><p className="panel-kicker">03 / REQUEST</p><h2 id="transaction-title">Agent proposal (Orion / AI Agent)</h2></div></div>
+          <p className="transaction-entry-copy">The autonomous agent does not evaluate its own safety or hold custody—it simply <strong>produces a proposed action</strong>. IntentGuard independently checks whether this real Base transaction or calldata matches the human instruction before or after execution.</p>
           <div className="hash-form">
-            <label htmlFor="transaction-hash">Base transaction hash / proposed action</label>
+            <label htmlFor="transaction-hash">Base transaction hash / proposed calldata</label>
             <div className="hash-control"><input id="transaction-hash" value={transactionHash} onChange={(event) => { setTransactionHash(event.target.value); setClientError(null); }} placeholder="0x…" inputMode="text" autoComplete="off" spellCheck="false" /><button type="button" className="button-primary" onClick={handleVerify} disabled={isWorking || !currentIntent}>{verifyIntent.isPending ? <><Loader2 size={16} className="animate-spin" /> Inspecting Base</> : <>Verify agent action <FileCheck2 size={16} /></>}</button></div>
             {!currentIntent && <p className="form-note">Extract and review the intent first. No verification request will be sent until the policy is visible.</p>}
           </div>
@@ -306,11 +336,11 @@ export default function IntentWorkspace() {
 
         {result && (
           <section className="verification-output" aria-labelledby="verification-title">
-            <div className="section-kicker-row"><p className="eyebrow">Evidence-led verification</p><p className="mono-note">{result.verification.receiptId}</p></div>
+            <div className="section-kicker-row"><p className="eyebrow">04 / EVIDENCE & 05 / VERDICT</p><p className="mono-note">{result.verification.receiptId}</p></div>
             <div className="verdict-grid">
               <article className={`verdict-card verdict-${result.verification.verdict.toLowerCase()}`}>
                 <div className="verdict-icon">{result.verification.verdict === "MATCH" ? <ShieldCheck size={29} /> : <ShieldAlert size={29} />}</div>
-                <p className="panel-kicker">04 / Verdict</p>
+                <p className="panel-kicker">05 / VERDICT</p>
                 <h2 id="verification-title">{verdictLabel(result.verification.verdict)}</h2>
                 <p>{result.verification.summary}</p>
                 <div className="verdict-counts">
@@ -321,7 +351,7 @@ export default function IntentWorkspace() {
               </article>
 
               <article className="transaction-panel">
-                <div className="receipt-heading"><p className="panel-kicker">Observed transaction</p>{result.inspection && <a href={`https://basescan.org/tx/${result.inspection.transactionHash}`} target="_blank" rel="noreferrer">View on BaseScan <ExternalLink size={13} /></a>}</div>
+                <div className="receipt-heading"><p className="panel-kicker">04 / EVIDENCE: Blockchain facts</p>{result.inspection && <a href={`https://basescan.org/tx/${result.inspection.transactionHash}`} target="_blank" rel="noreferrer">View on BaseScan <ExternalLink size={13} /></a>}</div>
                 {result.inspection ? <dl className="transaction-list">
                   <div><dt>Network</dt><dd>{result.inspection.networkChainId === "0x2105" ? "Base / 8453" : result.inspection.networkChainId}</dd></div>
                   <div><dt>Transaction</dt><dd className="address-value">{shortHash(result.inspection.transactionHash)}</dd></div>
@@ -336,10 +366,47 @@ export default function IntentWorkspace() {
               </article>
             </div>
 
+            {/* Why Blocked / Intent Violation Breakdown */}
+            {result.verification.verdict === "MISMATCH" && (
+              <article className="violation-breakdown-card">
+                <div className="violation-header">
+                  <CircleAlert size={22} style={{ color: "#c84e31", flexShrink: 0 }} />
+                  <div>
+                    <h4>INTENT VIOLATION DETECTED</h4>
+                    <p>IntentGuard blocked approval because the observed transaction directly contradicts declared policy limits.</p>
+                  </div>
+                </div>
+                <div className="violation-grid">
+                  {result.verification.evidence
+                    .filter((item) => item.state === "CONFLICTING" || item.state === "failed")
+                    .map((item) => (
+                      <div key={item.id} className="violation-item">
+                        <div className="violation-row">
+                          <span className="violation-label">User policy:</span>
+                          <strong>{item.id === "approval" ? "No unlimited approvals (prohibitUnlimitedApproval = true)" : item.id === "spend-limit" ? `Spend cap ${result.intent.maxSpendUsdc} USDC` : item.id === "chain" ? "Network must be Base Mainnet (8453)" : "Explicit declared human constraint"}</strong>
+                        </div>
+                        <div className="violation-row">
+                          <span className="violation-label">Observed on Base:</span>
+                          <span className="violation-val">{item.detail}</span>
+                        </div>
+                        <div className="violation-row">
+                          <span className="violation-label">Deterministic rule:</span>
+                          <code>{item.id === "approval" ? "APPROVAL_AMOUNT <= MAX_EXACT_SPEND" : item.id === "spend-limit" ? "OBSERVED_SPEND <= MAX_SPEND_USDC" : item.id === "chain" ? "CHAIN_ID == 8453" : "OBSERVED_FACTS == INTENT_SPEC"}</code>
+                        </div>
+                        <div className="violation-row">
+                          <span className="violation-label">Evaluation result:</span>
+                          <strong className="badge-conflicting">CONFLICTING → FAILED</strong>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </article>
+            )}
+
             <div className="result-details-grid">
               <article className="evidence-panel">
                 <div className="receipt-heading">
-                  <p className="panel-kicker">Evidence state</p>
+                  <p className="panel-kicker">04 / EVIDENCE: Evaluation checks</p>
                   <span>{result.verification.evidence.length} deterministic checks</span>
                 </div>
                 <ul className="evidence-list">
@@ -393,7 +460,7 @@ export default function IntentWorkspace() {
 
             <article className="provenance-panel" aria-labelledby="provenance-title">
               <div className="receipt-heading">
-                <p className="panel-kicker" id="provenance-title">05 / Evidence Provenance</p>
+                <p className="panel-kicker" id="provenance-title">06 / RECEIPT: Provenance Origin Tree</p>
                 <span>Forensic origin trace</span>
               </div>
               <p className="provenance-intro">
@@ -459,7 +526,7 @@ export default function IntentWorkspace() {
                 <div className="tree-node">
                   <span className="tree-branch">├──</span>
                   <span className="tree-label">Receipt schema:</span>
-                  <span className="tree-val">v{result.verification.provenance?.receiptSchemaVersion ?? 1} (EIP-712)</span>
+                  <span className="tree-val">v{result.verification.provenance?.receiptSchemaVersion ?? 1}</span>
                 </div>
                 <div className="tree-node">
                   <span className="tree-branch">└──</span>
@@ -469,9 +536,10 @@ export default function IntentWorkspace() {
               </div>
             </article>
 
-            <article className="intent-receipt"><div className="receipt-heading"><p className="panel-kicker">Intent receipt</p><span>Verified at {new Date(result.verification.observedAt).toLocaleString()}</span></div><div className="receipt-grid"><div><span>ID</span><strong>{result.verification.receiptId}</strong></div><div><span>Intent</span><strong>{result.intent.action.toUpperCase()} / {result.intent.maxSpendUsdc} USDC / BASE</strong></div><div><span>Result</span><strong className={`receipt-${result.verification.verdict.toLowerCase()}`}>{result.verification.verdict}</strong></div><div><span>Approval boundary</span><strong>NO SIGNATURE REQUESTED</strong></div></div></article>
+            <article className="intent-receipt"><div className="receipt-heading"><p className="panel-kicker">06 / RECEIPT: EIP-712 attestation</p><span>Verified at {new Date(result.verification.observedAt).toLocaleString()}</span></div><div className="receipt-grid"><div><span>ID</span><strong>{result.verification.receiptId}</strong></div><div><span>Intent</span><strong>{result.intent.action.toUpperCase()} / {result.intent.maxSpendUsdc} USDC / BASE</strong></div><div><span>Result</span><strong className={`receipt-${result.verification.verdict.toLowerCase()}`}>{result.verification.verdict}</strong></div><div><span>Approval boundary</span><strong>NO SIGNATURE REQUESTED</strong></div></div></article>
+
             <article className="trust-loop-panel" aria-labelledby="trust-loop-title">
-              <div className="receipt-heading"><p className="panel-kicker" id="trust-loop-title">Verification receipt</p><span>Base Sepolia attestation infrastructure</span></div>
+              <div className="receipt-heading"><p className="panel-kicker" id="trust-loop-title">07 / PROOF: Base Sepolia Registry</p><span>On-chain trust loop</span></div>
               <p className="trust-loop-copy">The Base Mainnet verdict remains a read-only inspection. The controls below commit the canonical policy and anchor a signed, independently attributable receipt on Base Sepolia only after transaction confirmation and on-chain readback validation.</p>
               <div className="trust-loop-grid">
                 <div><span>Policy</span><strong className={policyCommitment ? "trust-confirmed" : "trust-pending"}>{policyCommitment ? "COMMITTED" : "NOT COMMITTED"}</strong>{policyCommitment ? <><small>{shortHash(policyCommitment.policyId)}</small><a href={policyCommitment.explorerUrl} target="_blank" rel="noreferrer">Commitment tx <ExternalLink size={12} /></a></> : <small>No policy transaction has been confirmed.</small>}</div>
@@ -486,20 +554,20 @@ export default function IntentWorkspace() {
                 {!policyCommitment ? <button type="button" className="button-primary" disabled={isWorking || !currentIntent} onClick={handleCommitPolicy}>{commitPolicy.isPending ? <><Loader2 size={16} className="animate-spin" /> Committing policy</> : <>Commit reviewed policy <FileCheck2 size={16} /></>}</button> : <button type="button" className="button-primary" disabled={isWorking || !result.inspection || Boolean(anchoredReceipt)} onClick={handleAnchorReceipt}>{anchorReceipt.isPending ? <><Loader2 size={16} className="animate-spin" /> Anchoring receipt</> : anchoredReceipt ? <>Receipt anchored <Check size={16} /></> : <>Anchor verification receipt <FileCheck2 size={16} /></>}</button>}
               </div>
             </article>
-            <article className="human-review-panel">
-              <div>
-                <p className="panel-kicker">05 / Human approval</p>
-                <h3>{result.verification.verdict === "MATCH" ? "A human may record the review." : "Approval is blocked until the evidence is sufficient."}</h3>
-                <p>{result.verification.verdict === "MATCH" ? "Recording this review is a local browser acknowledgement only. It does not request a signature, connect a wallet, or submit a transaction." : result.verification.verdict === "MISMATCH" ? "IntentGuard will not enable approval because the observed action conflicts with an explicit constraint." : "IntentGuard will not enable approval because one or more required facts remain unavailable."}</p>
-              </div>
-              <button type="button" className="human-review-button" disabled={result.verification.verdict !== "MATCH" || humanReviewRecorded} onClick={() => setHumanReviewRecorded(true)}>{humanReviewRecorded ? "Review recorded locally" : result.verification.verdict === "MATCH" ? "Record human review" : "Approval unavailable"}</button>
-            </article>
 
             {verificationSession && (
               <article className="session-bundle-card">
                 <div className="receipt-heading">
-                  <p className="panel-kicker">06 / End-to-end Forensic Session</p>
-                  <div className="session-actions" style={{ display: "flex", gap: "8px" }}>
+                  <p className="panel-kicker">07 / PROOF: Verifiable Forensic Session</p>
+                  <div className="session-actions">
+                    <button
+                      type="button"
+                      className="button-subtle"
+                      onClick={downloadSessionJson}
+                      title="Download complete JSON file"
+                    >
+                      <Download size={14} /> Download Evidence Packet (.json)
+                    </button>
                     <button
                       type="button"
                       className="button-subtle"
@@ -509,18 +577,18 @@ export default function IntentWorkspace() {
                         setTimeout(() => setSessionCopied(false), 2000);
                       }}
                     >
-                      {sessionCopied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy VerificationSession JSON</>}
+                      {sessionCopied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy JSON</>}
                     </button>
                     <button
                       type="button"
                       className="button-subtle"
                       onClick={() => setShowSessionJson((prev) => !prev)}
                     >
-                      <Braces size={14} /> {showSessionJson ? "Hide JSON" : "Inspect VerificationSession"}
+                      <Braces size={14} /> {showSessionJson ? "Hide Raw" : "Inspect Session JSON"}
                     </button>
                   </div>
                 </div>
-                <p className="provenance-copy">Unified end-to-end envelope containing: <code>IntentSpec</code> + <code>PolicyCommitment</code> + <code>ProposedRequest</code> + <code>EvidencePacket</code> + <code>VerificationResult</code> + <code>ReceiptAttestation</code>.</p>
+                <p className="provenance-copy">Unified verifiable bundle containing: <code>IntentSpec</code> + <code>PolicyCommitment</code> + <code>ProposedRequest</code> + <code>EvidencePacket</code> + <code>VerificationResult</code> + <code>ReceiptAttestation</code>.</p>
                 {showSessionJson && (
                   <pre className="session-json-view" style={{ background: "rgba(0,0,0,0.6)", padding: "16px", borderRadius: "8px", overflowX: "auto", fontSize: "12px", fontFamily: "var(--font-mono)", border: "1px solid rgba(255,255,255,0.08)", marginTop: "12px" }}>
                     <code>{JSON.stringify(verificationSession, null, 2)}</code>
@@ -528,6 +596,15 @@ export default function IntentWorkspace() {
                 )}
               </article>
             )}
+
+            <article className="human-review-panel">
+              <div>
+                <p className="panel-kicker">Human review record</p>
+                <h3>{result.verification.verdict === "MATCH" ? "A human may record the review." : "Approval is blocked until the evidence is sufficient."}</h3>
+                <p>{result.verification.verdict === "MATCH" ? "Recording this review is a local browser acknowledgement only. It does not request a signature, connect a wallet, or submit a transaction." : result.verification.verdict === "MISMATCH" ? "IntentGuard will not enable approval because the observed action conflicts with an explicit constraint." : "IntentGuard will not enable approval because one or more required facts remain unavailable."}</p>
+              </div>
+              <button type="button" className="human-review-button" disabled={result.verification.verdict !== "MATCH" || humanReviewRecorded} onClick={() => setHumanReviewRecorded(true)}>{humanReviewRecorded ? "Review recorded locally" : result.verification.verdict === "MATCH" ? "Record human review" : "Approval unavailable"}</button>
+            </article>
           </section>
         )}
       </main>

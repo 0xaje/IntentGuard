@@ -87,9 +87,9 @@ export default function Home() {
           </div>
 
           <div className="hero-copy">
-            <p className="eyebrow"><ScanLine size={14} /> Deterministic Intent Verification / Base</p>
-            <h1>Verify the intent before and after you execute.</h1>
-            <p className="hero-lede">IntentGuard is a deterministic intent-verification and attestation layer for AI agent transactions on Base. It compares human-declared constraints with observable transaction behavior and produces a cryptographically verifiable verdict before or after execution, depending on available evidence.</p>
+            <p className="eyebrow"><ScanLine size={14} /> Agent-Compatible Intent Verification / Base</p>
+            <h1>Prove that an AI agent did what the human actually asked.</h1>
+            <p className="hero-lede">A deterministic trust layer for AI agents that converts human intent into enforceable constraints, independently evaluates proposed blockchain actions, and produces cryptographically verifiable receipts on Base.</p>
             <div className="hero-actions">
               <a className="button-primary" href="/app">Test an Agent Action <ArrowDownRight size={17} /></a>
               <a className="text-action" href="#principles" onClick={scrollToSection}>Security Boundaries <ArrowUpRight size={16} /></a>
