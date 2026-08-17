@@ -93,7 +93,7 @@ Once the required Base Sepolia configuration is securely provided, deploy the re
 
 ```bash
 INTENTGUARD_DEPLOYMENT_OUTPUT=deployments/baseSepolia.json \
-pnpm exec hardhat run scripts/deploy.ts --network baseSepolia
+pnpm exec hardhat run scripts/deploy.cjs --network baseSepolia
 ```
 
 Then set the confirmed `POLICY_REGISTRY_ADDRESS` and `RECEIPT_REGISTRY_ADDRESS`, and run:

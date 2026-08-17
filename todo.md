@@ -118,3 +118,9 @@
 - [x] Diagnose why `npm start` does not serve the IntentGuard frontend in the IDE and verify the correct local development command and URL.
 - [x] Add only the minimal start-script or documentation change required to make the verified frontend startup path clear, then test, commit, push, and checkpoint it.
 - [x] Commit, push, and checkpoint the verified `start:local` script and IDE frontend-startup guidance.
+
+## Paused deployment readiness
+
+- [x] Audit remaining trust-loop items for safe completion without Base Sepolia credentials and document any work that must remain paused.
+- [x] Add and test deployment-script preflight validation so missing Base Sepolia RPC, deployer key, admin, or evaluator configuration fails before any on-chain deployment attempt.
+- [x] Make the deployment entrypoint executable by the configured Hardhat runner, then re-run the offline preflight test.
