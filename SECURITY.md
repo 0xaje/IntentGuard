@@ -1,14 +1,21 @@
 # Security Policy
 
-## Security posture
+## Security Posture & Trust Boundaries
 
-IntentGuard is a hackathon MVP for read-only transaction-intent analysis. It is **not audited** and must not be used as a custody system, transaction executor, wallet replacement, or guarantee that a transaction is safe.
+IntentGuard is a deterministic intent-verification and attestation layer for AI agent transactions on Base.
 
-The repository’s smart contracts are intentionally non-custodial. They store policy commitments, target metadata, and signed evidence receipts; they do not hold ETH or ERC-20 assets and do not make arbitrary external calls.
+### Explicit Trust Invariants
+IntentGuard strictly adheres to the following non-custodial invariants. **IntentGuard does NOT:**
+- **Hold user funds**: Zero token custody, no escrow contracts, and no balance storage.
+- **Hold user private keys**: Never receives, stores, or requests mnemonic phrases or private keys.
+- **Execute transactions on behalf of users**: Never broadcasts transactions for users or acts as a relayer.
+- **Trust an LLM to determine the final verdict**: LLMs only assist in natural language normalization; all verdicts (`MATCH`, `MISMATCH`, `UNVERIFIABLE`) are strictly computed by deterministic TypeScript/Solidity policy code.
+- **Infer missing blockchain evidence**: Missing RPC data or unmined states never default to success.
+- **Convert unavailable evidence into approval**: Unknown selectors or unavailable RPC endpoints fail closed.
 
-## Supported scope
+## Supported Scope
 
-The current core implementation supports native transfers, ERC-20 `transfer`, ERC-20 `approve`, and ERC-2612-style `Permit` typed data. Unsupported or incomplete effects should return `CANNOT_VERIFY`. Generic nested calls, universal EOA enforcement, and live simulation adapters are outside the current core scope.
+The current core implementation supports native transfers, ERC-20 approvals and supported permit evidence (`transfer`, `approve`, ERC-2612 typed `Permit`), and allowlisted Uniswap V3 `SwapRouter02.exactInputSingle` routes. Unsupported or incomplete effects return `CANNOT_VERIFY` / `UNVERIFIABLE`. Generic nested calls, universal EOA enforcement, and live simulation adapters are outside the current core scope.
 
 ## Reporting a vulnerability
 

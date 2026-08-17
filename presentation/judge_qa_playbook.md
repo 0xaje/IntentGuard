@@ -5,6 +5,16 @@
 
 **Core Thesis**: Pre-execution (*Can this proposed transaction safely proceed?*) and Post-execution (*Did the transaction that actually executed remain consistent?*) are **fundamentally different security problems**. The current implementation is strongest at post-execution / transaction evidence verification alongside preflight QuoterV2 / calldata simulation checks.
 
+### Formal Trust Boundary Invariants
+
+IntentGuard does **NOT**:
+1. **Hold user funds** (non-custodial; zero balance storage)
+2. **Hold user private keys** (never touches key material or seed phrases)
+3. **Execute transactions on behalf of users** (does not act as a relayer or sign for EOAs)
+4. **Trust an LLM to determine the final verdict** (deterministic code decides; LLMs only format input schemas)
+5. **Infer missing blockchain evidence** (never assumes unobserved data is safe)
+6. **Convert unavailable evidence into approval** (fails closed on unknown or unreachable data)
+
 ## 1. Answering doctrine
 
 Every answer should follow the same four-part pattern:

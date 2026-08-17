@@ -70,38 +70,63 @@ IntentGuard explicitly distinguishes between three concepts often conflated in W
 
 ---
 
-## Trust Architecture & Boundaries
+## Formal Trust Architecture & Boundaries
 
 ```text
-               +---------------------------------------------+
-               | User / DApp Intent Definition               |
-               +---------------------------------------------+
-                                      |
-                                      v
-               +---------------------------------------------+
-               | Deterministic Policy Engine & Decoder       |
-               +---------------------------------------------+
-                                      |
-                         +------------+------------+
-                         |                         |
-                         v                         v
-               +-------------------+     +-------------------+
-               | Base Mainnet RPC  |     | Base Sepolia      |
-               | (Live Evidence)   |     | Registry / Trust  |
-               +-------------------+     +-------------------+
-                         |                         |
-                         +------------+------------+
-                                      |
-                                      v
-               +---------------------------------------------+
-               | EIP-712 Signed Receipt (MATCH/MISMATCH/...) |
-               +---------------------------------------------+
+                    HUMAN
+                      │
+                      │ declares intent
+                      ▼
+             ┌──────────────────┐
+             │   INTENT SPEC    │
+             │                  │
+             │ constraints      │
+             └────────┬─────────┘
+                      │
+                      ▼
+             ┌──────────────────┐
+             │ POLICY COMMITMENT│
+             │                  │
+             │ keccak256        │
+             └────────┬─────────┘
+                      │
+                      │
+        ┌─────────────▼─────────────┐
+        │       INTENTGUARD         │
+        │                           │
+        │ deterministic verifier    │
+        │                           │
+        │ NO LLM VERDICT            │
+        │ NO CUSTODY                │
+        │ NO PRIVATE KEYS CLIENT    │
+        └─────────────┬─────────────┘
+                      │
+                      ▼
+             ┌──────────────────┐
+             │ REAL TX EVIDENCE │
+             └────────┬─────────┘
+                      │
+          ┌───────────┼───────────┐
+          ▼           ▼           ▼
+        MATCH      MISMATCH   CANNOT_VERIFY
+          │           │           │
+          └───────────┼───────────┘
+                      ▼
+               EIP-712 RECEIPT
+                      │
+                      ▼
+              RECEIPT REGISTRY
 ```
 
-### Trust Boundary Rules
-- **Non-custodial**: IntentGuard never holds, manages, or routes tokens.
-- **Fail-closed**: Unknown selectors or missing RPC evidence yield `UNVERIFIABLE` or `MISMATCH`, never `MATCH`.
-- **Infrastructure separation**: The policy committer/evaluator is distinct from the actual Base transaction subject.
+### Explicit Trust Invariants
+
+IntentGuard operates under strict non-custodial, deterministic boundaries. **IntentGuard does NOT:**
+1. **Hold user funds**: Zero token custody, no escrow contracts, and no balance management.
+2. **Hold user private keys**: Never receives, stores, or requests mnemonic phrases or private keys.
+3. **Execute transactions on behalf of users**: Never broadcasts on behalf of EOAs or acts as a relayer.
+4. **Trust an LLM to determine the final verdict**: LLMs only normalize natural language into typed schemas; all verdicts (`MATCH`, `MISMATCH`, `UNVERIFIABLE`) are computed by pure, deterministic TypeScript/Solidity policy code.
+5. **Infer missing blockchain evidence**: Missing RPC data or unmined states never default to success.
+6. **Convert unavailable evidence into approval**: Unknown selectors, unsupported routes, or unavailable RPC endpoints fail closed.
 
 The EIP-712 Receipt Type Hash:
 ```text
