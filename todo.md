@@ -112,3 +112,9 @@
 - [ ] Commit, push, checkpoint, and deliver the subject-separation trust-loop milestone without force-pushing or rewriting history.
 - [x] Add explicit subject-separation contract coverage for expired receipts and invalid receipt validity windows, then rerun the complete Hardhat suite.
 - [ ] Implement and validate server-side ABI-backed registry calls that bind every canonical receipt field only after real confirmation.
+
+## IDE startup diagnosis
+
+- [x] Diagnose why `npm start` does not serve the IntentGuard frontend in the IDE and verify the correct local development command and URL.
+- [x] Add only the minimal start-script or documentation change required to make the verified frontend startup path clear, then test, commit, push, and checkpoint it.
+- [ ] Commit, push, and checkpoint the verified `start:local` script and IDE frontend-startup guidance.

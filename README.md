@@ -75,6 +75,18 @@ pnpm build
 
 The current implementation has 15 passing Vitest tests and 9 passing Hardhat tests. See [`verification.md`](./verification.md) for the recorded evidence and limitations.
 
+## Run locally in an IDE
+
+The frontend source is in [`client/`](./client/), with React entry files under [`client/src/`](./client/src/). It is intentionally served through the Express server so the browser and `/api/trpc` backend share one origin.
+
+| Goal | Command | Expected result |
+|---|---|---|
+| Development with hot reload | `npm install` then `npm run dev` | Express starts Vite middleware and serves the source frontend at `http://localhost:3000`. If that port is already occupied, the server chooses the next available port and prints it. |
+| Production-like local run | `npm install` then `npm run start:local` | Builds the React frontend into `dist/public`, bundles the server into `dist/index.js`, and serves both together. |
+| Start an existing production build | `npm start` | Serves only an already-built `dist/` directory. Run `npm run build` first if `dist/index.js` or `dist/public/index.html` is absent. |
+
+> `npm start` does not compile the React source. The generated `dist/` directory is excluded from Git, so a fresh IDE clone should use `npm run dev` for development or `npm run start:local` for a production-like run. Do not start Vite separately for normal IntentGuard development: the Express development server already supplies its middleware and the tRPC API route.
+
 ## Deployment sequence
 
 Once the required Base Sepolia configuration is securely provided, deploy the revised registries and write the local deployment manifest:
