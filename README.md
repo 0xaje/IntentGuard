@@ -90,7 +90,7 @@ Evidence
 
 ---
 
-## Formal Trust Architecture & Boundaries
+## Formal Trust Architecture & Agent Boundaries
 
 ```text
                     HUMAN
@@ -110,9 +110,17 @@ Evidence
              │ keccak256        │
              └────────┬─────────┘
                       │
+                      ▼
+             ┌──────────────────┐
+             │ ORION / AI AGENT │
+             │                  │
+             │ plans workflow   │
+             └────────┬─────────┘
                       │
-        ┌─────────────▼─────────────┐
-        │       INTENTGUARD         │
+                      │ produces proposed action (calldata / tx hash)
+                      ▼
+        ┌───────────────────────────┐
+        │        INTENTGUARD        │
         │                           │
         │ deterministic verifier    │
         │                           │
@@ -124,6 +132,7 @@ Evidence
                       ▼
              ┌──────────────────┐
              │ REAL TX EVIDENCE │
+             │ (Base RPC / logs)│
              └────────┬─────────┘
                       │
           ┌───────────┼───────────┐
@@ -137,6 +146,8 @@ Evidence
                       ▼
               RECEIPT REGISTRY
 ```
+
+> **The Orion / Agent Boundary**: The autonomous agent does not need to execute transactions or hold custody. The agent's responsibility is solely to **produce a proposed action**. IntentGuard acts as the independent, uncompromised verification gate that deterministically proves whether that action matches the user's intent.
 
 ### Deterministic Confidence Semantics
 

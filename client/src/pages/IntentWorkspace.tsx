@@ -226,15 +226,15 @@ export default function IntentWorkspace() {
         )}
 
         <div className="chain-of-custody" aria-label="Verification workflow sequence">
-          <span>02 / Constraints</span><i /><span>03 / Proposed action</span><i /><span>04 / Evidence</span><i /><span>05 / Human review</span>
+          <span>01 / Human intent</span><i /><span>02 / Policy commitment</span><i /><span>03 / Orion agent proposal</span><i /><span>04 / Deterministic verification</span><i /><span>05 / Provenance</span><i /><span>06 / Attestation</span>
         </div>
 
         <section className="transaction-entry-section" aria-labelledby="transaction-title">
-          <div className="panel-heading"><span className="panel-index">03</span><div><p className="panel-kicker">Agent / transaction proposal</p><h2 id="transaction-title">Inspect a real Base transaction.</h2></div></div>
-          <p className="transaction-entry-copy">Paste a transaction hash from Base Mainnet. IntentGuard retrieves the actual transaction and receipt from Base RPC; it will report <strong>UNVERIFIABLE</strong> when the available evidence is incomplete.</p>
+          <div className="panel-heading"><span className="panel-index">03</span><div><p className="panel-kicker">Orion / AI Agent proposal</p><h2 id="transaction-title">The agent proposes; IntentGuard verifies.</h2></div></div>
+          <p className="transaction-entry-copy">The autonomous agent does not evaluate its own safety or hold custody—it simply <strong>produces a proposed action</strong>. IntentGuard independently checks whether this real Base transaction or calldata matches the human instruction before/after execution.</p>
           <div className="hash-form">
-            <label htmlFor="transaction-hash">Base transaction hash</label>
-            <div className="hash-control"><input id="transaction-hash" value={transactionHash} onChange={(event) => { setTransactionHash(event.target.value); setClientError(null); }} placeholder="0x…" inputMode="text" autoComplete="off" spellCheck="false" /><button type="button" className="button-primary" onClick={handleVerify} disabled={isWorking || !currentIntent}>{verifyIntent.isPending ? <><Loader2 size={16} className="animate-spin" /> Inspecting Base</> : <>Verify action <FileCheck2 size={16} /></>}</button></div>
+            <label htmlFor="transaction-hash">Base transaction hash / proposed action</label>
+            <div className="hash-control"><input id="transaction-hash" value={transactionHash} onChange={(event) => { setTransactionHash(event.target.value); setClientError(null); }} placeholder="0x…" inputMode="text" autoComplete="off" spellCheck="false" /><button type="button" className="button-primary" onClick={handleVerify} disabled={isWorking || !currentIntent}>{verifyIntent.isPending ? <><Loader2 size={16} className="animate-spin" /> Inspecting Base</> : <>Verify agent action <FileCheck2 size={16} /></>}</button></div>
             {!currentIntent && <p className="form-note">Extract and review the intent first. No verification request will be sent until the policy is visible.</p>}
           </div>
         </section>
