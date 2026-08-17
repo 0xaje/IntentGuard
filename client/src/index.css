@@ -180,73 +180,56 @@
   .app-signal-rail span { position: relative; z-index: 1; color: #66716e; background: #f5f0e8; font-family: "IBM Plex Mono", monospace; font-size: .56rem; letter-spacing: .08em; writing-mode: vertical-rl; }
   .app-signal-rail i { position: relative; z-index: 1; display: block; width: 6px; height: 6px; align-self: center; border-radius: 50%; background: #d6d0c6; }
   .app-signal-rail .rail-active { background: #e7653d; box-shadow: 0 0 0 4px rgba(231, 101, 61, .15); }
-  .app-intro { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(230px, .55fr); gap: 2.5rem; align-items: end; padding-bottom: 2rem; }
-  .app-intro h1 { max-width: 680px; margin: 0; color: #182a39; font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.1; }
+  .app-intro { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(230px, .55fr); gap: 3rem; align-items: end; padding-bottom: 2.5rem; }
+  .app-intro h1 { max-width: 660px; margin: 0; color: #182a39; font-size: clamp(2.2rem, 3.8vw, 3.4rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.08; }
   .app-intro > p { max-width: 380px; margin: 0 0 .2rem; color: #5a656a; font-size: .95rem; line-height: 1.55; }
-
-  /* Quick Demo Presets */
-  .scenarios-container { margin: 1.8rem 0 2.2rem; }
-  .scenarios-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: .8rem; }
-  .scenarios-heading span { color: #66716e; font-family: "IBM Plex Mono", monospace; font-size: .65rem; text-transform: uppercase; letter-spacing: .08em; }
-  .scenarios-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
-  .scenario-card { padding: 1.1rem; background: #ece7de; border: 1px solid #d6d0c6; border-radius: 4px; text-align: left; cursor: pointer; transition: all 180ms ease; display: grid; gap: .45rem; }
-  .scenario-card:hover { border-color: #e7653d; background: #fdfbf7; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(24, 42, 57, .06); }
-  .scenario-card.is-active { border-color: #182a39; border-left: 4px solid #e7653d; background: #fff; box-shadow: 0 4px 12px rgba(24, 42, 57, .08); }
-  .scenario-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
-  .scenario-badge { display: inline-block; padding: .15rem .45rem; border-radius: 3px; font-family: "IBM Plex Mono", monospace; font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-  .badge-swap { background: rgba(98, 113, 93, .15); color: #495e43; }
-  .badge-exploit { background: rgba(200, 78, 49, .15); color: #c84e31; }
-  .badge-transfer { background: rgba(30, 80, 140, .12); color: #1e508c; }
-  .scenario-card strong { color: #182a39; font-size: .88rem; font-weight: 700; letter-spacing: -.02em; }
-  .scenario-hint { color: #66716e; font-size: .74rem; line-height: 1.4; margin: 0; }
-
-  /* Workspace 2-Column Console Cards */
-  .app-workspace-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 1.6rem; align-items: stretch; }
-  .console-card { background: #f7f3ec; border: 1px solid #d6d0c6; border-top: 3px solid #182a39; border-radius: 4px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; }
-  .console-card-secondary { border-top-color: #62715d; }
-  .console-header { margin-bottom: 1.2rem; }
-  .console-header .panel-kicker { margin-bottom: .25rem; }
-  .console-header h2 { margin: 0; color: #182a39; font-size: 1.35rem; font-weight: 800; letter-spacing: -.025em; }
-  .console-header p { margin: .35rem 0 0; color: #66716e; font-size: .8rem; line-height: 1.45; }
-
-  .intent-form { display: grid; gap: .85rem; margin: 0; }
-  .intent-form label, .hash-form label { color: #66716e; font-family: "IBM Plex Mono", monospace; font-size: .66rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
-  .intent-form textarea { width: 100%; resize: vertical; min-height: 120px; border: 1px solid #bfc1b8; border-radius: 4px; background: #ece7de; color: #182a39; padding: .9rem 1rem; font: 500 .95rem/1.5 "DM Sans", sans-serif; outline: none; transition: border-color 160ms ease, box-shadow 160ms ease; }
-  .intent-form textarea:focus { border-color: #e7653d; box-shadow: 2px 2px 0 rgba(231, 101, 61, .14); background: #fff; }
-  .example-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .2rem; }
-  .example-chip { border: 1px solid #d6d0c6; border-radius: 3px; background: #e8e2d7; color: #5a656a; padding: .3rem .55rem; font-family: "IBM Plex Mono", monospace; font-size: .62rem; text-transform: uppercase; letter-spacing: .04em; cursor: pointer; transition: all 160ms ease; }
-  .example-chip:hover { border-color: #182a39; color: #182a39; background: #fff; }
-  .composer-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: .6rem; }
+  .app-workspace-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(245px, .32fr); gap: 1.8rem; align-items: stretch; }
+  .composer-panel, .operation-boundary, .transaction-entry-section { border-top: 2px solid #182a39; border-bottom: 1px solid #d6d0c6; padding: 1.25rem 0 1.45rem; }
+  .panel-heading { display: grid; grid-template-columns: 36px 1fr; gap: .85rem; align-items: start; }
+  .panel-index { color: #e7653d; font-family: "IBM Plex Mono", monospace; font-size: .74rem; font-weight: 600; padding-top: .2rem; }
+  .panel-kicker { margin: 0 0 .35rem; color: #62715d; font-family: "IBM Plex Mono", monospace; font-size: .66rem; text-transform: uppercase; letter-spacing: .09em; }
+  .panel-heading h2, .operation-boundary h2, .intent-summary h2, .transaction-entry-section h2 { margin: 0; color: #182a39; font-size: clamp(1.35rem, 2.2vw, 1.85rem); font-weight: 800; letter-spacing: -.03em; line-height: 1.15; }
+  .intent-form { display: grid; gap: .75rem; margin: 1.6rem 0 0 3rem; }
+  .intent-form label, .hash-form label { color: #66716e; font-family: "IBM Plex Mono", monospace; font-size: .66rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 500; }
+  .intent-form textarea { width: 100%; resize: vertical; min-height: 140px; border: 1px solid #bfc1b8; border-radius: 4px; background: #ece7de; color: #182a39; padding: 1rem; font: 500 .98rem/1.55 "DM Sans", sans-serif; outline: none; transition: border-color 160ms ease, box-shadow 160ms ease; }
+  .intent-form textarea:focus { border-color: #e7653d; box-shadow: 3px 3px 0 rgba(231, 101, 61, .14); }
+  .example-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .example-chip { border: 1px solid #d6d0c6; border-radius: 3px; background: transparent; color: #62715d; padding: .38rem .55rem; font-family: "IBM Plex Mono", monospace; font-size: .63rem; text-transform: uppercase; letter-spacing: .04em; transition: color 160ms ease, border-color 160ms ease, background 160ms ease; }
+  .example-chip:hover, .example-chip:focus-visible { border-color: #e7653d; color: #182a39; background: #f9f4ec; }
+  .composer-actions { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding-top: .4rem; }
   .composer-actions .button-primary, .hash-control .button-primary { border: 0; }
   .button-primary:disabled { cursor: not-allowed; opacity: .62; transform: none; }
-  .composer-actions p, .transaction-entry-copy, .operation-boundary > p:last-child, .intent-summary > p, .form-note { color: #66716e; font-size: .78rem; line-height: 1.45; }
+  .composer-actions p, .transaction-entry-copy, .operation-boundary > p:last-child, .intent-summary > p, .form-note { color: #66716e; font-size: .82rem; line-height: 1.5; }
   .composer-actions p { max-width: 260px; margin: 0; }
-
-  .hash-form { display: grid; gap: .75rem; margin: 0; }
-  .hash-control { display: grid; grid-template-columns: 1fr; gap: .75rem; }
-  .hash-control input { width: 100%; min-width: 0; border: 1px solid #bfc1b8; border-radius: 4px; background: #ece7de; color: #182a39; padding: .85rem 1rem; font-family: "IBM Plex Mono", monospace; font-size: .78rem; outline: none; }
-  .hash-control input:focus { border-color: #e7653d; box-shadow: 2px 2px 0 rgba(231, 101, 61, .14); background: #fff; }
-  .hash-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: .4rem; }
-
+  .operation-boundary { display: flex; flex-direction: column; align-items: flex-start; padding: 1.25rem 1.15rem; border-top-color: #62715d; background: linear-gradient(to bottom, rgba(98, 113, 93, .06), transparent); border-radius: 4px; }
+  .operation-boundary .panel-kicker { margin-top: 1.4rem; }
+  .operation-boundary h2 { max-width: 260px; font-size: 1.35rem; }
+  .operation-boundary > p:last-child { max-width: 270px; margin: .8rem 0 0; }
   .app-error, .verification-progress { display: flex; gap: .75rem; margin-top: 1.5rem; border-left: 3px solid #e7653d; background: rgba(231, 101, 61, .08); padding: .9rem 1rem; color: #182a39; border-radius: 0 4px 4px 0; }
   .app-error svg { color: #e7653d; flex: 0 0 auto; }
   .app-error div, .verification-progress div { display: grid; gap: .15rem; }
   .app-error strong, .verification-progress strong { font-size: .86rem; }
   .app-error span, .verification-progress span { color: #66716e; font-size: .78rem; line-height: 1.4; }
-
-  .intent-review-section, .verification-output { padding-top: 2.2rem; }
-  .intent-review-grid { display: grid; grid-template-columns: minmax(0, .75fr) minmax(320px, 1.25fr); gap: 2.5rem; padding-top: 1.2rem; }
-  .intent-summary > p { max-width: 420px; margin: .6rem 0 0; }
+  .intent-review-section, .transaction-entry-section, .verification-output { padding-top: clamp(2.8rem, 5vw, 4.2rem); }
+  .intent-review-grid { display: grid; grid-template-columns: minmax(0, .78fr) minmax(330px, 1.22fr); gap: clamp(2rem, 5vw, 5rem); padding-top: 1.8rem; }
+  .intent-summary > p { max-width: 420px; margin: .8rem 0 0; }
   .constraint-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; border-top: 1px solid #d6d0c6; }
-  .constraint-list div { min-height: 70px; padding: .75rem 1rem .75rem 0; border-bottom: 1px solid #d6d0c6; }
+  .constraint-list div { min-height: 75px; padding: .85rem 1rem .85rem 0; border-bottom: 1px solid #d6d0c6; }
   .constraint-list div:nth-child(odd) { padding-right: 1.2rem; }
   .constraint-list dt, .transaction-list dt, .receipt-grid span { color: #66716e; font-family: "IBM Plex Mono", monospace; font-size: .63rem; text-transform: uppercase; letter-spacing: .08em; }
   .constraint-list dd { margin: .35rem 0 0; color: #182a39; font-size: .88rem; font-weight: 700; letter-spacing: -.01em; }
   .policy-blocked { color: #c84e31 !important; }
   .address-value { word-break: break-all; font-family: "IBM Plex Mono", monospace; font-size: .7rem !important; font-weight: 500 !important; }
-  .chain-of-custody { display: flex; align-items: center; gap: .65rem; margin: 1.8rem 0; padding: .65rem 0; border-top: 1px solid #62715d; border-bottom: 1px solid #d6d0c6; color: #66716e; font-family: "IBM Plex Mono", monospace; font-size: .62rem; text-transform: uppercase; letter-spacing: .07em; }
+  .chain-of-custody { display: flex; align-items: center; gap: .65rem; margin-top: clamp(2.4rem, 4vw, 3.8rem); padding: .65rem 0; border-top: 1px solid #62715d; border-bottom: 1px solid #d6d0c6; color: #66716e; font-family: "IBM Plex Mono", monospace; font-size: .62rem; text-transform: uppercase; letter-spacing: .07em; }
   .chain-of-custody i { flex: 1; min-width: 14px; height: 1px; background: #d6d0c6; }
-
+  .transaction-entry-section { margin-top: clamp(2rem, 4vw, 3.2rem); border-top-color: #62715d; }
+  .transaction-entry-copy { max-width: 620px; margin: 1rem 0 0 3rem; }
+  .transaction-entry-copy strong { color: #182a39; }
+  .hash-form { display: grid; gap: .55rem; margin: 1.5rem 0 0 3rem; }
+  .hash-control { display: grid; grid-template-columns: 1fr auto; gap: .75rem; }
+  .hash-control input { width: 100%; min-width: 0; border: 1px solid #bfc1b8; border-radius: 4px; background: #ece7de; color: #182a39; padding: .85rem 1rem; font-family: "IBM Plex Mono", monospace; font-size: .78rem; outline: none; }
+  .hash-control input:focus { border-color: #e7653d; box-shadow: 3px 3px 0 rgba(231, 101, 61, .14); }
+  .form-note { margin: 0; font-size: .75rem; }
   .verification-progress { border-left-color: #62715d; background: rgba(98, 113, 93, .08); }
   .verification-progress > svg { color: #62715d; flex: 0 0 auto; }
   .inspector-progress { display: grid; gap: .85rem; padding: 1rem 1.1rem; }
