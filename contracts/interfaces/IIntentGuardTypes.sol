@@ -8,6 +8,12 @@ interface IIntentGuardTypes {
         CANNOT_VERIFY
     }
 
+    enum TargetStatus {
+        UNLISTED,
+        RECOGNIZED,
+        BLOCKED
+    }
+
     struct PolicyCommitment {
         bytes32 policyHash;
         address owner;
@@ -32,6 +38,15 @@ interface IIntentGuardTypes {
         uint64 expiresAt;
         uint32 engineVersion;
         uint32 decoderVersion;
+    }
+
+    struct TargetRecord {
+        address target;
+        bytes4 selector;
+        TargetStatus status;
+        bytes32 metadataHash;
+        uint64 version;
+        string metadataURI;
     }
 }
 
