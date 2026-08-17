@@ -83,3 +83,32 @@
 - [x] Commit any necessary unpushed project changes without staging ignored environment, credential, or generated files.
 - [x] Push the complete verified feature branch to GitHub without rewriting remote history.
 - [x] Record the final GitHub synchronization result and remote commit.
+
+## Cryptographic trust-loop milestone
+
+- [x] Audit existing Solidity registries, canonical hashing, EIP-712 receipt logic, shared contracts, tRPC routes, Base verification flow, configuration boundaries, and tests before changing code.
+- [x] Document the audit: what already exists, what is missing, and the exact files that must change; do not duplicate current functionality.
+- [x] Define one canonical IntentSpec serialization and Ethereum keccak256 intent hash including all enforced constraints and the policy version.
+- [x] Add deterministic canonical hashes for request, evidence, and receipt identity using structured data only.
+- [x] Match the existing Receipt Registry EIP-712 schema, field ordering, types, and domain exactly in TypeScript.
+- [x] Implement server-only policy commitment, evaluator signing, local signature recovery, and receipt anchoring with clear missing-configuration failures.
+- [x] Keep every policy, signature, and anchoring state fail-closed; never return a fabricated transaction, signature, confirmation, or receipt.
+- [x] Extend the existing UI with real policy, verdict, evidence, attestation, and on-chain receipt states without redesigning the Forensic Signal interface.
+- [x] Add unit, contract, integration, security-boundary, and Base Sepolia end-to-end tests only where existing contracts and credentials make real validation possible.
+- [x] Update README, verification records, environment guidance, and architecture documentation with actual deployment and test evidence only.
+- [ ] Commit, push, checkpoint, and document the cryptographic trust-loop milestone without destructive history rewrites.
+
+## Approved subject-separation registry revision
+
+- [x] Document the exact minimal change that authorizes independent transaction subjects under a valid service-owned policy without changing the receipt subject.
+- [x] Preserve policy committer/owner, policy validity, revocation, replay protection, evaluator role separation, and receipt expiry in the revised contracts.
+- [x] Bring the existing Solidity, engine, deployment, verification, and contract-test sources from the default branch into the feature branch without overwriting the live verifier.
+- [x] Update Solidity interfaces, registry tests, canonical hashes, EIP-712 types, and server ABI use to bind policy ID, intent hash, request hash, evidence hash, independent subject, verdict, evaluator, expiry, and versions.
+- [x] Implement server-only policy commitment, evaluator signing, local signature recovery, and confirmed receipt anchoring with explicit missing-configuration failures.
+- [x] Extend the existing UI with truthful policy, signature, and anchoring states; no wallet execution or client-side keys.
+- [ ] Configure and redeploy the revised registries to Base Sepolia with real credentials only, recording real addresses and transaction hashes only after confirmation.
+- [ ] Run the complete contract, engine, TypeScript, application, security, and testnet validation suites.
+- [x] Update architecture, trust boundaries, deployment guidance, verification records, and security limitations with actual results only.
+- [ ] Commit, push, checkpoint, and deliver the subject-separation trust-loop milestone without force-pushing or rewriting history.
+- [x] Add explicit subject-separation contract coverage for expired receipts and invalid receipt validity windows, then rerun the complete Hardhat suite.
+- [ ] Implement and validate server-side ABI-backed registry calls that bind every canonical receipt field only after real confirmation.

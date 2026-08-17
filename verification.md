@@ -65,3 +65,15 @@ Live inspection of Base transaction `0x89e0bcc982a5d661f45d12f537615dea9d8c2cadc
 ## Development command and integration audit
 
 `npm run dev` was reproduced successfully. It starts the same `tsx watch server/_core/index.ts` development entrypoint as `pnpm dev`; it does not require a pre-built `dist` directory. The audit used port `3001` only because the managed preview already occupied port `3000`, and the expected long-running development server was stopped by the bounded test timeout. The frontend uses `httpBatchLink` to `/api/trpc`, the Express server mounts the typed `intentGuard` router at that path, and the browser has exercised the resulting server-side Base transaction, receipt, metadata, and quote calls.
+
+## Cryptographic trust-loop interface validation
+
+On 17 August 2026, the refreshed `/app` interface was exercised against the public Base RPC using the actual 32-byte Base hash `0x217aed864a2c2792395c1edfdfaeaee5795ccf5eef3871a5ef09a57d3db4a3d5`. Base RPC did not return a transaction object or receipt for that supplied hash, so IntentGuard rendered **CANNOT VERIFY**, not a fabricated approval or match. The interface showed a live BaseScan link, raw empty RPC evidence, and kept human approval disabled.
+
+The new **Verification receipt** panel then displayed only truthful non-final states: **NOT COMMITTED**, **NOT GENERATED**, **NOT SIGNED**, and **NOT ANCHORED**. The panel states that a Base Sepolia policy or receipt status appears only after server submission, confirmation, and on-chain readback. No policy commitment, evaluator signature, receipt anchor, deployment address, or Base Sepolia transaction hash is recorded here because no live Base Sepolia infrastructure credentials or deployed registries have been supplied.
+
+## Subject-separation implementation validation
+
+The revised Solidity suite completed with **9 passing** Hardhat tests. It covers service-owned policy commitment and revocation, unrelated-revoker rejection, evaluator-role signature validation, receipt replay rejection, active-policy enforcement, the independent transaction-subject flow, subject receipt revocation, pause enforcement, explicit expiry handling, invalid receipt validity windows, and target-manager access control.
+
+The application suite completed with **15 passing** Vitest tests. This includes canonical intent/request/evidence hashing, exact Receipt EIP-712 type-hash and evaluator recovery, decoder and policy tests, and a trust-loop configuration-boundary test. The configuration test proves that a policy commitment fails closed before any network call when `BASE_SEPOLIA_RPC_URL`, `EVALUATOR_PRIVATE_KEY`, `POLICY_REGISTRY_ADDRESS`, or `RECEIPT_REGISTRY_ADDRESS` is absent. TypeScript checking and the production build both completed successfully. The build emitted only Vite’s non-blocking chunk-size advisory.

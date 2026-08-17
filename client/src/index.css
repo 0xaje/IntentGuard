@@ -306,6 +306,22 @@
   .receipt-match { color: #62715d !important; }
   .receipt-mismatch { color: #c84e31 !important; }
   .receipt-unverifiable { color: #a58042 !important; }
+  .trust-loop-panel { margin-top: 1.4rem; padding: 1.35rem 0 1.45rem; border-top: 2px solid #62715d; border-bottom: 1px solid #d6d0c6; }
+  .trust-loop-copy { max-width: 800px; margin: 1rem 0 0; color: #66716e; font-size: .82rem; line-height: 1.5; }
+  .trust-loop-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 1.3rem; border-top: 1px solid #e2dbd0; }
+  .trust-loop-grid > div { display: grid; align-content: start; gap: .38rem; min-height: 118px; padding: .95rem 1rem .95rem 0; border-bottom: 1px solid #e2dbd0; }
+  .trust-loop-grid > div:not(:nth-child(3n + 1)) { padding-left: 1rem; border-left: 1px solid #e2dbd0; }
+  .trust-loop-grid span { color: #66716e; font-family: "IBM Plex Mono", monospace; font-size: .58rem; text-transform: uppercase; letter-spacing: .08em; }
+  .trust-loop-grid strong { font-size: .76rem; letter-spacing: -.02em; }
+  .trust-loop-grid small { color: #78817b; font-family: "IBM Plex Mono", monospace; font-size: .57rem; line-height: 1.4; word-break: break-word; }
+  .trust-loop-grid a { display: inline-flex; align-items: center; gap: .3rem; width: fit-content; color: #182a39; border-bottom: 1px solid #d6d0c6; padding-bottom: .18rem; font-family: "IBM Plex Mono", monospace; font-size: .56rem; text-decoration: none; text-transform: uppercase; letter-spacing: .06em; }
+  .trust-loop-grid a:hover, .trust-loop-grid a:focus-visible { color: #e7653d; border-color: #e7653d; }
+  .trust-confirmed { color: #62715d !important; }
+  .trust-pending { color: #879089 !important; }
+  .trust-loop-actions { display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; padding-top: 1.25rem; }
+  .trust-loop-actions p:last-child { max-width: 650px; margin: 0; color: #66716e; font-size: .77rem; line-height: 1.45; }
+  .trust-loop-actions .panel-kicker { margin-bottom: .35rem; }
+  .trust-loop-actions .button-primary { flex: 0 0 auto; border: 0; }
   .human-review-panel { display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; margin-top: 1.4rem; padding: 1.25rem; border: 1px solid #d6d0c6; border-left: 4px solid #182a39; background: rgba(236, 231, 222, .62); }
   .human-review-panel h3 { margin: 0; color: #182a39; font-size: 1.25rem; letter-spacing: -.045em; }
   .human-review-panel p:last-child { max-width: 640px; margin: .55rem 0 0; color: #66716e; font-size: .81rem; line-height: 1.45; }
@@ -355,6 +371,10 @@
   .verdict-card { min-height: 300px; }
   .result-details-grid { padding-top: 2.6rem; }
   .receipt-grid { grid-template-columns: 1fr 1fr; }
+  .trust-loop-grid { grid-template-columns: 1fr 1fr; }
+  .trust-loop-grid > div:not(:nth-child(3n + 1)) { padding-left: 0; border-left: 0; }
+  .trust-loop-grid > div:nth-child(even) { padding-left: 1rem; border-left: 1px solid #e2dbd0; }
+  .trust-loop-actions { align-items: flex-start; flex-direction: column; gap: 1rem; }
   .inspection-stage-list { grid-template-columns: 1fr; gap: 0; }
   .inspection-stage-list li { grid-template-columns: 24px 1fr; padding: .7rem 0; }
   .inspection-stage-list small { display: block; margin-top: .18rem; color: #78817b; font-size: .68rem; line-height: 1.35; }

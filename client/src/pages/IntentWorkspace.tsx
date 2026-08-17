@@ -79,18 +79,24 @@ export default function IntentWorkspace() {
   const [humanReviewRecorded, setHumanReviewRecorded] = useState(false);
   const parseIntent = trpc.intentGuard.parse.useMutation();
   const verifyIntent = trpc.intentGuard.verify.useMutation();
+  const commitPolicy = trpc.intentGuard.commitPolicy.useMutation();
+  const anchorReceipt = trpc.intentGuard.anchorReceipt.useMutation();
   const baseHealth = trpc.intentGuard.health.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
 
   const currentIntent = verifyIntent.data?.intent ?? parseIntent.data?.intent;
   const result = verifyIntent.data;
-  const isWorking = parseIntent.isPending || verifyIntent.isPending;
-  const errorMessage = clientError ?? parseIntent.error?.message ?? verifyIntent.error?.message ?? null;
+  const policyCommitment = commitPolicy.data;
+  const anchoredReceipt = anchorReceipt.data;
+  const isWorking = parseIntent.isPending || verifyIntent.isPending || commitPolicy.isPending || anchorReceipt.isPending;
+  const errorMessage = clientError ?? parseIntent.error?.message ?? verifyIntent.error?.message ?? commitPolicy.error?.message ?? anchorReceipt.error?.message ?? null;
 
   function handleExtract(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setClientError(null);
     setHumanReviewRecorded(false);
     verifyIntent.reset();
+    commitPolicy.reset();
+    anchorReceipt.reset();
     parseIntent.mutate({ text: intentText });
   }
 
@@ -106,7 +112,32 @@ export default function IntentWorkspace() {
     }
     setClientError(null);
     setHumanReviewRecorded(false);
+    anchorReceipt.reset();
     verifyIntent.mutate({ text: intentText, transactionHash: normalizedHash });
+  }
+
+  function handleCommitPolicy() {
+    if (!currentIntent) {
+      setClientError("Extract the structured intent before requesting an on-chain policy commitment.");
+      return;
+    }
+    setClientError(null);
+    anchorReceipt.reset();
+    commitPolicy.mutate({ intent: currentIntent, validForSeconds: 86_400 });
+  }
+
+  function handleAnchorReceipt() {
+    const normalizedHash = transactionHash.trim();
+    if (!policyCommitment) {
+      setClientError("Commit the reviewed intent policy before requesting an on-chain verification receipt.");
+      return;
+    }
+    if (!result?.inspection || !/^0x[a-fA-F0-9]{64}$/.test(normalizedHash)) {
+      setClientError("Verify a real Base transaction before requesting an on-chain receipt.");
+      return;
+    }
+    setClientError(null);
+    anchorReceipt.mutate({ text: intentText, transactionHash: normalizedHash, policyId: policyCommitment.policyId, receiptValidForSeconds: 86_400 });
   }
 
   return (
@@ -147,10 +178,10 @@ export default function IntentWorkspace() {
             </div>
             <form onSubmit={handleExtract} className="intent-form">
               <label htmlFor="intent-text">Use natural language. Base must be explicit.</label>
-              <textarea id="intent-text" value={intentText} onChange={(event) => { setIntentText(event.target.value); setClientError(null); }} rows={7} maxLength={600} spellCheck="false" />
+              <textarea id="intent-text" value={intentText} onChange={(event) => { setIntentText(event.target.value); setClientError(null); commitPolicy.reset(); anchorReceipt.reset(); }} rows={7} maxLength={600} spellCheck="false" />
               <div className="example-row" aria-label="Supported example intents">
                 {examples.map((example) => (
-                  <button key={example.label} type="button" className="example-chip" onClick={() => { setIntentText(example.text); setClientError(null); parseIntent.reset(); verifyIntent.reset(); }}>
+                  <button key={example.label} type="button" className="example-chip" onClick={() => { setIntentText(example.text); setClientError(null); parseIntent.reset(); verifyIntent.reset(); commitPolicy.reset(); anchorReceipt.reset(); }}>
                     {example.label}
                   </button>
                 ))}
@@ -246,6 +277,22 @@ export default function IntentWorkspace() {
             </div>
 
             <article className="intent-receipt"><div className="receipt-heading"><p className="panel-kicker">Intent receipt</p><span>Verified at {new Date(result.verification.observedAt).toLocaleString()}</span></div><div className="receipt-grid"><div><span>ID</span><strong>{result.verification.receiptId}</strong></div><div><span>Intent</span><strong>{result.intent.action.toUpperCase()} / {result.intent.maxSpendUsdc} USDC / BASE</strong></div><div><span>Result</span><strong className={`receipt-${result.verification.verdict.toLowerCase()}`}>{result.verification.verdict}</strong></div><div><span>Approval boundary</span><strong>NO SIGNATURE REQUESTED</strong></div></div></article>
+            <article className="trust-loop-panel" aria-labelledby="trust-loop-title">
+              <div className="receipt-heading"><p className="panel-kicker" id="trust-loop-title">Verification receipt</p><span>Base Sepolia attestation infrastructure</span></div>
+              <p className="trust-loop-copy">The Base Mainnet verdict remains a read-only inspection. The controls below commit the canonical policy and anchor a signed, independently attributable receipt on Base Sepolia only after transaction confirmation and on-chain readback validation.</p>
+              <div className="trust-loop-grid">
+                <div><span>Policy</span><strong className={policyCommitment ? "trust-confirmed" : "trust-pending"}>{policyCommitment ? "COMMITTED" : "NOT COMMITTED"}</strong>{policyCommitment ? <><small>{shortHash(policyCommitment.policyId)}</small><a href={policyCommitment.explorerUrl} target="_blank" rel="noreferrer">Commitment tx <ExternalLink size={12} /></a></> : <small>No policy transaction has been confirmed.</small>}</div>
+                <div><span>Verdict</span><strong className={`receipt-${result.verification.verdict.toLowerCase()}`}>{result.verification.verdict === "UNVERIFIABLE" ? "CANNOT VERIFY" : result.verification.verdict}</strong><small>{verdictLabel(result.verification.verdict)}</small></div>
+                <div><span>Evidence hash</span><strong className={anchoredReceipt ? "trust-confirmed address-value" : "trust-pending"}>{anchoredReceipt ? shortHash(anchoredReceipt.receipt.evidenceHash) : "NOT GENERATED"}</strong><small>{anchoredReceipt ? "Bound into the anchored receipt." : "Generated only during anchoring."}</small></div>
+                <div><span>Attestation</span><strong className={anchoredReceipt ? "trust-confirmed" : "trust-pending"}>{anchoredReceipt ? "SIGNED / RECOVERED" : "NOT SIGNED"}</strong><small>{anchoredReceipt ? `Evaluator ${shortHash(anchoredReceipt.receipt.evaluator)}` : "No evaluator signature has been returned."}</small></div>
+                <div><span>On-chain</span><strong className={anchoredReceipt ? "trust-confirmed" : "trust-pending"}>{anchoredReceipt ? "ANCHORED" : "NOT ANCHORED"}</strong>{anchoredReceipt ? <><small>{shortHash(anchoredReceipt.receipt.receiptId)}</small><a href={anchoredReceipt.explorerUrl} target="_blank" rel="noreferrer">Anchor tx <ExternalLink size={12} /></a></> : <small>No confirmed receipt transaction exists.</small>}</div>
+                <div><span>Transaction subject</span><strong className="address-value">{result.inspection?.transaction?.from ? shortHash(result.inspection.transaction.from) : "UNAVAILABLE"}</strong><small>Independent from the policy committer.</small></div>
+              </div>
+              <div className="trust-loop-actions">
+                <div><p className="panel-kicker">No wallet execution</p><p>IntentGuard uses server-held infrastructure credentials only. It never requests the transaction sender’s private key, seed phrase, or wallet signature.</p></div>
+                {!policyCommitment ? <button type="button" className="button-primary" disabled={isWorking || !currentIntent} onClick={handleCommitPolicy}>{commitPolicy.isPending ? <><Loader2 size={16} className="animate-spin" /> Committing policy</> : <>Commit reviewed policy <FileCheck2 size={16} /></>}</button> : <button type="button" className="button-primary" disabled={isWorking || !result.inspection || Boolean(anchoredReceipt)} onClick={handleAnchorReceipt}>{anchorReceipt.isPending ? <><Loader2 size={16} className="animate-spin" /> Anchoring receipt</> : anchoredReceipt ? <>Receipt anchored <Check size={16} /></> : <>Anchor verification receipt <FileCheck2 size={16} /></>}</button>}
+              </div>
+            </article>
             <article className="human-review-panel">
               <div>
                 <p className="panel-kicker">05 / Human approval</p>

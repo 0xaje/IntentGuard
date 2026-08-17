@@ -7,4 +7,8 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  baseSepoliaRpcUrl: process.env.BASE_SEPOLIA_RPC_URL ?? "",
+  evaluatorPrivateKey: process.env.EVALUATOR_PRIVATE_KEY ?? "",
+  policyRegistryAddress: process.env.POLICY_REGISTRY_ADDRESS ?? "",
+  receiptRegistryAddress: process.env.RECEIPT_REGISTRY_ADDRESS ?? "",
 };

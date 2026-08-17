@@ -6,6 +6,9 @@
 dist/
 build/
 *.dist
+artifacts/
+cache/
+typechain-types/
 
 # Environment variables
 .env
@@ -21,6 +24,8 @@ build/
 *.pem
 *.key
 *.crt
+deployments/*.json
+!deployments/.gitkeep
 
 # IDE and editor files
 .vscode/
