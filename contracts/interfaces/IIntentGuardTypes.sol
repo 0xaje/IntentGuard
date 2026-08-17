@@ -8,12 +8,6 @@ interface IIntentGuardTypes {
         CANNOT_VERIFY
     }
 
-    enum TargetStatus {
-        UNLISTED,
-        RECOGNIZED,
-        BLOCKED
-    }
-
     struct PolicyCommitment {
         bytes32 policyHash;
         address owner;
@@ -39,22 +33,27 @@ interface IIntentGuardTypes {
         uint32 engineVersion;
         uint32 decoderVersion;
     }
-
-    struct TargetRecord {
-        address target;
-        bytes4 selector;
-        TargetStatus status;
-        bytes32 metadataHash;
-        uint64 version;
-        string metadataURI;
-    }
 }
 
 interface IIntentGuardPolicyRegistry is IIntentGuardTypes {
+    function commitPolicy(
+        bytes32 policyHash,
+        uint64 version,
+        uint64 validAfter,
+        uint64 validUntil,
+        string calldata metadataURI
+    ) external returns (bytes32 policyId);
+
+    function revokePolicy(bytes32 policyId) external;
+
     function getPolicy(bytes32 policyId)
         external
         view
         returns (PolicyCommitment memory commitment, bool revoked);
+
+    function policyOwner(bytes32 policyId) external view returns (address);
+
+    function policyCommitter(bytes32 policyId) external view returns (address);
 
     function isPolicyActive(bytes32 policyId) external view returns (bool);
 }

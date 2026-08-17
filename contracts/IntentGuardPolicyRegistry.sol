@@ -109,6 +109,10 @@ contract IntentGuardPolicyRegistry is AccessControl, IIntentGuardPolicyRegistry 
         return _policies[policyId].owner;
     }
 
+    function policyCommitter(bytes32 policyId) external view returns (address) {
+        return _policies[policyId].owner;
+    }
+
     function isPolicyActive(bytes32 policyId) public view returns (bool) {
         PolicyCommitment memory policy = _policies[policyId];
         if (policy.owner == address(0) || _revoked[policyId]) return false;

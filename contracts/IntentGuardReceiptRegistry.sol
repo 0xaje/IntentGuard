@@ -37,7 +37,6 @@ contract IntentGuardReceiptRegistry is
     error InvalidSubject();
     error InvalidEvaluator();
     error PolicyNotActive(bytes32 policyId);
-    error PolicyOwnerMismatch();
     error InvalidSignature();
     error WrongChain(uint256 expected, uint256 received);
     error EvaluatedInFuture();
@@ -95,19 +94,17 @@ contract IntentGuardReceiptRegistry is
             revert WrongChain(block.chainid, receipt.chainId);
         }
         if (receipt.evaluatedAt > block.timestamp) revert EvaluatedInFuture();
-        if (receipt.expiresAt != 0 && receipt.expiresAt <= block.timestamp) {
-            revert ReceiptExpired(receiptId);
-        }
         if (receipt.expiresAt != 0 && receipt.expiresAt < receipt.evaluatedAt) {
             revert InvalidValidityWindow();
+        }
+        if (receipt.expiresAt != 0 && receipt.expiresAt <= block.timestamp) {
+            revert ReceiptExpired(receiptId);
         }
 
         if (receipt.policyId != bytes32(0)) {
             if (!policyRegistry.isPolicyActive(receipt.policyId)) {
                 revert PolicyNotActive(receipt.policyId);
             }
-            (PolicyCommitment memory policy, ) = policyRegistry.getPolicy(receipt.policyId);
-            if (policy.owner != receipt.subject) revert PolicyOwnerMismatch();
         }
 
         bytes32 digest = _hashTypedDataV4(_hashReceiptStruct(receipt));
