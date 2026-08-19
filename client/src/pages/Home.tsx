@@ -69,6 +69,7 @@ export default function Home() {
           <nav className={`primary-navigation ${menuOpen ? "is-open" : ""}`} aria-label="Primary">
             <a href="#signal" onClick={(e) => { setMenuOpen(false); scrollToSection(e); }}>Signal Layer</a>
             <a href="#method" onClick={(e) => { setMenuOpen(false); scrollToSection(e); }}>Two Stages</a>
+            <a href="#orion" onClick={(e) => { setMenuOpen(false); scrollToSection(e); }}>Orion Trust</a>
             <a href="#principles" onClick={(e) => { setMenuOpen(false); scrollToSection(e); }}>Boundaries</a>
             <a className="nav-action" href="/app">Launch Workspace</a>
           </nav>
@@ -143,18 +144,53 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Orion Ecosystem Integration Section */}
+        <section id="orion" className="orion-section section-shell">
+          <div className="section-intro">
+            <p className="eyebrow">Orion Ecosystem Trust Layer</p>
+            <h2>Empowering Orion agents with cryptographic intent fidelity.</h2>
+            <p className="orion-lead-copy">
+              <strong>IntentGuard gives Orion agents a cryptographic <em>“did this action actually match the user’s intent?”</em> layer.</strong> Instead of asking users to blindly trust autonomous AI proposals, IntentGuard evaluates candidate actions against policy commitments and generates tamper-evident receipts that build verifiable agent reputation on Base.
+            </p>
+          </div>
+
+          <div className="orion-flow-grid">
+            <div className="orion-flow-step">
+              <div className="orion-step-badge">01 / PROPOSE</div>
+              <h3>Orion Agent Workflow</h3>
+              <p>The autonomous agent plans multi-step operations and constructs candidate transaction parameters and calldata.</p>
+            </div>
+            <div className="orion-flow-arrow" aria-hidden="true">→</div>
+            <div className="orion-flow-step">
+              <div className="orion-step-badge">02 / VERIFY</div>
+              <h3>IntentGuard Engine</h3>
+              <p>Deterministically evaluates candidate proposals against human constraints. Produces MATCH / BLOCK decisions.</p>
+            </div>
+            <div className="orion-flow-arrow" aria-hidden="true">→</div>
+            <div className="orion-flow-step">
+              <div className="orion-step-badge">03 / ATTEST</div>
+              <h3>On-Chain Reputation</h3>
+              <p>Anchors EIP-712 receipts to Base Sepolia, creating an immutable cryptographic audit trail and provenance record.</p>
+            </div>
+          </div>
+        </section>
+
         <section id="principles" className="principles-section section-shell">
           <div className="principles-copy">
             <p className="eyebrow">The guardrail boundary</p>
             <h2>Honest security boundaries.</h2>
             <p>Pre-execution ("Can this safely proceed?") and post-execution ("Did it execute as promised?") require different evidence. IntentGuard provides deterministic decoding, live RPC inspection, and cryptographic attestations without touching private keys, holding custody, or executing transactions.</p>
+            <div className="llm-boundary-quote">
+              <strong>THE ARCHITECTURAL GUARANTEE:</strong>
+              <p>“The model may help interpret intent. It does not decide whether the transaction is safe.”</p>
+            </div>
             <a className="text-action" href="#top" onClick={scrollToSection}>Back to top <ArrowUpRight size={16} /></a>
           </div>
           <div className="decision-card">
             <img src={decisionAsset} alt="Folded paper map showing branching paths and a signal-orange clip" loading="lazy" />
             <div className="decision-card-copy">
               <span className="decision-card-index">Decision note / 003</span>
-              <p>When the context changes, the route should show its work.</p>
+              <p>Natural Language → Parser → IntentSpec → Schema Validation → Canonical Policy → Deterministic Engine → Verdict.</p>
             </div>
           </div>
         </section>

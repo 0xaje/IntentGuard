@@ -38,10 +38,10 @@ function buildResult(
   const verifiedChecks = evidenceItems.filter((item) => item.state === "VERIFIED" || item.state === "verified").length;
   const verdict: VerificationResult["verdict"] = conflictingChecks > 0 ? "MISMATCH" : insufficientChecks > 0 ? "CANNOT_VERIFY" : "MATCH";
   const summary = verdict === "MATCH"
-    ? "The observed transaction satisfies every constraint that IntentGuard can verify from the available Base evidence."
+    ? "Intent Fidelity Confirmed: The transaction is 100% faithful to the declared human intent under all observable Base evidence."
     : verdict === "MISMATCH"
-      ? `IntentGuard identified ${conflictingChecks} conflicting check${conflictingChecks > 1 ? "s" : ""} between the intent and the observed Base transaction.`
-      : `IntentGuard cannot verify the transaction because ${insufficientChecks} required check${insufficientChecks > 1 ? "s" : ""} could not be resolved from available Base RPC evidence.`;
+      ? `Intent Fidelity Violation: IntentGuard identified ${conflictingChecks} conflicting check${conflictingChecks > 1 ? "s" : ""}. The proposed action cannot be considered faithful to the declared intent.`
+      : `Intent Fidelity Unverifiable: ${insufficientChecks} required check${insufficientChecks > 1 ? "s" : ""} could not be resolved from available Base RPC evidence.`;
 
   const chainId = inspection?.networkChainId ? (Number.isNaN(Number(inspection.networkChainId)) ? parseInt(inspection.networkChainId, 16) : Number(inspection.networkChainId)) : 8453;
   const rawBlockNumber = inspection?.receipt.blockNumber ?? inspection?.transaction?.blockNumber ?? null;

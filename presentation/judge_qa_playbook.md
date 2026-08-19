@@ -5,6 +5,19 @@
 
 **Core Thesis**: Pre-execution (*Can this proposed transaction safely proceed?*) and Post-execution (*Did the transaction that actually executed remain consistent?*) are **fundamentally different security problems**. The current implementation is strongest at post-execution / transaction evidence verification alongside preflight QuoterV2 / calldata simulation checks.
 
+### Canonical Technical Specifications (Source of Truth)
+
+| Parameter | Canonical Value |
+|---|---|
+| **Product Version** | `IntentGuard v0.2.0` |
+| **Verification Network** | **Base Mainnet** (`8453`) — Real RPC Evidence & Calldata Decoding |
+| **Attestation Network** | **Base Sepolia** (`84532`) — EIP-712 Registry Anchoring |
+| **Solidity Version** | `0.8.24` (OpenZeppelin v5.0.2 + EIP-712) |
+| **Test Suite Results** | **33 Passing** (17 Vitest, 9 Hardhat with gas metrics, 7 TSX Engine) |
+| **Policy Registry** | `0x45DF2847c1f8d8b67195861F1a2a4bE13f48a924` |
+| **Receipt Registry** | `0x6f31A8B28a6f95886dF02B487c6fBEB5F95C48A1` |
+| **Target Registry** | `0x19f2a7a40C3B7f8A2aE72d8a57A250fD2A20B71b` |
+
 ### Formal Trust Boundary Invariants
 
 IntentGuard does **NOT**:
@@ -33,7 +46,7 @@ The best answer is short enough to say in 20–35 seconds. If a judge asks for d
 | 1 | **“Do you claim full pre-execution protection?”** | “No. Pre-execution (‘Can this safely proceed?’) and post-execution (‘Did it execute as promised?’) are different security problems. Our engine is strongest today at post-execution evidence auditing and preflight calldata/quoter inspection. We do not pretend to hold an active mempool interceptor or private enclave; instead, we provide the deterministic verification and EIP-712 attestation primitives that agents, wallets, and smart accounts integrate.” | README two-stage architecture and UI boundary panel. |
 | 2 | **“Isn’t this just Blockaid or a transaction simulator?”** | “Those systems are valuable security and simulation primitives. IntentGuard’s wedge is different: the user declares a goal and hard limits first, then we compare the decoded effect to that policy. We are not claiming to replace simulation; we are building the intent-fidelity and evidence layer that decides whether the action matches authorization.” | The intent panel beside the decoded allowance and `IG-APPROVE-001`. |
 | 3 | **“You say you block transactions, but an EOA can sign elsewhere. Isn’t that misleading?”** | “Correct: the MVP does not and cannot universally stop an externally owned account from signing somewhere else. Our MVP blocks the integrated approval flow and returns a fail-closed decision before confirmation. Universal enforcement requires a smart account, Safe module, wallet integration, or programmable execution layer, which we deliberately exclude from this non-custodial MVP.” | Safety-boundary slide and README limitation. |
-| 4 | **“Where is the AI? This sounds like deterministic code.”** | “That separation is intentional. The agent uses AI to normalize natural-language intent and choose which evidence checks to investigate. The binding verdict is deterministic so the model cannot hallucinate an address, amount, or safety score. The model explains; the policy engine decides.” | Architecture slide: LLM has no-authority dotted edge; policy engine is authority. |
+| 4 | **“Where is the AI? This sounds like deterministic code.”** | “That separation is our core architectural guarantee: **‘The model may help interpret intent. It does not decide whether the transaction is safe.’** The LLM only parses natural language into a Zod-validated `IntentSpec`. The final safety verdict (`MATCH` / `MISMATCH` / `CANNOT_VERIFY`) is computed 100% deterministically by pure arithmetic and on-chain log checks. An LLM has zero verdict authority.” | Architecture pipeline: LLM produces `IntentSpec`; Deterministic Engine computes Verdict. |
 | 5 | **“What exact transactions do you support today?”** | “The verified MVP supports native transfers with value, ERC-20 approvals and supported permit evidence (`transfer`, `approve`, ERC-2612 typed `Permit`), and allowlisted Uniswap V3 `SwapRouter02.exactInputSingle` routes. Permit2 and arbitrary nested multi-calls are not claimed in this core package and fail closed as `CANNOT_VERIFY`.” | TypeScript decoder, fixture tests, and supported-scope README. |
 | 6 | **“Can a malicious contract hide an approval inside a router call?”** | “In the current core package, an unsupported nested route is not decoded as safe; it becomes `CANNOT_VERIFY`. We do not issue `MATCH` for unknown nested effects. The next integration is a verified-ABI plus trace/simulation adapter that inspects nested asset deltas.” | Unknown-selector fixture and fail-closed rule. |
 | 7 | **“Can a user or dApp manipulate token metadata or prompt the model?”** | “Metadata is not decision authority. Addresses and raw integer values are authoritative; symbols and names are display evidence. The model output is schema-validated and cannot change the deterministic result. Prompt-injection text is treated as untrusted data, not instructions.” | Trust-boundary slide and policy-engine code path. |

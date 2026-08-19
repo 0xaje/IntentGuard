@@ -30,6 +30,34 @@ IntentGuard explicitly distinguishes between two different security problems in 
 
 ---
 
+## The Zero-LLM Verdict Engine Guarantee
+
+> [!IMPORTANT]
+> **"The model may help interpret intent. It does not decide whether the transaction is safe."**
+
+IntentGuard strictly separates natural language interpretation from safety evaluation:
+
+```text
+Natural Language
+      ↓
+Parser / LLM
+      ↓
+Structured IntentSpec
+      ↓
+Schema validation (Zod)
+      ↓
+Canonical policy (keccak256 commitment)
+      ↓
+DETERMINISTIC ENGINE (Pure TypeScript / Solidity)
+      ↓
+VERDICT (MATCH / MISMATCH / CANNOT_VERIFY)
+```
+
+1. **LLM Authority Boundary**: If an LLM is used to parse natural language constraints into an `IntentSpec`, its role ends at structured schema extraction.
+2. **Deterministic Evaluation Authority**: The final safety verdict (`MATCH`, `MISMATCH`, `CANNOT_VERIFY`) is computed **100% deterministically** by pure arithmetic and exact on-chain log comparisons. No LLM has verdict authority.
+
+---
+
 ## Critical Technical Distinction
 
 IntentGuard explicitly distinguishes between three concepts often conflated in Web3 transaction security:
@@ -94,66 +122,111 @@ Evidence
 
 > **Why explicit versioning matters**: When a decoder or rule is updated in the future, past on-chain receipts remain unambiguous. A judge or verifier can always attest: *"This receipt was deterministically evaluated under decoder v1 and engine v1."*
 
+## Technical Specification & Source of Truth
+
+| Parameter | Canonical Value | Notes |
+|---|---|---|
+| **Product Version** | `IntentGuard v0.2.0` | Deterministic Intent Fidelity & Attestation Layer |
+| **Verification Network** | **Base Mainnet** (`8453`) | Live Base JSON-RPC Evidence, Decoding, QuoterV2 |
+| **Attestation Network** | **Base Sepolia** (`84532`) | EIP-712 Registry Anchoring & Revocation |
+| **Solidity Version** | `0.8.24` | OpenZeppelin v5.0.2 + EIP-712 Typed Data |
+| **Automated Tests** | **33 Passing** across 3 suites | 17 Vitest unit/integration, 9 Hardhat (gas tracked), 7 TSX engine |
+| **Policy Registry** | `0x45DF2847c1f8d8b67195861F1a2a4bE13f48a924` | Policy commitments & versioning |
+| **Receipt Registry** | `0x6f31A8B28a6f95886dF02B487c6fBEB5F95C48A1` | EIP-712 signature verification & receipts |
+| **Target Registry** | `0x19f2a7a40C3B7f8A2aE72d8a57A250fD2A20B71b` | Allowlisted contract addresses & selectors |
+
 ---
 
 ## Formal Trust Architecture & Agent Boundaries
 
 ```text
-                    HUMAN
-                      │
-                      │ declares intent
-                      ▼
-             ┌──────────────────┐
-             │   INTENT SPEC    │
-             │                  │
-             │ constraints      │
-             └────────┬─────────┘
-                      │
-                      ▼
-             ┌──────────────────┐
-             │ POLICY COMMITMENT│
-             │                  │
-             │ keccak256        │
-             └────────┬─────────┘
-                      │
-                      ▼
-             ┌──────────────────┐
-             │ ORION / AI AGENT │
-             │                  │
-             │ plans workflow   │
-             └────────┬─────────┘
-                      │
-                      │ produces proposed action (calldata / tx hash)
-                      ▼
-        ┌───────────────────────────┐
-        │        INTENTGUARD        │
-        │                           │
-        │ deterministic verifier    │
-        │                           │
-        │ NO LLM VERDICT            │
-        │ NO CUSTODY                │
-        │ NO PRIVATE KEYS CLIENT    │
-        └─────────────┬─────────────┘
-                      │
-                      ▼
-             ┌──────────────────┐
-             │ REAL TX EVIDENCE │
-             │ (Base RPC / logs)│
-             └────────┬─────────┘
-                      │
-          ┌───────────┼───────────┐
-          ▼           ▼           ▼
-        MATCH      MISMATCH   CANNOT_VERIFY
-          │           │           │
-          └───────────┼───────────┘
-                      ▼
-               EIP-712 RECEIPT
-                      │
-                      ▼
-              RECEIPT REGISTRY
+                         HUMAN
+                           │
+                           │ Intent
+                           ▼
+                  ┌─────────────────┐
+                  │ Intent Compiler │
+                  └────────┬────────┘
+                           │
+                           ▼
+                  ┌─────────────────┐
+                  │ Policy Registry │
+                  │   Commitment    │
+                  └────────┬────────┘
+                           │
+                           │ Policy
+                           ▼
+                       AI AGENT
+                           │
+                           │ Proposed Request
+                           ▼
+                  ┌─────────────────┐
+                  │   IntentGuard   │
+                  │                 │
+                  │ Decoder         │
+                  │ Evidence        │
+                  │ Policy Engine   │
+                  └────────┬────────┘
+                           │
+                 ┌─────────┴─────────┐
+                 ▼                   ▼
+              MATCH              MISMATCH
+                 │                   │
+                 ▼                   ▼
+          Human approval         BLOCK/STOP
+                 │
+                 ▼
+             Execution
+                 │
+                 ▼
+             Base RPC
+                 │
+                 ▼
+          Post-execution
+             evidence
+                 │
+                 ▼
+          EIP-712 Receipt
+                 │
+                 ▼
+          Receipt Registry
 ```
 
-> **The Orion / Agent Boundary**: The autonomous agent does not need to execute transactions or hold custody. The agent's responsibility is solely to **produce a proposed action**. IntentGuard acts as the independent, uncompromised verification gate that deterministically proves whether that action matches the user's intent.
+> [!IMPORTANT]
+> ### The Orion Integration Story: Cryptographic Intent Fidelity for Autonomous Agents
+> **IntentGuard gives Orion agents a cryptographic *“did this action actually match the user’s intent?”* layer.**
+>
+> ```text
+>              ORION AGENT
+>                   │
+>                   │ proposes candidate action (calldata / tx)
+>                   ▼
+>           ┌─────────────────┐
+>           │   INTENTGUARD   │
+>           │                 │
+>           │ Intent Fidelity │
+>           │ Deterministic   │
+>           │ Evidence        │
+>           │ Attestation     │
+>           └────────┬────────┘
+>                    │
+>              MATCH / BLOCK
+>                    │
+>                    ▼
+>              HUMAN APPROVAL
+>
+> Then:
+>
+> IntentGuard Receipt
+>         ↓
+> On-chain proof (Base Sepolia)
+>         ↓
+> Agent reputation / audit trail
+> ```
+>
+> 1. **Zero-Custody Agent Operation**: The Orion agent plans multi-step DeFi routes and emits a candidate proposal (`ProposedRequest`). It never touches user private keys.
+> 2. **Independent Policy Verification**: IntentGuard deterministically evaluates the candidate action against the human policy commitment.
+> 3. **Tamper-Evident Reputation**: Each anchored EIP-712 receipt attributes the execution outcome to the `agentId`, creating an immutable on-chain track record of agent fidelity.
 
 ### The Core Evaluation Triad
 
@@ -184,47 +257,60 @@ type ProposedRequest = {
 };
 ```
 
-### The Unified `VerificationSession` Forensic Envelope
+### Formal `VerificationReceipt` Cryptographic Schema
 
-To facilitate end-to-end auditability and single-bundle verification, IntentGuard organizes the entire trust lifecycle into a `VerificationSession`:
+The receipt cryptographically binds the entire verification lifecycle into an immutable, EIP-712 typed data structure:
 
 ```text
-VerificationSession
+VerificationReceipt
+├── [Policy Commitment]
+│   ├── policyId            ──► keccak256(owner, committer, nonce, intentHash, version)
+│   ├── intentHash          ──► Canonical keccak256(IntentSpec)
+│   └── policyVersion       ──► Strict version identifier
 │
-├── IntentSpec          ──► Human constraints & caps (source text, limits)
-├── PolicyCommitment    ──► On-chain policyId, intentHash, & committer
-├── ProposedRequest     ──► Agent target, calldata proposal, value, & nonce
-├── EvidencePacket      ──► Anchored Base RPC facts & discrete states
-├── VerificationResult  ──► Discrete check counts & MATCH / MISMATCH / CANNOT_VERIFY
-└── ReceiptAttestation  ──► EIP-712 evaluator signature & Base Sepolia anchor tx
+├── [Execution Binding]
+│   ├── transactionHash     ──► Proposed calldata hash or mined Base tx hash
+│   ├── transactionSubject  ──► Execution address / Smart account on Base
+│   └── chainId             ──► 8453 (Base Mainnet) / 84532 (Base Sepolia)
+│
+├── [Evidence Hashes]
+│   ├── requestHash         ──► Canonical keccak256(ProposedRequest)
+│   └── evidenceHash        ──► Canonical keccak256(EvidenceItems[])
+│
+├── [Deterministic Decision]
+│   └── verdict             ──► MATCH (0), MISMATCH (1), CANNOT_VERIFY (2)
+│
+├── [Temporal & Attestation Bounds]
+│   ├── evaluator           ──► Address holding EVALUATOR_ROLE on ReceiptRegistry
+│   ├── evaluatedAt         ──► Timestamp of evaluation
+│   └── expiresAt           ──► Timestamp when attestation ceases to be active
+│
+└── [Code Provenance & Replay Defense]
+    ├── engineVersion       ──► Deterministic policy engine version
+    ├── decoderVersion      ──► Supported calldata decoder version
+    └── receiptId           ──► Unique 32-byte cryptographic identifier
 ```
 
-### Explicit Actor & Key Separation
+---
 
-To maximize security and prevent conflicts of interest, IntentGuard strictly isolates four distinct entities:
+### Strict Security Invariant: Subject Separation
+
+IntentGuard enforces a fundamental security property across the entire trust loop:
+
+$$\mathbf{policyOwner} \neq \mathbf{transactionSubject} \neq \mathbf{evaluator}$$
 
 ```text
-┌───────────────────────────┐
-│     ORION / AI AGENT      │  ──► Proposes candidate action (ProposedRequest)
-└───────────────────────────┘
-              │
-              ▼
-┌───────────────────────────┐
-│    INTENTGUARD ENGINE     │  ──► Evaluates deterministically against IntentSpec + Evidence
-└───────────────────────────┘
-              │
-              ▼
-┌───────────────────────────┐
-│    ATTESTING EVALUATOR    │  ──► Signs EIP-712 receipt with EVALUATOR_ROLE on Base Sepolia
-└───────────────────────────┘
+┌─────────────────────────┐     ┌─────────────────────────┐     ┌─────────────────────────┐
+│       POLICY OWNER      │     │   TRANSACTION SUBJECT   │     │   ATTESTING EVALUATOR   │
+├─────────────────────────┤     ├─────────────────────────┤     ├─────────────────────────┤
+│ • Human user or DAO     │  ≠  │ • Autonomous AI Agent   │  ≠  │ • Independent Attestor  │
+│ • Declares IntentSpec   │     │   (Orion / Smart Acct)  │     │ • Holds EVALUATOR_ROLE  │
+│ • Commits policy hash   │     │ • Proposes/Executes tx  │     │ • Signs EIP-712 receipt │
+│ • Holds no custody      │     │ • Cannot attest itself  │     │ • Holds no user funds   │
+└─────────────────────────┘     └─────────────────────────┘     └─────────────────────────┘
 ```
 
-| Role | Entity / Key | Responsibility | Security Boundary |
-|---|---|---|---|
-| **Human Owner** | User Account / EOA | Declares intent constraints and spending caps. | Never signs unreviewed actions or shares private keys. |
-| **Proposing Agent** | Orion / AI Planner | Plans workflow and constructs candidate `ProposedRequest`. | **Zero custody; cannot evaluate or approve its own safety.** |
-| **Evaluation Engine** | IntentGuard Deterministic Code | Evaluates `IntentSpec + ProposedRequest + ObservableEvidence`. | **Pure deterministic computation; zero LLM verdict authority.** |
-| **Attesting Evaluator** | Key holding `EVALUATOR_ROLE` | Attests to canonical hashes and signs EIP-712 trust receipt. | **Gated by ReceiptRegistry on Base Sepolia; strictly revocable.** |
+> **Why this matters**: In naive agent frameworks, the agent is either assumed to be the policy owner (meaning it can re-define its own rules) or the evaluator (meaning it can rubber-stamp its own actions). IntentGuard mathematically isolates all three entities. While they may technically be the same address in single-user testing, **the protocol never assumes identity correlation**.
 
 ### Deterministic Confidence Semantics
 
