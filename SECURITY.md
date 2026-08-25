@@ -9,13 +9,13 @@ IntentGuard strictly adheres to the following non-custodial invariants. **Intent
 - **Hold user funds**: Zero token custody, no escrow contracts, and no balance storage.
 - **Hold user private keys**: Never receives, stores, or requests mnemonic phrases or private keys.
 - **Execute transactions on behalf of users**: Never broadcasts transactions for users or acts as a relayer.
-- **Trust an LLM to determine the final verdict**: LLMs only assist in natural language normalization; all verdicts (`MATCH`, `MISMATCH`, `UNVERIFIABLE`) are strictly computed by deterministic TypeScript/Solidity policy code.
+- **Trust an LLM to determine the final verdict**: LLMs only assist in natural language normalization; all verdicts (`MATCH`, `MISMATCH`, `CANNOT_VERIFY`) are strictly computed by deterministic TypeScript/Solidity policy code.
 - **Infer missing blockchain evidence**: Missing RPC data or unmined states never default to success.
 - **Convert unavailable evidence into approval**: Unknown selectors or unavailable RPC endpoints fail closed.
 
 ## Supported Scope
 
-The current core implementation supports native transfers, ERC-20 approvals and supported permit evidence (`transfer`, `approve`, ERC-2612 typed `Permit`), and allowlisted Uniswap V3 `SwapRouter02.exactInputSingle` routes. Unsupported or incomplete effects return `CANNOT_VERIFY` / `UNVERIFIABLE`. Generic nested calls, universal EOA enforcement, and live simulation adapters are outside the current core scope.
+The current core implementation supports native transfers, ERC-20 approvals and supported permit evidence (`transfer`, `approve`, ERC-2612 typed `Permit`), dynamic ERC-20 token metadata resolution (`symbol`, `decimals`), and allowlisted Uniswap V3 `SwapRouter02.exactInputSingle` routes. Unsupported or incomplete effects return `CANNOT_VERIFY`. Generic nested calls, universal EOA enforcement, and live simulation adapters are outside the current core scope.
 
 ## Reporting a vulnerability
 

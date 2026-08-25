@@ -231,7 +231,7 @@ The presenter should keep the cursor still during verdict moments, avoid reading
 
 **“Can it stop a user from signing?”** Answer: “The MVP is read-only and confirm-first. It warns and blocks the product flow, but an external EOA can always sign elsewhere. Universal enforcement requires a programmable account or wallet integration, which is a deliberate next step—not a claim we make today.”
 
-**“What happens when the model is wrong?”** Answer: “The model is not the authority. The decoder and policy engine produce the verdict from typed fields and evidence. The model can only generate a constrained explanation from that immutable result.”
+**“What happens when the model is wrong?”** Answer: “The model is not the authority. The decoder and policy engine produce the verdict from typed fields and evidence. The model can only generate a constrained explanation from that deterministic result.”
 
 **“Why put anything on-chain?”** Answer: “The on-chain registries do not hold funds and do not execute calls. They anchor hashes, policy versions, evaluator identity, expiry, and revocation so a receipt can be independently verified.”
 

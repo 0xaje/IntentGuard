@@ -6,7 +6,7 @@
  *
  * The LLM may propose any calldata, but IntentGuard guarantees that if the calldata
  * violates human intent (overspending, wrong recipient, unlimited approval, slippage drift),
- * the execution is deterministically blocked BEFORE touching the network.
+ * the middleware prevents continuation before touching the network.
  */
 
 import { verifyAgentAction, buildErc20TransferData } from "../engine/src";

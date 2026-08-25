@@ -2,13 +2,13 @@
 
 <div align="center">
 
-### Deterministic Intent Verification & Cryptographic Attestation Layer for Orion AI Agents on Base
+#### Deterministic Intent Verification & Cryptographic Attestation Layer for Autonomous AI Agents on Base
 
 [![Live Demo](https://img.shields.io/badge/Live%20App-intentguard.onrender.com-success?style=flat-square&logo=render)](https://intentguard-drd7.onrender.com)
 [![CI / Test Suite](https://img.shields.io/badge/Tests-42%2F42%20Passing-emerald?style=flat-square)](https://github.com/0xaje/IntentGuard)
 [![Base Mainnet](https://img.shields.io/badge/Verification-Base%20Mainnet%20(8453)-blue?style=flat-square)](https://base.org)
 [![Base Sepolia](https://img.shields.io/badge/Attestation-Base%20Sepolia%20(84532)-purple?style=flat-square)](https://sepolia.basescan.org)
-[![Orion Agent](https://img.shields.io/badge/Framework-Orion%20Agent%20Ready-orange?style=flat-square)](https://github.com/0xaje/IntentGuard)
+[![Orion Adapter](https://img.shields.io/badge/Adapter-Orion%20Compatible-orange?style=flat-square)](examples/orion-integration.ts)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
 
 [**Live Application**](https://intentguard-drd7.onrender.com) · [**Pitch Deck**](presentation/intentguard_pitch_deck.md) · [**Judge Q&A Playbook**](presentation/judge_qa_playbook.md) · [**Architecture**](presentation/intentguard_architecture.mmd)
@@ -17,66 +17,71 @@
 
 ---
 
-## 1. What We Are Building: The Intent Fidelity Layer for Orion Agents
+## 1. Executive Summary
 
-**IntentGuard** is a zero-custody, zero-LLM deterministic security and cryptographic attestation layer built specifically for **autonomous Orion Agents executing on Base**.
+**IntentGuard** is an intent-fidelity and cryptographic attestation layer for autonomous AI agents on Base.
 
-As autonomous AI agents like **Orion** take on complex DeFi routing, token transfers, DEX swaps, and multi-step on-chain operations, they face critical security threats:
-- **Prompt Injection & Hijacks**: Malicious inputs tricking an Orion agent into rerouting funds to an unauthorized address.
-- **Calldata Hallucination**: Orion agents inadvertently constructing invalid recipient parameters, wrong token contracts, or excessive spend allowances (`type(uint256).max`).
-- **Execution Drift**: Slippage and liquidity shifts between the agent's planning phase and blockchain mining.
+It converts human instructions into structured, deterministic constraints and evaluates agent-proposed transactions against observable blockchain evidence.
 
-### The Zero-LLM Deterministic Guarantee
-> **"The Orion LLM interprets human intent. It NEVER decides whether a transaction is safe."**
+IntentGuard does not hold user funds, private keys, or custody assets. It does not use an LLM to make the final safety decision.
+
+Instead, the system produces one of three deterministic outcomes:
+- **`MATCH`** — All required supported constraints are satisfied by the available evidence (Safe to review / continue).
+- **`MISMATCH`** — Observable transaction behavior conflicts with a declared constraint (**Do Not Approve / Execute**; prevents continuation through integrated middleware).
+- **`CANNOT_VERIFY`** — The available evidence is insufficient or unsupported (Fails closed; do not approve).
+
+Successful evaluations can be represented as EIP-712 signed verification receipts and anchored on Base Sepolia (`chainId 84532`), creating an independently verifiable on-chain attestation trail.
+
+### The Architectural Moat: Separation of Interpretation from Enforcement
+
+> **"Agents can decide. IntentGuard verifies."**
+> 
+> *The agent can be intelligent. The verifier doesn't have to be.*
 >
-> 1. **Intent Extraction**: The user's natural language goal is parsed into a strictly validated `IntentSpec` schema.
-> 2. **Deterministic Evaluation**: IntentGuard's pure arithmetic policy engine checks proposed calldata against constraints (spend limits, allowlisted spenders/recipients, slippage bounds).
-> 3. **Cryptographic Attestation**: Computes canonical hashes and anchors evaluator-signed **EIP-712 receipts** to smart contracts on Base Sepolia, producing an immutable **Proof of Agent Fidelity**.
+> **LLMs interpret. Deterministic rules enforce.** IntentGuard may use an LLM to translate natural language into a structured `IntentSpec`. The LLM does **not** determine the final verdict. The verdict is produced by deterministic rules applied to decoded transaction data and observable blockchain evidence.
+
+### Pre-Execution vs. Post-Execution Precision
+The same deterministic policy engine can evaluate both unsigned agent proposals before execution and observable transaction evidence after execution. The current public demo proves the verification path with live Base evidence; pre-execution enforcement is exposed through the agent middleware architecture.
 
 ---
 
-## 2. The Orion Agent Trust Architecture
+## 2. IntentGuard Trust & Attestation Architecture
 
 ```text
-                              HUMAN USER
-                                  │
-                                  │ Declares Intent ("Swap $50 USDC for ETH on Base, max 1% slippage")
-                                  ▼
-                         ┌─────────────────┐
-                         │   ORION AGENT   │ ──► Plans Route & Generates Calldata
-                         └────────┬────────┘
-                                  │
-                                  │ ProposedRequest (Target, Calldata, Value, Nonce)
-                                  ▼
-                      ┌───────────────────────┐
-                      │      INTENTGUARD      │
-                      │                       │
-                      │ • Calldata Decoder    │
-                      │ • Policy Engine       │
-                      │ • Deterministic Math  │
-                      └───────────┬───────────┘
-                                  │
-                       ┌──────────┴──────────┐
-                       ▼                     ▼
-                    [MATCH]               [MISMATCH]
-                       │                     │
-                       ▼                     ▼
-                Broadcast to Base     FAIL-CLOSED (Execution Aborted)
-                       │
-                       ▼
-                Mined Base Receipt
-                       │
-                       ▼
-         EIP-712 Receipt Anchored to Base Sepolia
-                       │
-                       ▼
-       Orion Agent Reputation & Escrow Settlement
+                    HUMAN INTENT
+                         │
+                         ▼
+                     IntentSpec
+                         │
+                 Policy Commitment
+                         │
+              ┌──────────┴──────────┐
+              │                     │
+        PRE-EXECUTION         POST-EXECUTION
+        Agent proposal        Mined transaction
+              │                     │
+              └──────────┬──────────┘
+                         ▼
+                Deterministic Engine
+                         │
+             ┌───────────┼───────────┐
+             ▼           ▼           ▼
+           MATCH      MISMATCH   CANNOT_VERIFY
+             │
+             ▼
+        EIP-712 Receipt
+             │
+             ▼
+      Base Sepolia Anchor
 ```
 
-### 1. Orion Zero-Custody Agent Operation
-- The **Orion Agent** plans execution without ever holding user seed phrases or private keys.
-- If the Orion agent constructs a valid transaction -> IntentGuard returns `MATCH` (`canExecute: true`).
-- If an attack or hallucination violates constraints -> IntentGuard returns `MISMATCH` (`canExecute: false`) with strict failure codes (`IG-SPEND-001`, `IG-RECIPIENT-001`, `IG-APPROVE-001`).
+### 1. Orion-Compatible Integration Adapter ([`examples/orion-integration.ts`](examples/orion-integration.ts))
+
+IntentGuard provides an Orion-compatible integration adapter prototype illustrating how an agent's proposal is verified prior to execution:
+
+```text
+Orion Agent ──► Proposes Transaction ──► IntentGuard.verify(...) ──► [ MATCH / MISMATCH / CANNOT_VERIFY ] ──► Only MATCH continues
+```
 
 ### 2. Orion Agent Integration ([`examples/orion-integration.ts`](examples/orion-integration.ts))
 ```typescript
@@ -122,7 +127,7 @@ In addition to native Orion Agent support, IntentGuard provides drop-in adapters
 
 ## 4. Cryptographic Smart Contracts on Base Sepolia
 
-IntentGuard anchors its deterministic verdicts to immutable Solidity registries deployed on **Base Sepolia**:
+IntentGuard anchors its deterministic verdicts to Solidity registries deployed on **Base Sepolia** (`chainId 84532`):
 
 | Contract | Network | Address | Purpose |
 |---|---|---|---|
@@ -130,10 +135,8 @@ IntentGuard anchors its deterministic verdicts to immutable Solidity registries 
 | **`IntentGuardReceiptRegistry`** | Base Sepolia (`84532`) | `0x6f31A8B28a6f95886dF02B487c6fBEB5F95C48A1` | EIP-712 evaluator signature verification & receipt anchoring |
 | **`IntentGuardTargetRegistry`** | Base Sepolia (`84532`) | `0x19f2a7a40C3B7f8A2aE72d8a57A250fD2A20B71b` | Curated registry for allowlisted contracts & function selectors |
 
-### Security Invariant: Strict Subject Separation
-IntentGuard mathematically isolates entities to guarantee objectivity:
-
-$$\mathbf{policyOwner} \neq \mathbf{transactionSubject} \neq \mathbf{evaluator}$$
+### Security Invariant: Independent Protocol Roles
+Policy ownership, transaction subject, and evaluator identity are represented as separate protocol fields. The evaluator is independently authorized and is never substituted for the transaction subject merely because it submitted an infrastructure transaction.
 
 - **Policy Owner (Human / DAO)**: Commits intent constraints; holds no custody.
 - **Transaction Subject (Orion Agent / Smart Account)**: Proposes or executes transactions; cannot attest to its own actions.
@@ -165,17 +168,26 @@ IntentGuard is validated across three independent test runners with 100% green c
   • Rogue spender blocked (IG-APPROVE-002)
   • Unknown selectors fail closed (IG-SELECTOR-001)
   • Dynamic token metadata resolver & precision conversion (4 passed)
-  • Invariant: Overspend amounts mathematically impossible to MATCH
-  • Invariant: Non-allowlisted recipients mathematically impossible to MATCH
+  • Invariant: Overspend amounts deterministically rejected from MATCH
+  • Invariant: Non-allowlisted recipients deterministically rejected from MATCH
   • Invariant: Malformed / truncated calldata safely fails closed
   (16 Node/TSX engine & fuzz tests passed)
 
   TypeScript Compiler Check (tsc --noEmit): 0 ERRORS
 ```
 
+## 6. V2 Roadmap
+
+- **Pre-execution state simulation**: Native dry-run trace evaluation alongside calldata decoding.
+- **Runtime enforcement packages**: Drop-in middleware for Orion and other autonomous agent runtimes.
+- **Smart Account / Safe execution hooks**: Programmable policy modules for explicit account verification.
+- **Expanded protocol coverage**: Independently audited decoders for complex protocols (Permit2, Universal Router).
+- **Cross-chain intent verification**: Interoperable policy attestations across the Superchain.
+- **Persistent forensic verification history**: Indexing and public querying for attestation receipts.
+
 ---
 
-## 6. Quickstart & Demo Commands
+## 7. Quickstart & Demo Commands
 
 ```bash
 # 1. Install dependencies
@@ -198,10 +210,12 @@ Open `https://intentguard-drd7.onrender.com` (or `http://localhost:3000` locally
 
 ---
 
-## 7. Hackathon Submission & Team
+## 8. Hackathon Submission & Team
 
 - **Project**: IntentGuard
 - **Track**: Autonomous AI Agents / Security & Infrastructure on Base (Orion Agent Hackathon)
+- **Status**: Submission-Ready MVP
 - **Author**: Aje Oluwaseun Isaac ([@0xaje](https://github.com/0xaje))
 - **Repository**: [github.com/0xaje/IntentGuard](https://github.com/0xaje/IntentGuard)
 - **License**: MIT License
+

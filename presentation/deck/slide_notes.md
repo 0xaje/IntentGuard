@@ -32,7 +32,7 @@ We win this hackathon by being the agent that refuses to guess. Our judging case
 
 # 9 - The agent investigates. Deterministic code decides.
 
-We separate human language from strict on-chain execution so that AI never holds the keys. The model normalizes your goal and gathers evidence, but only deterministic code issues the verdict. If evidence is missing or ambiguous, the engine defaults to cannot verify rather than guessing. Point to the separation between the agent investigation layer and the immutable policy engine. And notice how this guarantees that even if a model hallucinates, the hard limits remain absolute. Moving forward, let us examine how this architecture enforces a strict trust boundary.
+We separate human language from strict on-chain execution so that AI never holds the keys. The model normalizes your goal and gathers evidence, but only deterministic code issues the verdict. If evidence is missing or ambiguous, the engine defaults to cannot verify rather than guessing. Point to the separation between the agent investigation layer and the deterministic policy engine. And notice how this guarantees that even if a model hallucinates, the hard limits remain absolute. Moving forward, let us examine how this architecture enforces a strict trust boundary.
 
 # 10 - Safety is a product feature—and a trust boundary.
 

@@ -20,7 +20,7 @@ export interface GuardrailCheckResult {
 
 /**
  * Verify a proposed agent transaction against a declared intent constraint.
- * Deterministic, zero-LLM verdict authority.
+ * Deterministic verdict authority (LLMs may interpret intent; deterministic rules enforce verdicts).
  *
  * @example
  * ```ts

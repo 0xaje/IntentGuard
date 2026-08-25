@@ -70,7 +70,7 @@ Do not attack competitors. Say that simulation, reputation, and threat intellige
 
 ## Slide 5 — 2:15–2:55
 
-**Say:** “The architecture has a deliberate authority boundary. The intent normalizer turns language into a strict schema. The decoder reads calldata and EIP-712 typed data. Evidence adapters read Base state and registry metadata. The policy engine applies typed rules and produces the only binding verdict. The explanation layer receives the immutable result; it cannot change the verdict.”
+**Say:** “The architecture has a deliberate authority boundary. The intent normalizer turns language into a strict schema. The decoder reads calldata and EIP-712 typed data. Evidence adapters read Base state and registry metadata. The policy engine applies typed rules and produces the only binding verdict. The explanation layer receives the deterministic result; it cannot change the verdict.”
 
 Trace the diagram from left to right and stop at the policy engine. Mention that the on-chain registries anchor policy commitments and receipts, while the detailed analysis remains off-chain for speed and flexibility. The key security sentence is: “The model explains; deterministic code decides.”
 
@@ -92,9 +92,9 @@ This slide is designed to earn trust with security judges. Do not rush the limit
 
 **Say before the live interaction:** “I will run the same three scenarios every time: an exact approval, an unlimited approval, and an undecodable request or permit. There is no wallet connection, no gas, and no real funds.”
 
-**At the mismatch:** “The user said claim only. The decoder found `approve(spender, uint256.max)`. The policy engine returns `MISMATCH — DO NOT SIGN` and cites `IG-APPROVE-001`.”
+**At the mismatch:** “The user said claim only. The decoder found `approve(spender, uint256.max)`. The policy engine returns `MISMATCH — DO NOT APPROVE / EXECUTE` and cites `IG-APPROVE-001`.”
 
-**At the match:** “Now the exact amount and approved spender agree with the policy. This is `MATCH — safe to review`; the product is not trying to block every action.”
+**At the match:** “Now the exact amount and approved spender agree with the policy. This is `MATCH — constraints satisfied; safe to review`; the product is not trying to block every action.”
 
 **At the uncertainty:** “Here the selector or nested evidence is unavailable. We show `CANNOT VERIFY` instead of pretending the request is safe.”
 

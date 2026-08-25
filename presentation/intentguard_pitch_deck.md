@@ -35,10 +35,11 @@ Orion Builder Hackathon · Base · Read-only · Confirm-first
 
 ## Slide 5
 ### The agent investigates. Deterministic code decides.
-- **Intent normalizer:** converts language into explicit limits.
+- **“The agent can be intelligent. The verifier doesn't have to be.”**
+- **Intent normalizer:** converts language into explicit limits; the LLM never decides whether a transaction is safe.
 - **Decoder + evidence fetcher:** reads calldata, EIP-712 fields, Base state, and target metadata.
-- **Policy engine:** applies typed rules; the model cannot change the verdict.
-- **Explanation + receipt:** makes the result human-readable and independently verifiable.
+- **Policy engine:** applies typed rules; pure arithmetic and observable evidence decide the verdict.
+- **Explanation + receipt:** makes the result human-readable and independently verifiable on-chain.
 
 ## Slide 6
 ### Safety is a product feature—and a trust boundary.
@@ -72,6 +73,7 @@ Orion Builder Hackathon · Base · Read-only · Confirm-first
 
 ## Slide 10
 ### We win by being the agent that refuses to guess.
+- **Thesis: “Agents can decide. IntentGuard verifies.”**
 - Useful: prevents a costly, understandable signing mistake.
 - Executed: live no-wallet demo, deterministic engine, tests, and verified contracts.
 - Original: intent-to-effect verification instead of a generic “safe” label.
@@ -81,4 +83,5 @@ Orion Builder Hackathon · Base · Read-only · Confirm-first
 ### Autonomous finance earns trust by proving what it means.
 **IntentGuard**  
 The transaction-intent firewall for autonomous finance.  
-Live demo · Open-source engine · Base receipts · Orion-ready
+Live demo · Open-source engine · Base receipts · Orion-compatible adapter
+

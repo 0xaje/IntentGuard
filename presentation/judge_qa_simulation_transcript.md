@@ -21,7 +21,7 @@
 
 **Judge 2 — AI/agents:** “Where is the AI? The result seems deterministic.”
 
-**Presenter:** “That is intentional. AI normalizes the user’s natural-language goal and can choose follow-up evidence checks. The typed decoder and policy engine produce the binding result. The explanation model receives the immutable result and cannot alter the verdict, amount, address, or rule code. The model explains; deterministic code decides.”
+**Presenter:** “That is intentional. AI normalizes the user’s natural-language goal and can choose follow-up evidence checks. The typed decoder and policy engine produce the binding result. The explanation model receives the deterministic result and cannot alter the verdict, amount, address, or rule code. The model explains; deterministic code decides.”
 
 **Judge 2:** “What if the intent parser hallucinates an amount or address?”
 

@@ -1,9 +1,9 @@
 /**
- * IntentGuard + Orion Agent Flagship Integration
+ * IntentGuard + Orion Agent Integration Prototype
  *
  * Demonstrates how an autonomous Orion Agent operating on Base uses IntentGuard
- * to achieve 100% deterministic intent fidelity, fail-closed safety, and on-chain
- * EIP-712 cryptographic attestation on Base Sepolia.
+ * middleware to verify intent fidelity, fail-closed safety, and on-chain
+ * EIP-712 cryptographic attestation before continuing execution.
  */
 
 import { verifyAgentAction, createAgentGuardrail, buildErc20TransferData } from "../engine/src";
@@ -110,7 +110,7 @@ async function main() {
   console.log("Verdict:", checkB.verdict, "-> Can Execute:", checkB.canExecute);
   console.log("Primary Failure Code:", checkB.reasonCode);
   console.log("Explanation:", checkB.explanation);
-  console.log("Result: Execution deterministically aborted before touching Base mempool.");
+  console.log("Result: Middleware prevents continuation through the execution path.");
 }
 
 if (process.argv[1]?.includes("orion-integration")) {

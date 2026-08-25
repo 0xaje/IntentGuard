@@ -170,7 +170,7 @@ export default function Home() {
             <div className="orion-flow-step">
               <div className="orion-step-badge">03 / ATTEST</div>
               <h3>On-Chain Reputation</h3>
-              <p>Anchors EIP-712 receipts to Base Sepolia, creating an immutable cryptographic audit trail and provenance record.</p>
+              <p>Anchors signed verification receipts on Base Sepolia for independently verifiable on-chain attestation.</p>
             </div>
           </div>
         </section>
