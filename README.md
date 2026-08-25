@@ -4,13 +4,14 @@
 
 ### Deterministic Intent Verification & Cryptographic Attestation Layer for Orion AI Agents on Base
 
+[![Live Demo](https://img.shields.io/badge/Live%20App-intentguard.onrender.com-success?style=flat-square&logo=render)](https://intentguard-drd7.onrender.com)
 [![CI / Test Suite](https://img.shields.io/badge/Tests-38%2F38%20Passing-emerald?style=flat-square)](https://github.com/0xaje/IntentGuard)
 [![Base Mainnet](https://img.shields.io/badge/Verification-Base%20Mainnet%20(8453)-blue?style=flat-square)](https://base.org)
 [![Base Sepolia](https://img.shields.io/badge/Attestation-Base%20Sepolia%20(84532)-purple?style=flat-square)](https://sepolia.basescan.org)
 [![Orion Agent](https://img.shields.io/badge/Framework-Orion%20Agent%20Ready-orange?style=flat-square)](https://github.com/0xaje/IntentGuard)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
 
-[**Live Demo App**](http://localhost:3000/app) · [**Pitch Deck**](presentation/intentguard_pitch_deck.md) · [**Judge Q&A Playbook**](presentation/judge_qa_playbook.md) · [**Architecture**](presentation/intentguard_architecture.mmd)
+[**🌐 Live Application**](https://intentguard-drd7.onrender.com) · [**Pitch Deck**](presentation/intentguard_pitch_deck.md) · [**Judge Q&A Playbook**](presentation/judge_qa_playbook.md) · [**Architecture**](presentation/intentguard_architecture.mmd)
 
 </div>
 
@@ -192,7 +193,7 @@ npx tsx examples/orion-integration.ts
 npm run audit -- --action TRANSFER --token 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 --recipient 0xb8069ea05dca32f8116f1af6bb719155274010fa --max 10000000 --data 0xa9059cbb000000000000000000000000b8069ea05dca32f8116f1af6bb719155274010fa0000000000000000000000000000000000000000000000000000000000989680
 ```
 
-Open `http://localhost:3000/app` to launch the **IntentGuard Forensic Signal Workspace**.
+Open `https://intentguard-drd7.onrender.com` (or `http://localhost:3000` locally) to launch the **IntentGuard Forensic Signal Workspace**.
 
 ---
 
