@@ -5,19 +5,19 @@
 ### Deterministic Intent Verification & Cryptographic Attestation Layer for Orion AI Agents on Base
 
 [![Live Demo](https://img.shields.io/badge/Live%20App-intentguard.onrender.com-success?style=flat-square&logo=render)](https://intentguard-drd7.onrender.com)
-[![CI / Test Suite](https://img.shields.io/badge/Tests-38%2F38%20Passing-emerald?style=flat-square)](https://github.com/0xaje/IntentGuard)
+[![CI / Test Suite](https://img.shields.io/badge/Tests-42%2F42%20Passing-emerald?style=flat-square)](https://github.com/0xaje/IntentGuard)
 [![Base Mainnet](https://img.shields.io/badge/Verification-Base%20Mainnet%20(8453)-blue?style=flat-square)](https://base.org)
 [![Base Sepolia](https://img.shields.io/badge/Attestation-Base%20Sepolia%20(84532)-purple?style=flat-square)](https://sepolia.basescan.org)
 [![Orion Agent](https://img.shields.io/badge/Framework-Orion%20Agent%20Ready-orange?style=flat-square)](https://github.com/0xaje/IntentGuard)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
 
-[**🌐 Live Application**](https://intentguard-drd7.onrender.com) · [**Pitch Deck**](presentation/intentguard_pitch_deck.md) · [**Judge Q&A Playbook**](presentation/judge_qa_playbook.md) · [**Architecture**](presentation/intentguard_architecture.mmd)
+[**Live Application**](https://intentguard-drd7.onrender.com) · [**Pitch Deck**](presentation/intentguard_pitch_deck.md) · [**Judge Q&A Playbook**](presentation/judge_qa_playbook.md) · [**Architecture**](presentation/intentguard_architecture.mmd)
 
 </div>
 
 ---
 
-## 🌟 What We Are Building: The Intent Fidelity Layer for Orion Agents
+## 1. What We Are Building: The Intent Fidelity Layer for Orion Agents
 
 **IntentGuard** is a zero-custody, zero-LLM deterministic security and cryptographic attestation layer built specifically for **autonomous Orion Agents executing on Base**.
 
@@ -26,7 +26,7 @@ As autonomous AI agents like **Orion** take on complex DeFi routing, token trans
 - **Calldata Hallucination**: Orion agents inadvertently constructing invalid recipient parameters, wrong token contracts, or excessive spend allowances (`type(uint256).max`).
 - **Execution Drift**: Slippage and liquidity shifts between the agent's planning phase and blockchain mining.
 
-### 🛡️ The Zero-LLM Deterministic Guarantee
+### The Zero-LLM Deterministic Guarantee
 > **"The Orion LLM interprets human intent. It NEVER decides whether a transaction is safe."**
 >
 > 1. **Intent Extraction**: The user's natural language goal is parsed into a strictly validated `IntentSpec` schema.
@@ -35,7 +35,7 @@ As autonomous AI agents like **Orion** take on complex DeFi routing, token trans
 
 ---
 
-## 🤖 The Orion Agent Trust Architecture
+## 2. The Orion Agent Trust Architecture
 
 ```text
                               HUMAN USER
@@ -58,7 +58,7 @@ As autonomous AI agents like **Orion** take on complex DeFi routing, token trans
                                   │
                        ┌──────────┴──────────┐
                        ▼                     ▼
-                    🟢 MATCH              🔴 MISMATCH
+                    [MATCH]               [MISMATCH]
                        │                     │
                        ▼                     ▼
                 Broadcast to Base     FAIL-CLOSED (Execution Aborted)
@@ -75,8 +75,8 @@ As autonomous AI agents like **Orion** take on complex DeFi routing, token trans
 
 ### 1. Orion Zero-Custody Agent Operation
 - The **Orion Agent** plans execution without ever holding user seed phrases or private keys.
-- If the Orion agent constructs a valid transaction $\rightarrow$ IntentGuard returns `MATCH` (`canExecute: true`).
-- If an attack or hallucination violates constraints $\rightarrow$ IntentGuard returns `MISMATCH` (`canExecute: false`) with strict failure codes (`IG-SPEND-001`, `IG-RECIPIENT-001`, `IG-APPROVE-001`).
+- If the Orion agent constructs a valid transaction -> IntentGuard returns `MATCH` (`canExecute: true`).
+- If an attack or hallucination violates constraints -> IntentGuard returns `MISMATCH` (`canExecute: false`) with strict failure codes (`IG-SPEND-001`, `IG-RECIPIENT-001`, `IG-APPROVE-001`).
 
 ### 2. Orion Agent Integration ([`examples/orion-integration.ts`](examples/orion-integration.ts))
 ```typescript
@@ -106,7 +106,7 @@ export async function guardOrionPlan(userIntent, orionPlan) {
 
 ---
 
-## ⚡ Multi-Framework Adapter Support
+## 3. Multi-Framework Adapter Support
 
 In addition to native Orion Agent support, IntentGuard provides drop-in adapters for the broader AI agent ecosystem:
 
@@ -120,7 +120,7 @@ In addition to native Orion Agent support, IntentGuard provides drop-in adapters
 
 ---
 
-## 🔒 Cryptographic Smart Contracts on Base Sepolia
+## 4. Cryptographic Smart Contracts on Base Sepolia
 
 IntentGuard anchors its deterministic verdicts to immutable Solidity registries deployed on **Base Sepolia**:
 
@@ -141,7 +141,7 @@ $$\mathbf{policyOwner} \neq \mathbf{transactionSubject} \neq \mathbf{evaluator}$
 
 ---
 
-## 🧪 Comprehensive Verification Suite (38 / 38 Passing)
+## 5. Comprehensive Verification Suite (42 / 42 Passing)
 
 IntentGuard is validated across three independent test runners with 100% green coverage:
 
@@ -159,22 +159,23 @@ IntentGuard is validated across three independent test runners with 100% green c
   IntentGuardTargetRegistry (1 passed)
   (9 Hardhat contract & gas tracking tests passed)
 
-  Engine & Invariant Fuzz Suite (12 passed)
+  Engine, Tokens, & Invariant Fuzz Suite (16 passed)
   • Exact ERC-20 approval matches
   • Unlimited approval blocked (IG-APPROVE-001)
   • Rogue spender blocked (IG-APPROVE-002)
   • Unknown selectors fail closed (IG-SELECTOR-001)
+  • Dynamic token metadata resolver & precision conversion (4 passed)
   • Invariant: Overspend amounts mathematically impossible to MATCH
   • Invariant: Non-allowlisted recipients mathematically impossible to MATCH
   • Invariant: Malformed / truncated calldata safely fails closed
-  (12 Node/TSX engine & fuzz tests passed)
+  (16 Node/TSX engine & fuzz tests passed)
 
-  TypeScript Compiler Check (`tsc --noEmit`): 0 ERRORS
+  TypeScript Compiler Check (tsc --noEmit): 0 ERRORS
 ```
 
 ---
 
-## 🚀 Quickstart & Demo Commands
+## 6. Quickstart & Demo Commands
 
 ```bash
 # 1. Install dependencies
@@ -183,7 +184,7 @@ npm install
 # 2. Run development server (Frontend + Backend)
 npm run dev
 
-# 3. Run the full 38-test verification suite
+# 3. Run the full 42-test verification suite
 npm run test:all
 
 # 4. Run the flagship Orion Agent integration demo
@@ -197,7 +198,7 @@ Open `https://intentguard-drd7.onrender.com` (or `http://localhost:3000` locally
 
 ---
 
-## 👥 Hackathon Submission & Team
+## 7. Hackathon Submission & Team
 
 - **Project**: IntentGuard
 - **Track**: Autonomous AI Agents / Security & Infrastructure on Base (Orion Agent Hackathon)

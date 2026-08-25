@@ -48,7 +48,7 @@ const liveScenarios: Scenario[] = [
     id: "demo-1-safe-transfer",
     mode: "pre-execution",
     title: "Demo 1: Safe Transfer (37.67 USDC)",
-    badge: "🟢 MATCH / SAFE",
+    badge: "MATCH / SAFE",
     badgeType: "match",
     description: "Agent proposes 37.67 USDC transfer to Alice; satisfies all constraints. Safe to sign.",
     intentText: "Transfer 37.67 USDC to 0xb8069ea05dca32f8116f1af6bb719155274010fa on Base.",
@@ -60,7 +60,7 @@ const liveScenarios: Scenario[] = [
     id: "demo-2-agent-overspend",
     mode: "pre-execution",
     title: "Demo 2: Agent Mistake (Overspend Cap)",
-    badge: "🔴 MISMATCH / IG-SPEND-001",
+    badge: "MISMATCH / IG-SPEND-001",
     badgeType: "mismatch",
     description: "Human cap was 10 USDC; agent proposed 37.67 USDC. Blocked by IG-SPEND-001 (Excess: 27.67 USDC).",
     intentText: "Transfer 10 USDC to 0xb8069ea05dca32f8116f1af6bb719155274010fa on Base.",
@@ -72,7 +72,7 @@ const liveScenarios: Scenario[] = [
     id: "demo-3-malicious-approval",
     mode: "pre-execution",
     title: "Demo 3: Malicious Unlimited Approval",
-    badge: "🔴 MISMATCH / IG-APPROVE-001",
+    badge: "MISMATCH / IG-APPROVE-001",
     badgeType: "mismatch",
     description: "Human prohibited unlimited approval; agent proposed approve(spender, 2^256-1). Blocked by IG-APPROVE-001.",
     intentText: "Send 25 USDC to 0x5df3a0cc5bf77f1f024585fb9a495db80b93df1a on Base. Never approve unlimited spending.",
@@ -84,7 +84,7 @@ const liveScenarios: Scenario[] = [
     id: "demo-4-swap-quote",
     mode: "pre-execution",
     title: "Demo 4: Swap Preflight & QuoterV2",
-    badge: "🟡 CANNOT_VERIFY / QUOTE",
+    badge: "CANNOT_VERIFY / QUOTE",
     badgeType: "quote",
     description: "Inspects allowlisted SwapRouter02 and queries live QuoterV2. Fails closed until mined execution evidence.",
     intentText: "Swap $100 USDC for ETH on Base. Maximum slippage 1%. Don't allow unlimited approvals.",
@@ -97,7 +97,7 @@ const liveScenarios: Scenario[] = [
     id: "post-scenario-mined-match",
     mode: "post-execution",
     title: "Mined Transfer Audit (37.67 USDC)",
-    badge: "🟢 MATCH / ANCHORED",
+    badge: "MATCH / ANCHORED",
     badgeType: "match",
     description: "Audits mined Base Mainnet receipt and Transfer logs to prove intent fidelity and anchor receipt.",
     intentText: "Transfer 37.67 USDC to 0xb8069ea05dca32f8116f1af6bb719155274010fa on Base.",
@@ -107,7 +107,7 @@ const liveScenarios: Scenario[] = [
     id: "post-scenario-overspend-audit",
     mode: "post-execution",
     title: "Mined Overspend Violation Audit",
-    badge: "🔴 MISMATCH / VIOLATION",
+    badge: "MISMATCH / VIOLATION",
     badgeType: "mismatch",
     description: "Inspects mined Base transaction logs and proves actual spend (37.67 USDC) violated the 10 USDC cap.",
     intentText: "Send 10 USDC to 0xb8069ea05dca32f8116f1af6bb719155274010fa on Base.",
@@ -946,10 +946,10 @@ npm run test:all`;
                   <div className="fidelity-verdict-body">
                     <div className={`verdict-pill pill-${result.verification.verdict.toLowerCase()}`}>
                       {result.verification.verdict === "MATCH"
-                        ? "🟢 MATCH"
+                        ? "MATCH"
                         : result.verification.verdict === "MISMATCH"
-                        ? "🔴 MISMATCH"
-                        : "🟡 CANNOT VERIFY"}
+                        ? "MISMATCH"
+                        : "CANNOT VERIFY"}
                     </div>
                     <p className="fidelity-verdict-summary">
                       {result.verification.verdict === "MATCH"
