@@ -95,7 +95,6 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@builder.io/vite-plugin-jsx-loc": "^0.1.1",
     "@nomicfoundation/hardhat-toolbox": "6.1.0",
     "@openzeppelin/contracts": "5.4.0",
     "@tailwindcss/typography": "^0.5.15",
