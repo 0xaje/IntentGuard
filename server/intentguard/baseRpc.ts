@@ -318,7 +318,7 @@ function noSimulation(detail: string): RouterSimulation {
   return { state: "not-applicable", protocol: null, contractAddress: null, method: null, selector: null, amountOutRaw: null, sqrtPriceX96AfterRaw: null, initializedTicksCrossed: null, gasEstimate: null, blockTag: null, detail };
 }
 
-async function resolveTokenMetadata(address: string): Promise<TokenMetadata> {
+export async function resolveTokenMetadata(address: string): Promise<TokenMetadata> {
   try {
     const [symbolResponse, decimalsResponse] = await Promise.all([
       rpcCall("eth_call", [{ to: address, data: ERC20_SYMBOL_SELECTOR }, "latest"], hexSchema),

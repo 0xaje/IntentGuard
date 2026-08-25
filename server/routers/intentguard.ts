@@ -2,11 +2,12 @@ import { TRPCError } from "@trpc/server";
 import { Contract, JsonRpcProvider, Wallet, getAddress, keccak256, AbiCoder } from "ethers";
 import { z } from "zod";
 import { structuredIntentSchema, transactionHashSchema, type AgentTraceStep } from "@shared/intentguard";
-import { BaseRpcError, getBaseHealth, inspectBaseTransaction } from "../intentguard/baseRpc";
+import { BaseRpcError, getBaseHealth, inspectBaseTransaction, resolveTokenMetadata } from "../intentguard/baseRpc";
 import { buildTrustReceipt, hashIntent, receiptTypedDataForRegistry, recoverReceiptEvaluator } from "../intentguard/crypto";
 import { IntentParseError, parseStructuredIntent } from "../intentguard/intent";
 import { evaluateIntentAgainstTransaction, makeUnverifiableResult } from "../intentguard/policy";
 import { receiptStruct } from "../../engine/src/receipt";
+import { getKnownToken, formatTokenUnits, parseTokenUnits } from "../../engine/src/tokens";
 import { ENV } from "../_core/env";
 import { publicProcedure, router } from "../_core/trpc";
 
@@ -307,5 +308,45 @@ export const intentGuardRouter = router({
   }),
   receipt: router({
     anchor: anchorReceiptProcedure,
+  }),
+  token: router({
+    getMetadata: publicProcedure
+      .input(z.object({ addressOrSymbol: z.string().min(1).max(66) }))
+      .query(async ({ input }) => {
+        const known = getKnownToken(input.addressOrSymbol);
+        if (known) {
+          return {
+            address: known.address,
+            name: known.name,
+            symbol: known.symbol,
+            decimals: known.decimals,
+            isKnown: true,
+            source: "cache" as const,
+            detail: "Instant resolved from Base verified token cache.",
+          };
+        }
+        try {
+          const resolved = await resolveTokenMetadata(input.addressOrSymbol);
+          return {
+            address: input.addressOrSymbol,
+            name: resolved.symbol ?? "Unknown Token",
+            symbol: resolved.symbol ?? "UNKNOWN",
+            decimals: resolved.decimals ?? 18,
+            isKnown: false,
+            source: "rpc" as const,
+            detail: resolved.detail,
+          };
+        } catch {
+          return {
+            address: input.addressOrSymbol,
+            name: "Unknown Token",
+            symbol: "UNKNOWN",
+            decimals: 18,
+            isKnown: false,
+            source: "fallback" as const,
+            detail: "Could not query on-chain ERC-20 metadata; defaulted to 18 decimals.",
+          };
+        }
+      }),
   }),
 });
