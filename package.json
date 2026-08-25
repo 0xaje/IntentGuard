@@ -111,7 +111,7 @@
     "chai": "4.5.0",
     "drizzle-kit": "^0.31.4",
     "esbuild": "^0.25.0",
-    "hardhat": "2.26.3",
+    "hardhat": "^2.28.0",
     "pnpm": "^10.15.1",
     "postcss": "^8.4.47",
     "prettier": "^3.6.2",
