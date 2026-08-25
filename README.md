@@ -26,7 +26,7 @@ It converts human instructions into structured, deterministic constraints and ev
 IntentGuard does not hold user funds, private keys, or custody assets. It does not use an LLM to make the final safety decision.
 
 Instead, the system produces one of three deterministic outcomes:
-- **`MATCH`** — All required supported constraints are satisfied by the available evidence (Safe to review / continue).
+- **`MATCH`** — All required supported constraints are satisfied by the available evidence. In an integrated agent workflow, `MATCH` permits the action to continue to the execution/confirmation boundary.
 - **`MISMATCH`** — Observable transaction behavior conflicts with a declared constraint (**Do Not Approve / Execute**; prevents continuation through integrated middleware).
 - **`CANNOT_VERIFY`** — The available evidence is insufficient or unsupported (Fails closed; do not approve).
 
@@ -38,7 +38,7 @@ Successful evaluations can be represented as EIP-712 signed verification receipt
 > 
 > *The agent can be intelligent. The verifier doesn't have to be.*
 >
-> **LLMs interpret. Deterministic rules enforce.** IntentGuard may use an LLM to translate natural language into a structured `IntentSpec`. The LLM does **not** determine the final verdict. The verdict is produced by deterministic rules applied to decoded transaction data and observable blockchain evidence.
+> **LLMs interpret. Deterministic rules enforce.** IntentGuard may use an LLM to translate natural language into a structured `IntentSpec`. The LLM does **not** determine the final verdict. The verdict is computed deterministically from typed policy constraints, decoded transaction data, and observable blockchain evidence.
 
 ### Pre-Execution vs. Post-Execution Precision
 The same deterministic policy engine can evaluate both unsigned agent proposals before execution and observable transaction evidence after execution. The current public demo proves the verification path with live Base evidence; pre-execution enforcement is exposed through the agent middleware architecture.
@@ -46,6 +46,12 @@ The same deterministic policy engine can evaluate both unsigned agent proposals 
 ---
 
 ## 2. IntentGuard Trust & Attestation Architecture
+
+### Product Lifecycle Abstraction
+$$\text{\bf Intent} \longrightarrow \text{\bf Evidence} \longrightarrow \text{\bf Verdict} \longrightarrow \text{\bf Attestation}$$
+
+### Complete 7-Stage Implementation Flow
+$$\text{\bf Intent} \longrightarrow \text{\bf Policy} \longrightarrow \text{\bf Request} \longrightarrow \text{\bf Evidence} \longrightarrow \text{\bf Verdict} \longrightarrow \text{\bf Receipt} \longrightarrow \text{\bf Proof}$$
 
 ```text
                     HUMAN INTENT
@@ -75,9 +81,9 @@ The same deterministic policy engine can evaluate both unsigned agent proposals 
       Base Sepolia Anchor
 ```
 
-### 1. Orion-Compatible Integration Adapter ([`examples/orion-integration.ts`](examples/orion-integration.ts))
+### 1. Primary Integration Prototype: Orion Agent ([`examples/orion-integration.ts`](examples/orion-integration.ts))
 
-IntentGuard provides an Orion-compatible integration adapter prototype illustrating how an agent's proposal is verified prior to execution:
+IntentGuard provides a primary Orion-compatible integration prototype illustrating how an agent's proposal is verified prior to execution:
 
 ```text
 Orion Agent ──► Proposes Transaction ──► IntentGuard.verify(...) ──► [ MATCH / MISMATCH / CANNOT_VERIFY ] ──► Only MATCH continues
