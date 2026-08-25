@@ -77,15 +77,26 @@
 }
 
 @layer base {
-  * { @apply border-border outline-ring/50; }
-  html { scroll-behavior: smooth; }
+  * {
+    border-color: var(--border);
+    outline-color: color-mix(in srgb, var(--ring) 50%, transparent);
+  }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
     font-family: "DM Sans", sans-serif;
     letter-spacing: -0.012em;
   }
-  button:not(:disabled), a[href] { @apply cursor-pointer; }
-  ::selection { background: #e7653d; color: #fff8f0; }
+  button:not(:disabled), a[href] {
+    cursor: pointer;
+  }
+  ::selection {
+    background: #e7653d;
+    color: #fff8f0;
+  }
 }
 
 @layer components {

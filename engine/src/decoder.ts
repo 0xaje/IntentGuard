@@ -123,42 +123,68 @@ export function decodeRequest(request: ProposedRequest): DecodedEffect {
   const target = request.to === undefined ? undefined : normalizeAddress(request.to);
 
   if (method === "transfer") {
-    const decoded = ERC20_INTERFACE.decodeFunctionData("transfer", data);
-    const recipient = asAddress(decoded[0], "transfer.to");
-    const amount = asDecimal(decoded[1], "transfer.amount");
-    return {
-      kind: "ERC20_TRANSFER",
-      chainId: request.chainId,
-      from: request.from,
-      target,
-      selector,
-      token: target,
-      recipient,
-      amountRaw: amount,
-      nativeValueWei: asDecimal(request.valueWei ?? "0", "valueWei"),
-      abiSource: "LOCAL_VERIFIED",
-      decodeConfidence: "EXACT",
-    };
+    try {
+      const decoded = ERC20_INTERFACE.decodeFunctionData("transfer", data);
+      const recipient = asAddress(decoded[0], "transfer.to");
+      const amount = asDecimal(decoded[1], "transfer.amount");
+      return {
+        kind: "ERC20_TRANSFER",
+        chainId: request.chainId,
+        from: request.from,
+        target,
+        selector,
+        token: target,
+        recipient,
+        amountRaw: amount,
+        nativeValueWei: asDecimal(request.valueWei ?? "0", "valueWei"),
+        abiSource: "LOCAL_VERIFIED",
+        decodeConfidence: "EXACT",
+      };
+    } catch {
+      return {
+        kind: "UNKNOWN_CALL",
+        chainId: request.chainId,
+        from: request.from,
+        target,
+        selector,
+        nativeValueWei: asDecimal(request.valueWei ?? "0", "valueWei"),
+        abiSource: "RAW_SELECTOR",
+        decodeConfidence: "UNKNOWN",
+      };
+    }
   }
 
   if (method === "approve") {
-    const decoded = ERC20_INTERFACE.decodeFunctionData("approve", data);
-    const spender = asAddress(decoded[0], "approve.spender");
-    const amount = asDecimal(decoded[1], "approve.amount");
-    return {
-      kind: "ERC20_APPROVE",
-      chainId: request.chainId,
-      from: request.from,
-      target,
-      selector,
-      token: target,
-      spender,
-      amountRaw: amount,
-      amountMaxRaw: amount,
-      nativeValueWei: asDecimal(request.valueWei ?? "0", "valueWei"),
-      abiSource: "LOCAL_VERIFIED",
-      decodeConfidence: "EXACT",
-    };
+    try {
+      const decoded = ERC20_INTERFACE.decodeFunctionData("approve", data);
+      const spender = asAddress(decoded[0], "approve.spender");
+      const amount = asDecimal(decoded[1], "approve.amount");
+      return {
+        kind: "ERC20_APPROVE",
+        chainId: request.chainId,
+        from: request.from,
+        target,
+        selector,
+        token: target,
+        spender,
+        amountRaw: amount,
+        amountMaxRaw: amount,
+        nativeValueWei: asDecimal(request.valueWei ?? "0", "valueWei"),
+        abiSource: "LOCAL_VERIFIED",
+        decodeConfidence: "EXACT",
+      };
+    } catch {
+      return {
+        kind: "UNKNOWN_CALL",
+        chainId: request.chainId,
+        from: request.from,
+        target,
+        selector,
+        nativeValueWei: asDecimal(request.valueWei ?? "0", "valueWei"),
+        abiSource: "RAW_SELECTOR",
+        decodeConfidence: "UNKNOWN",
+      };
+    }
   }
 
   return {

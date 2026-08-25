@@ -21,7 +21,11 @@
     "deploy:local": "hardhat run scripts/deploy.cjs",
     "deploy:testnet": "hardhat run scripts/deploy.cjs --network baseSepolia",
     "verify:testnet": "tsx scripts/verify-testnet.ts",
+    "audit": "tsx scripts/cli.ts",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
+  },
+  "bin": {
+    "intentguard": "./scripts/cli.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",

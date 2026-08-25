@@ -178,7 +178,7 @@ export default function IntentWorkspace() {
   const [humanReviewRecorded, setHumanReviewRecorded] = useState(false);
   const [showSessionJson, setShowSessionJson] = useState(false);
   const [showSdkDrawer, setShowSdkDrawer] = useState(false);
-  const [sdkLanguage, setSdkLanguage] = useState<"ts" | "py">("ts");
+  const [sdkLanguage, setSdkLanguage] = useState<"ts" | "agentkit" | "eliza" | "cli">("ts");
   const [sessionCopied, setSessionCopied] = useState(false);
   const [sdkCopied, setSdkCopied] = useState(false);
 
@@ -351,65 +351,89 @@ export default function IntentWorkspace() {
     URL.revokeObjectURL(url);
   }
 
-  const tsCode = `import { IntentGuard } from "@intentguard/sdk";
-import { OrionAgent } from "@orion/sdk";
+  const tsCode = `import { verifyAgentAction, createAgentGuardrail } from "intentguard";
 
-// 1. Initialize IntentGuard Verifier
-const guard = new IntentGuard({
-  rpcUrl: "https://mainnet.base.org",
-  registryChainId: 84532 // Base Sepolia Attestation Registry
-});
+// 1. Declare human constraints (e.g. from prompt or UI)
+const intent = {
+  schemaVersion: 1,
+  chainId: 8453, // Base Mainnet
+  action: "TRANSFER",
+  asset: { address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" }, // USDC
+  recipient: { exact: "0xb8069ea05dca32f8116f1af6bb719155274010fa" },
+  spendCap: { token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", maxRaw: "10000000" }, // 10 USDC max
+  approvalPolicy: "EXACT_ONLY",
+  permitPolicy: "NOT_APPLICABLE",
+  allowNativeValue: false,
+  allowUnknownSelectors: false,
+};
 
-// 2. Wrap Orion Agent Planner with Intent Fidelity Middleware
-export async function executeOrionProposal(userIntent: string, agent: OrionAgent) {
-  // Step A: Orion Agent proposes candidate transaction
-  const proposal = await agent.planTransaction(userIntent);
-
-  // Step B: IntentGuard deterministic verification (Zero-LLM safety check)
-  const verdict = await guard.verify({
-    intent: userIntent,
-    transactionHash: proposal.hash,
-    calldata: proposal.calldata
-  });
-
-  if (verdict.status !== "MATCH") {
-    // Fail-Closed: Block unauthorized proposal before broadcast
-    throw new IntentViolationError({
-      rule: verdict.conflictingChecks[0]?.id,
-      summary: "Orion proposal cannot be considered faithful to declared intent."
-    });
-  }
-
-  // Step C: Produce cryptographic proof & update Orion Agent reputation
-  return verdict.receipt;
+// 2. 3-Line Middleware wrapper for any agent
+export function withIntentGuard(intent, sendTransaction) {
+  return async (proposedReq) => {
+    const check = verifyAgentAction({ intent, request: proposedReq });
+    if (!check.isSafe) {
+      throw new Error(\`[IntentGuard BLOCKED] \${check.primaryReasonCode}: \${check.explanation}\`);
+    }
+    return sendTransaction(proposedReq);
+  };
 }`;
 
-  const pyCode = `from intentguard import IntentGuard, IntentViolationError
-from orion import OrionAgent
+  const agentkitCode = `import { IntentGuardAgentKitProvider } from "@intentguard/agentkit";
+import { AgentKit } from "@coinbase/agentkit";
 
-# 1. Initialize IntentGuard Client
-guard = IntentGuard(
-    rpc_url="https://mainnet.base.org",
-    chain_id=8453
-)
+// 1. Initialize guardrail with declared human policy
+const guardrail = new IntentGuardAgentKitProvider({
+  schemaVersion: 1,
+  chainId: 8453, // Base Mainnet
+  action: "TRANSFER",
+  asset: { address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" },
+  recipient: { exact: "0xb8069ea05dca32f8116f1af6bb719155274010fa" },
+  spendCap: { token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", maxRaw: "25000000" },
+  approvalPolicy: "EXACT_ONLY",
+  permitPolicy: "NOT_APPLICABLE",
+  allowNativeValue: false,
+  allowUnknownSelectors: false,
+});
 
-# 2. Orion Agent Intent Fidelity Hook
-def verify_orion_step(user_intent: str, orion_agent: OrionAgent):
-    # Step A: Orion proposes candidate transaction
-    proposal = orion_agent.propose_action(user_intent)
-    
-    # Step B: Deterministic policy evaluation
-    verdict = guard.verify(
-        intent=user_intent,
-        transaction_hash=proposal.tx_hash
-    )
-    
-    if verdict.verdict != "MATCH":
-        # Blocked before broadcast
-        raise IntentViolationError(f"Blocked by {verdict.conflicting_rules}: {verdict.summary}")
-        
-    # Step C: Anchor proof to Orion audit trail
-    return verdict.receipt_id`;
+// 2. Intercept AgentKit action before broadcasting
+const evaluation = guardrail.evaluateAction({
+  name: "transfer_usdc",
+  targetAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  calldata: agentProposal.calldata,
+});
+
+if (!evaluation.isApproved) {
+  throw new Error(\`AgentKit action blocked: \${evaluation.explanation}\`);
+}`;
+
+  const elizaCode = `import { intentGuardElizaPlugin } from "@intentguard/plugin-eliza";
+
+// 1. Register plugin into Eliza Agent Runtime
+runtime.registerPlugin(intentGuardElizaPlugin);
+
+// 2. Eliza automatically evaluates action fidelity before tool execution
+// If an LLM hallucination or prompt-injection attempts an overspend or rogue approval,
+// the evaluator returns valid: false with deterministic error code (e.g. IG-SPEND-001).`;
+
+  const cliCode = `# 1. Audit any transaction or proposal in terminal / CI pipeline
+npx intentguard verify \\
+  --action TRANSFER \\
+  --token 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 \\
+  --recipient 0xb8069ea05dca32f8116f1af6bb719155274010fa \\
+  --max 10000000 \\
+  --data 0xa9059cbb...
+
+# 2. Run complete test suite locally
+npm run test:all`;
+
+  const activeSnippet =
+    sdkLanguage === "ts"
+      ? tsCode
+      : sdkLanguage === "agentkit"
+      ? agentkitCode
+      : sdkLanguage === "eliza"
+      ? elizaCode
+      : cliCode;
 
   const filteredScenarios = liveScenarios.filter((s) => s.mode === mode);
 
@@ -460,21 +484,35 @@ def verify_orion_step(user_intent: str, orion_agent: OrionAgent):
                     className={`lang-tab ${sdkLanguage === "ts" ? "active" : ""}`}
                     onClick={() => setSdkLanguage("ts")}
                   >
-                    TypeScript
+                    TypeScript SDK
                   </button>
                   <button
                     type="button"
-                    className={`lang-tab ${sdkLanguage === "py" ? "active" : ""}`}
-                    onClick={() => setSdkLanguage("py")}
+                    className={`lang-tab ${sdkLanguage === "agentkit" ? "active" : ""}`}
+                    onClick={() => setSdkLanguage("agentkit")}
                   >
-                    Python
+                    Coinbase AgentKit
+                  </button>
+                  <button
+                    type="button"
+                    className={`lang-tab ${sdkLanguage === "eliza" ? "active" : ""}`}
+                    onClick={() => setSdkLanguage("eliza")}
+                  >
+                    ElizaOS Plugin
+                  </button>
+                  <button
+                    type="button"
+                    className={`lang-tab ${sdkLanguage === "cli" ? "active" : ""}`}
+                    onClick={() => setSdkLanguage("cli")}
+                  >
+                    CLI / CI
                   </button>
                 </div>
                 <button
                   type="button"
                   className="button-subtle text-xs"
                   onClick={() => {
-                    navigator.clipboard.writeText(sdkLanguage === "ts" ? tsCode : pyCode);
+                    navigator.clipboard.writeText(activeSnippet);
                     setSdkCopied(true);
                     setTimeout(() => setSdkCopied(false), 2000);
                   }}
@@ -491,10 +529,10 @@ def verify_orion_step(user_intent: str, orion_agent: OrionAgent):
               </div>
             </div>
             <p className="text-xs text-muted-foreground mt-2 mb-3">
-              Drop this 5-line middleware into autonomous agents (LangChain, Eliza, Orion, Rig) to deterministically fail-closed before or after any transaction broadcast.
+              Drop this deterministic guardrail into any autonomous AI agent on Base to prevent prompt injection and unauthorized execution.
             </p>
             <pre className="sdk-code-block">
-              <code>{sdkLanguage === "ts" ? tsCode : pyCode}</code>
+              <code>{activeSnippet}</code>
             </pre>
           </div>
         </div>

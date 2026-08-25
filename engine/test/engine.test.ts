@@ -4,10 +4,12 @@ import {
   analyze,
   buildErc20ApproveData,
   buildPermitTypedData,
+  createAgentGuardrail,
   makeReceipt,
   receiptHash,
   receiptTypedData,
   Verdict,
+  verifyAgentAction,
 } from "../src/index";
 import type { AnalysisInput, IntentSpec, ProposedRequest } from "../src/index";
 
@@ -175,3 +177,21 @@ test("receipt is deterministic and produces EIP-712 typed data", () => {
   assert.equal(typed.value.intentHash, receipt.intentHash);
   assert.equal(typed.value.verdict, 0);
 });
+
+test("verifyAgentAction and createAgentGuardrail provide direct agent middleware", () => {
+  const intent = approvalIntent();
+  const validReq = request(buildErc20ApproveData(SPENDER, CAP));
+  const badReq = request(buildErc20ApproveData(OTHER_SPENDER, CAP));
+
+  const validResult = verifyAgentAction({ intent, request: validReq }, { chainId: 84532, now: 1_700_000_000 });
+  assert.equal(validResult.isSafe, true);
+  assert.equal(validResult.verdict, Verdict.MATCH);
+  assert.equal(validResult.failedRules.length, 0);
+
+  const guard = createAgentGuardrail(intent, { chainId: 84532, now: 1_700_000_000 });
+  const badResult = guard(badReq);
+  assert.equal(badResult.isSafe, false);
+  assert.equal(badResult.verdict, Verdict.MISMATCH);
+  assert.equal(badResult.primaryReasonCode, "IG-APPROVE-002");
+});
+
